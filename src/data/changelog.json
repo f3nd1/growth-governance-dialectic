@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T15:46:28.947Z",
+      "action": "push",
+      "commit": "9b37b70",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Phase 3: persona builder + library",
+      "summary": "Weight-profile builder (sum-to-1, paradox ⚡, blind-spot probe), library cards with stacked bars, 8 seeded synthetic personas"
+    },
+    {
       "when": "2026-07-04T15:44:27.714Z",
       "action": "push",
       "commit": "3c5eed7",
