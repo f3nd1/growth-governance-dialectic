@@ -18,7 +18,6 @@ function blankPersona() {
     blindSpot: false,
     voice: '',
     synthetic: true,
-    runCount: 0,
   }
 }
 

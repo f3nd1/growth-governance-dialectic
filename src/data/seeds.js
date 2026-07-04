@@ -163,8 +163,7 @@ export function defaultPersonas() {
       held: ['wh2'],
       blindSpot: false,
       voice: 'Strategic, board-facing; cites accreditation wins and long-term stability.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
     {
       id: 'p2',
@@ -177,8 +176,7 @@ export function defaultPersonas() {
       blindSpot: false,
       voice:
         'Growth-driven and candid; complains about approval delays in one breath and credits EduTrust standing for agent deals in the next. Genuinely holds both positions.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
     {
       id: 'p3',
@@ -190,8 +188,7 @@ export function defaultPersonas() {
       held: ['wh2'],
       blindSpot: false,
       voice: 'Process-proud; frames every control as protecting students and the licence to operate.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
     {
       id: 'p4',
@@ -203,8 +200,7 @@ export function defaultPersonas() {
       held: ['wh3'],
       blindSpot: false,
       voice: 'Classroom-focused; sees governance as paperwork that happens to other people.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
     {
       id: 'p5',
@@ -216,8 +212,7 @@ export function defaultPersonas() {
       held: ['wh1'],
       blindSpot: false,
       voice: 'Time-poor; experiences audits and documentation as unpaid overhead crowding out teaching prep.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
     {
       id: 'p6',
@@ -229,8 +224,7 @@ export function defaultPersonas() {
       held: ['wh1'],
       blindSpot: false,
       voice: 'Detail-oriented; lives inside the fee-protection and reporting workflows and feels their weight.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
     {
       id: 'p7',
@@ -243,8 +237,7 @@ export function defaultPersonas() {
       blindSpot: true,
       voice:
         'BLIND-SPOT PROBE: deliberately off-script. Talks about cross-border logistics, informal WhatsApp approvals, currency issues and family expectations — themes the a priori codebook may not capture. Tests the emergent bucket.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
     {
       id: 'p8',
@@ -257,8 +250,7 @@ export function defaultPersonas() {
       blindSpot: false,
       voice:
         'External channel partner; weighs registration status and fee-protection when deciding which institutions to represent.',
-      synthetic: true,
-      runCount: 0,
+      synthetic: true
     },
   ]
 }

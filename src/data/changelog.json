@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T23:56:18.436Z",
+      "action": "push",
+      "commit": "1f03152",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Group A fixes: reset, confirms, dead field, mode, a11y",
+      "summary": "resetToEmpty preserves design layer; confirms on restore-default buttons; removed dead runCount; workspaceMode flags edited-but-unrun design as Custom; dropped role=alert on banner"
+    },
+    {
       "when": "2026-07-04T16:28:02.819Z",
       "action": "push",
       "commit": "7d5710a",

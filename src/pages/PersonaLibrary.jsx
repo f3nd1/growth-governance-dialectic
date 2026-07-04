@@ -24,7 +24,11 @@ export default function PersonaLibrary() {
         <Link className="btn" to="/participants/builder">+ New persona</Link>{' '}
         <button
           className="btn secondary"
-          onClick={() => update('personas', () => defaultPersonas())}
+          onClick={() => {
+            if (window.confirm('Reset to the default 8 synthetic personas? This replaces the current persona library, discarding any personas you have added or edited. Existing interviews are kept. This cannot be undone.')) {
+              update('personas', () => defaultPersonas())
+            }
+          }}
         >
           Reset to default 8
         </button>

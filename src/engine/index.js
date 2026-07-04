@@ -46,14 +46,11 @@ export async function runInterviews(personaIds, seed) {
     })
   }
 
+  // Run counts are derived live from ws.interviews wherever they are shown,
+  // so a run only appends interviews — the persona records are never mutated.
   setState((prev) => ({
     ...prev,
     interviews: [...prev.interviews, ...interviews],
-    personas: prev.personas.map((p) =>
-      personaIds.includes(p.id)
-        ? { ...p, runCount: (p.runCount ?? 0) + 1 }
-        : p,
-    ),
   }))
 
   return { interviews, errors }

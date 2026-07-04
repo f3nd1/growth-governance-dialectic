@@ -103,7 +103,14 @@ export default function Codebook() {
       })}
 
       <p>
-        <button className="btn secondary" onClick={() => setCodes(defaultCodebookCodes())}>
+        <button
+          className="btn secondary"
+          onClick={() => {
+            if (window.confirm('Restore the default codebook? This replaces all current codes and definitions, including any you have added or edited. This cannot be undone.')) {
+              setCodes(defaultCodebookCodes())
+            }
+          }}
+        >
           Restore default codebook
         </button>
       </p>

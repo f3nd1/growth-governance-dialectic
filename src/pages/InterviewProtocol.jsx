@@ -62,7 +62,11 @@ export default function InterviewProtocol() {
         <button className="btn secondary" onClick={addQuestion}>+ Add question</button>{' '}
         <button
           className="btn secondary"
-          onClick={() => setQuestions(defaultProtocolQuestions())}
+          onClick={() => {
+            if (window.confirm('Restore the default 7 protocol questions? This replaces the current protocol and discards any edits you have made. This cannot be undone.')) {
+              setQuestions(defaultProtocolQuestions())
+            }
+          }}
         >
           Restore default 7
         </button>

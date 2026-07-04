@@ -1,7 +1,7 @@
 // Deterministic demo-data builder + workspace-mode detection.
 //
 // "Load demo data" reproduces the known-good end-to-end state (8 personas →
-// 56 coded segments → κ≈0.88 Strong → split pattern on the paradox persona)
+// 56 coded segments → κ≈0.86 Strong → split pattern on the paradox persona)
 // so a fresh visitor can explore the whole pipeline immediately. It reuses
 // the SAME simulator and coder the live pipeline uses, with fixed IDs/seed/
 // timestamp so the result is fully deterministic and idempotent — loading
@@ -38,48 +38,63 @@ export function buildDemoWorkspace() {
   return {
     ...base,
     meta: { ...base.meta, createdAt: DEMO_TIMESTAMP, updatedAt: DEMO_TIMESTAMP },
-    personas: base.personas.map((p) => ({ ...p, runCount: 1 })),
     interviews,
     coding: { segments, overridesLog: [] },
     calibration: { runs: [] },
   }
 }
 
-/** Empty instrument: seeded definitions remain, all run/analysis data cleared. */
-export function buildEmptyWorkspace() {
-  const base = defaultWorkspace()
-  return {
-    ...base,
-    personas: base.personas.map((p) => ({ ...p, runCount: 0 })),
-    interviews: [],
-    coding: { segments: [], overridesLog: [] },
-    calibration: { runs: [] },
-  }
+// ------------------------------------------------------------- mode detection
+//
+// Progress is DERIVED from data, never stored. We compare signatures of the
+// live workspace against known pristine states so the reported mode can never
+// disagree with what is actually present.
+
+// Design layer = the parts a researcher edits while building the instrument.
+function designSignature(protocol, codebook, personas) {
+  return JSON.stringify({
+    protocol: protocol.questions,
+    codebook: codebook.codes,
+    personas,
+  })
 }
 
-// Signature over just the run/analysis payload — the parts demo/reset own.
-// Compared to detect whether the current workspace still matches a pristine
-// demo (or empty) state, so status can never disagree with the actual data.
-function runSignature(ws) {
+// Full signature = design layer + run/analysis layer, for exact demo match.
+function fullSignature(ws) {
   return JSON.stringify({
+    protocol: ws.protocol.questions,
+    codebook: ws.codebook.codes,
+    personas: ws.personas,
     interviews: ws.interviews,
     segments: ws.coding.segments,
     overrides: ws.coding.overridesLog,
-    personas: ws.personas.map((p) => ({ ...p })),
   })
 }
 
 let demoSig = null
-let emptySig = null
+let defaultDesignSig = null
 
-/** 'empty' | 'demo' | 'custom' — never recomputes analysis, just compares state. */
+function designIsDefault(ws) {
+  if (defaultDesignSig === null) {
+    const d = defaultWorkspace()
+    defaultDesignSig = designSignature(d.protocol, d.codebook, d.personas)
+  }
+  return designSignature(ws.protocol, ws.codebook, ws.personas) === defaultDesignSig
+}
+
+/**
+ * 'empty' | 'demo' | 'custom' — derived from data, never a stored flag.
+ * - demo:   design is default AND the run/analysis layer is exactly the demo build.
+ * - empty:  design is still the pristine defaults AND nothing has been run.
+ * - custom: anything else — including a designed-but-not-yet-run instrument
+ *           (edited protocol/codebook/personas), so design work is never
+ *           mislabelled "Empty".
+ */
 export function workspaceMode(ws) {
-  if (demoSig === null) demoSig = runSignature(buildDemoWorkspace())
-  if (emptySig === null) emptySig = runSignature(buildEmptyWorkspace())
-  const sig = runSignature(ws)
-  if (sig === demoSig) return 'demo'
-  if (sig === emptySig || (ws.interviews.length === 0 && ws.coding.segments.length === 0))
-    return 'empty'
+  if (demoSig === null) demoSig = fullSignature(buildDemoWorkspace())
+  if (fullSignature(ws) === demoSig) return 'demo'
+  const noRuns = ws.interviews.length === 0 && ws.coding.segments.length === 0
+  if (noRuns && designIsDefault(ws)) return 'empty'
   return 'custom'
 }
 
@@ -89,13 +104,25 @@ export const MODE_LABELS = {
   custom: 'Custom (user-modified)',
 }
 
-// Both mutations preserve settings (keys/toggles) and are idempotent.
+// ------------------------------------------------------------------ mutations
+
+/** Load the deterministic demo pipeline. Preserves settings; idempotent. */
 export function loadDemoData() {
   const demo = buildDemoWorkspace()
   setState((prev) => ({ ...demo, settings: prev.settings }))
 }
 
+/**
+ * Reset to an empty instrument. Preserves the DESIGN layer exactly as promised
+ * to the user — custom protocol, codebook and persona definitions remain — and
+ * clears only the pipeline-output layer: interviews/transcripts, coding,
+ * reliability and pattern-matching results, plus calibration history.
+ */
 export function resetToEmpty() {
-  const empty = buildEmptyWorkspace()
-  setState((prev) => ({ ...empty, settings: prev.settings }))
+  setState((prev) => ({
+    ...prev,
+    interviews: [],
+    coding: { segments: [], overridesLog: [] },
+    calibration: { runs: [] },
+  }))
 }

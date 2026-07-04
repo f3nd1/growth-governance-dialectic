@@ -22,7 +22,7 @@ export default function Layout() {
 
   return (
     <div className="app-frame">
-      <div className="synthetic-banner" role="alert">
+      <div className="synthetic-banner">
         PILOT · INSTRUMENT VALIDATION — synthetic data, not real findings
       </div>
       <div className="app-body">
