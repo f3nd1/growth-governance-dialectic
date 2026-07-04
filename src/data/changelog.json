@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T15:44:27.714Z",
+      "action": "push",
+      "commit": "3c5eed7",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Phase 2: design, hypotheses, protocol, codebook",
+      "summary": "Editable study design reference, WH1-3 with colours, 7 seeded protocol questions (RQ2/RQ3 + sources), a priori codebook with emergent bucket"
+    },
+    {
       "when": "2026-07-04T15:41:35.562Z",
       "action": "push",
       "commit": "d2172c7",

@@ -1,6 +1,8 @@
 // Initial workspace state. Everything in this app is SYNTHETIC pilot data —
 // this default shape is the single source of truth for the data model.
 
+import { defaultProtocolQuestions, defaultCodebookCodes } from '../data/seeds'
+
 export const HYPOTHESIS_IDS = ['wh1', 'wh2', 'wh3']
 
 export function defaultWorkspace() {
@@ -56,8 +58,8 @@ export function defaultWorkspace() {
           'separate functions; outcomes are attributed to external factors.',
       },
     },
-    protocol: { questions: [] }, // seeded in Phase 2
-    codebook: { codes: [] }, // seeded in Phase 2
+    protocol: { questions: defaultProtocolQuestions() },
+    codebook: { codes: defaultCodebookCodes() },
     personas: [], // seeded in Phase 3
     interviews: [], // Phase 4
     coding: { segments: [], overridesLog: [] }, // Phase 5
