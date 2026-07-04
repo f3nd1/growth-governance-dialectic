@@ -41,6 +41,22 @@ cp .env.local.example .env.local
 `.env.local` is gitignored. Never commit keys. Keys can also be entered on
 the Settings page (stored locally in your browser); env vars take precedence.
 
+### Supabase table (optional sync)
+
+If you enable Supabase sync, create the table once:
+
+```sql
+create table workspace_state (
+  id text primary key,
+  data jsonb,
+  updated_at timestamptz
+);
+```
+
+Grant the anon role access via your RLS policy of choice (the pilot stores a
+single row with id `'default'`). The app never needs — and must never be
+given — a `service_role` key.
+
 ## Offline vs live modes
 
 - **Offline (default, zero cost):** with no OpenAI key the entire pipeline

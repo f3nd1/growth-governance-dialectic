@@ -97,6 +97,14 @@ export function getState() {
   return state
 }
 
+export function hasLocalSave() {
+  try {
+    return localStorage.getItem(STORAGE_KEY) != null
+  } catch {
+    return false
+  }
+}
+
 /**
  * setState(updater) — updater is either a partial object (shallow-merged at
  * top level) or a function (prev) => next full state.

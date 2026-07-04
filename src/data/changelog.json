@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T16:00:14.207Z",
+      "action": "push",
+      "commit": "ebebb16",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Phase 7: outputs, Supabase, settings, change log",
+      "summary": "Advisor-ready pilot report, caveat-locked JSON/MD/HTML exports, OpenAI+Supabase settings, offline-vs-live calibration, Supabase sync adapter, changelog viewer"
+    },
+    {
       "when": "2026-07-04T15:56:08.097Z",
       "action": "push",
       "commit": "38bd250",
