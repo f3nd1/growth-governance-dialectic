@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T15:56:08.097Z",
+      "action": "push",
+      "commit": "38bd250",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Phase 6: pattern-matching + joint display",
+      "summary": "Distributed WH1-3 evidence weights with 50/50 paradox splits, split-pattern detection, Chapter 3 matrix with real-data-phase placeholders"
+    },
+    {
       "when": "2026-07-04T15:53:56.842Z",
       "action": "push",
       "commit": "13e1ab8",
