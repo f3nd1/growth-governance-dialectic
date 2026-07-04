@@ -1,0 +1,12 @@
+{
+  "entries": [
+    {
+      "when": "2026-07-04T15:41:35.562Z",
+      "action": "push",
+      "commit": "d2172c7",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Phase 1: app shell, nav, data layer",
+      "summary": "Scaffold, grouped sidebar, 18 routes, SYNTHETIC banner, save pill, localStorage dataStore"
+    }
+  ]
+}
