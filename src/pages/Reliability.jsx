@@ -4,6 +4,7 @@ import PageHeader from '../components/PageHeader'
 import { useWorkspace } from '../store/dataStore'
 import { agreementStats, kappaBand, codeInterview, UNCLASSIFIED } from '../engine/coding'
 import { runInterviews } from '../engine'
+import { ReliabilityChart } from '../components/AppCharts'
 
 function codeLabel(codeId, codebook) {
   if (codeId === UNCLASSIFIED) return 'unclassified'
@@ -157,6 +158,11 @@ export default function Reliability() {
               </p>
             </section>
           </div>
+
+          <section className="card">
+            <h2>κ across seeds (synthetic)</h2>
+            <ReliabilityChart />
+          </section>
         </>
       )}
 

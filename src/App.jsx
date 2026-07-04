@@ -13,6 +13,7 @@ import Coding from './pages/Coding'
 import Reliability from './pages/Reliability'
 import PatternMatching from './pages/PatternMatching'
 import JointDisplay from './pages/JointDisplay'
+import Visualisations from './pages/Visualisations'
 import PilotReport from './pages/PilotReport'
 import ExportCentre from './pages/ExportCentre'
 import Settings from './pages/Settings'
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/analysis/reliability" element={<Reliability />} />
           <Route path="/analysis/patterns" element={<PatternMatching />} />
           <Route path="/analysis/joint-display" element={<JointDisplay />} />
+          <Route path="/analysis/visualisations" element={<Visualisations />} />
           <Route path="/outputs/report" element={<PilotReport />} />
           <Route path="/outputs/export" element={<ExportCentre />} />
           <Route path="/settings" element={<Settings />} />

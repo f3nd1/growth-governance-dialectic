@@ -4,6 +4,7 @@ import WeightBar from '../components/WeightBar'
 import { useWorkspace } from '../store/dataStore'
 import { aggregateEvidence } from '../engine/patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
+import { HypothesisDistributionChart } from '../components/AppCharts'
 
 export default function PatternMatching() {
   const ws = useWorkspace()
@@ -44,6 +45,11 @@ export default function PatternMatching() {
           away is the whole point of this pilot.
         </div>
       )}
+
+      <section className="card">
+        <h2>Distribution chart (synthetic)</h2>
+        <HypothesisDistributionChart />
+      </section>
 
       <section className="card">
         <h2>Overall evidence distribution (synthetic)</h2>

@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T16:28:02.819Z",
+      "action": "push",
+      "commit": "7d5710a",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Addition 2: data visualisation",
+      "summary": "Three SVG charts (per-persona/aggregate distribution, kappa-over-seeds with bands, joint-display heatmap) reading existing selectors; Visualisations page + inline surfacing + report embedding"
+    },
+    {
       "when": "2026-07-04T16:20:53.361Z",
       "action": "push",
       "commit": "b801cfc",

@@ -4,6 +4,13 @@
 import { agreementStats, kappaBand } from './coding'
 import { aggregateEvidence } from './patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
+import {
+  hypothesisColors,
+  hypothesisDistributionData,
+  reliabilitySeriesData,
+  heatmapData,
+} from './vizData'
+import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
 
 export const SYNTHETIC_CAVEAT =
   'SYNTHETIC PILOT — INSTRUMENT VALIDATION ONLY. All participants, transcripts, codes and ' +
@@ -15,7 +22,18 @@ export function buildReportModel(ws) {
   const stats = agreementStats(ws.coding.segments)
   const { personas, overall, topCodes } = aggregateEvidence(ws.coding.segments, ws.codebook)
   const hypTotal = overall.wh1 + overall.wh2 + overall.wh3
+  const colors = hypothesisColors(ws)
+  const distData = hypothesisDistributionData(ws)
+  const relData = reliabilitySeriesData(ws)
+  const heatData = heatmapData(ws)
   return {
+    // Charts are built from the same selectors as the on-screen charts, so
+    // the exported report matches the app exactly. Null when there is no data.
+    charts: {
+      distribution: distData.hasData ? hypothesisDistributionSVG(distData, colors) : null,
+      reliability: relData.points.length ? reliabilitySVG(relData, colors) : null,
+      heatmap: heatmapSVG(heatData, colors),
+    },
     caveat: SYNTHETIC_CAVEAT, // non-removable
     generatedAt: new Date().toISOString(),
     studyDesign: ws.studyDesign,
@@ -149,6 +167,27 @@ export function reportToHTML(m) {
     .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
     .replace(/_(.+?)_/g, '<em>$1</em>')
 
+  const figure = (title, svg, caption) =>
+    svg
+      ? `<figure class="chart">
+  <h3>${esc(title)}</h3>
+  ${svg}
+  <figcaption>${esc(caption)} <span class="cav-inline">SYNTHETIC pilot data — illustrates the method, not a real finding.</span></figcaption>
+</figure>`
+      : ''
+
+  const chartsBlock = `
+<h2>8 · Visualisations</h2>
+${figure('A · Hypothesis distribution', m.charts.distribution, 'Per-persona coded-evidence shares across WH1/WH2/WH3 with the aggregate; ⚡ paradox personas span two hypotheses.')}
+${figure('B · Reliability over seeds', m.charts.reliability, 'Cohen’s κ per seed against the moderate / substantial / strong bands.')}
+${figure('C · Joint-display heatmap', m.charts.heatmap, 'Evidence strength per hypothesis; only the interview row is populated from synthetic data.')}
+`
+
+  // Insert the visualisations section just before the closing separator/caveat.
+  const bodyWithCharts = body.includes('<hr />')
+    ? body.replace('<hr />', `${chartsBlock}<hr />`)
+    : body + chartsBlock
+
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -160,11 +199,15 @@ export function reportToHTML(m) {
   .caveat { background: #fbedb8; border: 2px solid #e4c65b; padding: 12px 16px; font-weight: 700; margin: 1rem 0; }
   .li { margin: 0.15rem 0; }
   .sub { margin-left: 1.5rem; color: #555; }
+  .chart { margin: 1.2rem 0; padding: 12px 14px; border: 1px solid #e2e2de; border-radius: 8px; page-break-inside: avoid; }
+  .chart h3 { margin: 0 0 8px; }
+  .chart figcaption { font-size: 0.82rem; color: #555; margin-top: 6px; }
+  .chart .cav-inline { color: #7a5c00; font-weight: 600; }
   @media print { .caveat { border-width: 3px; } }
 </style>
 </head>
 <body>
-${body}
+${bodyWithCharts}
 </body>
 </html>`
 }

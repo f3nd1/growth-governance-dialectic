@@ -41,6 +41,7 @@ export const NAV_GROUPS = [
       { path: '/analysis/reliability', label: 'Reliability' },
       { path: '/analysis/patterns', label: 'Pattern-Matching' },
       { path: '/analysis/joint-display', label: 'Joint Display' },
+      { path: '/analysis/visualisations', label: 'Visualisations' },
     ],
   },
   {

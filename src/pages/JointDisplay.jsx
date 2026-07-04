@@ -3,6 +3,7 @@ import PageHeader from '../components/PageHeader'
 import { useWorkspace } from '../store/dataStore'
 import { aggregateEvidence } from '../engine/patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
+import { JointHeatmapChart } from '../components/AppCharts'
 
 // Expected-evidence text for each evidence type × hypothesis — the Chapter 3
 // pattern-matching matrix. Only qualitative rows can be populated by this
@@ -82,6 +83,11 @@ export default function JointDisplay() {
           IRB approval.
         </div>
       )}
+
+      <section className="card">
+        <h2>Heatmap view (synthetic)</h2>
+        <JointHeatmapChart />
+      </section>
 
       <section className="card" style={{ overflowX: 'auto' }}>
         <table className="data">
