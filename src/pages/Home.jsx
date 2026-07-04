@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { useWorkspace } from '../store/dataStore'
+import { loadDemoData, workspaceMode } from '../engine/demo'
 
 export default function Home() {
   const ws = useWorkspace()
+  const isEmpty = workspaceMode(ws) === 'empty'
 
   const steps = [
     {
@@ -46,6 +48,23 @@ export default function Home() {
         title="Pilot pipeline overview"
         desc="A doctoral research instrument: validates the data-collection and analysis method for the growth-vs-governance dialectic study on clearly-labelled synthetic participants — before any real fieldwork."
       />
+
+      {isEmpty && (
+        <section className="card" style={{ borderLeft: '5px solid var(--accent)' }}>
+          <h2>New here? Pick a starting point</h2>
+          <p className="small muted">
+            This workspace is empty. Load a deterministic demo run to explore the whole
+            pipeline immediately, or start from an empty instrument and build it up yourself.
+            Either way, everything is synthetic pilot data.
+          </p>
+          <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn" onClick={loadDemoData}>
+              Load demo data (8 personas → coded → κ)
+            </button>
+            <Link className="btn secondary" to="/design/study">Start from empty →</Link>
+          </p>
+        </section>
+      )}
 
       <div className="notice">
         <strong>What this is:</strong> a dry run of the full mixed-methods pipeline

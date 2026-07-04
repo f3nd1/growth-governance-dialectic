@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T16:20:53.361Z",
+      "action": "push",
+      "commit": "b801cfc",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Addition 1: demo data mode",
+      "summary": "Deterministic load/reset demo pipeline (8 personas, 56 segments, kappa 0.86), Settings mode status (Empty/Demo/Custom), Home first-run panel"
+    },
+    {
       "when": "2026-07-04T16:00:14.207Z",
       "action": "push",
       "commit": "ebebb16",

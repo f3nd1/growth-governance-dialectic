@@ -4,6 +4,7 @@ import { useWorkspace, update } from '../store/dataStore'
 import { liveModeAvailable } from '../engine/llm'
 import { testSupabase, supabaseConfigured } from '../store/supabase'
 import { initRemoteSync } from '../store/initSync'
+import { loadDemoData, resetToEmpty, workspaceMode, MODE_LABELS } from '../engine/demo'
 
 const MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini']
 
@@ -11,6 +12,7 @@ export default function Settings() {
   const ws = useWorkspace()
   const [testResult, setTestResult] = useState(null)
   const [testing, setTesting] = useState(false)
+  const [demoMsg, setDemoMsg] = useState('')
 
   const envOpenAI = Boolean(import.meta.env.VITE_OPENAI_KEY)
   const envSupabase = Boolean(import.meta.env.VITE_SUPABASE_URL)
@@ -40,6 +42,38 @@ export default function Settings() {
         title="Settings"
         desc="Keys are read from .env.local first, then from here (stored only in this browser). Nothing entered on this page is ever committed."
       />
+
+      <section className="card">
+        <h2>Demo data</h2>
+        <p className="small">
+          Current workspace: <strong>{MODE_LABELS[workspaceMode(ws)]}</strong>
+        </p>
+        <p className="small muted">
+          “Load demo data” populates the entire pipeline — 8 synthetic personas, a full
+          run-all interview pass at a fixed seed, complete dual-coding, reliability and
+          pattern-matching — so you can explore end-to-end at once. It is deterministic:
+          loading twice produces the identical state (56 coded segments, κ≈0.86 Strong,
+          a split pattern on the paradox persona). Everything loaded is stamped SYNTHETIC,
+          exactly like data you create yourself.
+        </p>
+        <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn" onClick={() => { loadDemoData(); setDemoMsg('Demo data loaded — the whole pipeline is now populated.') }}>
+            Load demo data
+          </button>
+          <button
+            className="btn danger"
+            onClick={() => {
+              if (window.confirm('Reset to an empty instrument? This permanently clears all interviews, transcripts, codings, reliability and pattern-matching results. Protocol, codebook and persona definitions remain. This cannot be undone.')) {
+                resetToEmpty()
+                setDemoMsg('Workspace reset to an empty instrument.')
+              }
+            }}
+          >
+            Reset to empty
+          </button>
+        </p>
+        {demoMsg && <p className="small" role="status" style={{ color: '#2f9e44' }}>{demoMsg}</p>}
+      </section>
 
       <section className="card">
         <h2>OpenAI (live generation)</h2>
