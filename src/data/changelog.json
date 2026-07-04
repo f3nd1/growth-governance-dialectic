@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T15:50:19.204Z",
+      "action": "push",
+      "commit": "9e7c612",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Phase 4: interview engine + transcripts",
+      "summary": "Deterministic simulator (paradox contradictions, blind-spot off-script), live LLM mode with offline fallback, run + re-run(seed) controls, tagged transcripts"
+    },
+    {
       "when": "2026-07-04T15:46:28.947Z",
       "action": "push",
       "commit": "9b37b70",
