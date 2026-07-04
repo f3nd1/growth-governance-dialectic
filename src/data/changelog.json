@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T15:53:56.842Z",
+      "action": "push",
+      "commit": "13e1ab8",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Phase 5: dual coding + reliability",
+      "summary": "Two independent coders (definition quality drives agreement), disagreement view, logged overrides, Cohen's kappa with bands, two-seed stability test"
+    },
+    {
       "when": "2026-07-04T15:50:19.204Z",
       "action": "push",
       "commit": "9e7c612",
