@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-04T23:58:15.696Z",
+      "action": "push",
+      "commit": "5313da0",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "B1: JSON import in Export Centre",
+      "summary": "Symmetric import with shape validation, pre-commit counts preview, confirm-before-overwrite, re-stamps SYNTHETIC on all layers; lossless round-trip"
+    },
+    {
       "when": "2026-07-04T23:56:18.436Z",
       "action": "push",
       "commit": "1f03152",
