@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-05T00:09:44.942Z",
+      "action": "push",
+      "commit": "6ace3b0",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "B4: Chapter-3 appendix export",
+      "summary": "Dense citation-ready appendix (codebook, reliability+citation, pattern-matching, joint-display matrix, charts) as Markdown/HTML with non-removable caveat; shared joint-display matrix module"
+    },
+    {
       "when": "2026-07-05T00:05:43.173Z",
       "action": "push",
       "commit": "1067073",

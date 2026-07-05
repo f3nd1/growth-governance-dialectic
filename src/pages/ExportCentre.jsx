@@ -5,6 +5,8 @@ import {
   buildReportModel,
   reportToMarkdown,
   reportToHTML,
+  appendixToMarkdown,
+  appendixToHTML,
   SYNTHETIC_CAVEAT,
 } from '../engine/report'
 
@@ -115,6 +117,28 @@ export default function ExportCentre() {
     setDone('Printable report opened in a new tab.')
   }
 
+  function exportAppendixMarkdown() {
+    const md = appendixToMarkdown(buildReportModel(ws))
+    download(`ggd-chapter3-appendix-SYNTHETIC-${stamp}.md`, md, 'text/markdown')
+    setDone('Chapter-3 appendix exported as Markdown (caveat at head and foot).')
+  }
+
+  function exportAppendixHTML() {
+    const html = appendixToHTML(buildReportModel(ws))
+    download(`ggd-chapter3-appendix-SYNTHETIC-${stamp}.html`, html, 'text/html')
+    setDone('Chapter-3 appendix exported as printable HTML.')
+  }
+
+  function openAppendixPrintable() {
+    const html = appendixToHTML(buildReportModel(ws))
+    const win = window.open('', '_blank')
+    if (win) {
+      win.document.write(html)
+      win.document.close()
+    }
+    setDone('Printable appendix opened in a new tab.')
+  }
+
   function onFile(e) {
     const file = e.target.files?.[0]
     if (!file) return
@@ -177,6 +201,22 @@ export default function ExportCentre() {
           </p>
         </section>
       </div>
+
+      <section className="card">
+        <h2>Chapter-3 Appendix</h2>
+        <p className="small muted">
+          A denser, citation-ready appendix distinct from the advisor summary — the codebook
+          with definitions, the reliability figures with band cut-points and citation, the
+          pattern-matching result, and the joint-display matrix, plus the three charts. Headed
+          with the non-removable caveat and a note that figures illustrate the METHOD, not
+          validated coefficients or real findings.
+        </p>
+        <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button className="btn" onClick={exportAppendixMarkdown}>Markdown</button>
+          <button className="btn" onClick={exportAppendixHTML}>Printable HTML</button>
+          <button className="btn secondary" onClick={openAppendixPrintable}>Open print view</button>
+        </p>
+      </section>
 
       <section className="card">
         <h2>Import workspace (JSON)</h2>

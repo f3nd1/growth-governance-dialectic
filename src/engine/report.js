@@ -11,6 +11,7 @@ import {
   heatmapData,
 } from './vizData'
 import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
+import { JOINT_DISPLAY_ROWS } from '../data/jointDisplayMatrix'
 
 export const SYNTHETIC_CAVEAT =
   'SYNTHETIC PILOT — INSTRUMENT VALIDATION ONLY. All participants, transcripts, codes and ' +
@@ -220,6 +221,208 @@ ${figure('C · Joint-display heatmap', m.charts.heatmap, 'Evidence strength per 
 </head>
 <body>
 ${bodyWithCharts}
+</body>
+</html>`
+}
+
+// ---------------------------------------------------------------------------
+// Chapter-3 appendix — a denser, canonical, citation-ready bundle distinct
+// from the advisor-summary Pilot Report. Same non-removable SYNTHETIC caveat.
+// ---------------------------------------------------------------------------
+
+const APPENDIX_METHOD_NOTE =
+  'These figures are illustrative of the METHOD, not validated coefficients and not real ' +
+  'findings about the institution. All data is generated from synthetic personas for ' +
+  'instrument validation ahead of advisor- and IRB-approved fieldwork.'
+
+function mdEsc(s) {
+  return String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
+}
+
+export function appendixToMarkdown(m) {
+  const L = []
+  L.push('# Appendix — Pilot Instrument Validation (SYNTHETIC)')
+  L.push('')
+  L.push(`> **${m.caveat}**`)
+  L.push('')
+  L.push(`**${APPENDIX_METHOD_NOTE}**`)
+  L.push('')
+  L.push(
+    `_Generated ${new Date(m.generatedAt).toLocaleString()} · ${m.counts.personas} synthetic ` +
+      `personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ` +
+      `${m.counts.overrides} logged overrides._`,
+  )
+  L.push('')
+
+  L.push('## A1 · Codebook (a priori + emergent)')
+  L.push('')
+  L.push('| Code | Hypothesis | Definition |')
+  L.push('| --- | --- | --- |')
+  for (const c of m.codebook) {
+    const grp = m.hypotheses.find((h) => h.id === c.group)?.short ?? c.group
+    L.push(`| ${mdEsc(c.label)} | ${grp} | ${mdEsc(c.definition || '—')} |`)
+  }
+  L.push('')
+
+  L.push('## A2 · Inter-coder reliability')
+  L.push('')
+  if (m.reliability) {
+    L.push(`- Coded segments (N): ${m.reliability.n}`)
+    L.push(`- Observed agreement (p₀): ${(m.reliability.po * 100).toFixed(1)}%`)
+    L.push(`- Expected agreement (pₑ): ${(m.reliability.pe * 100).toFixed(1)}%`)
+    L.push(`- Cohen's κ: **${m.reliability.kappa.toFixed(3)}** — **${m.reliability.band}**`)
+    L.push(
+      `- Band cut-points: substantial ≥ ${m.reliability.thresholds.substantial}, strong ≥ ${m.reliability.thresholds.strong}`,
+    )
+    if (m.reliability.citation) L.push(`- ${m.reliability.citation}`)
+  } else {
+    L.push('_No coded segments in this workspace._')
+  }
+  L.push('')
+
+  L.push('## A3 · Pattern-matching (distributed evidence)')
+  L.push('')
+  if (m.patterns.hypTotal > 0) {
+    L.push('| Hypothesis | Weighted segments | Share |')
+    L.push('| --- | --- | --- |')
+    for (const h of m.hypotheses) {
+      L.push(`| ${h.short} — ${mdEsc(h.label)} | ${m.patterns.overall[h.id].toFixed(1)} | ${(m.patterns.shares[h.id] * 100).toFixed(0)}% |`)
+    }
+    L.push('')
+    L.push(`Codebook coverage gap (emergent/unclassified): ${m.patterns.coverageGap.toFixed(1)} weighted segments.`)
+    if (m.patterns.splits.length) {
+      L.push('')
+      L.push('Split (paradox) patterns — coexisting support for two hypotheses, a finding under paradox theory (Smith & Lewis 2011):')
+      for (const p of m.patterns.splits) {
+        L.push(`- ${p.personaName}: ${p.splitPair.join(' + ').toUpperCase()}`)
+      }
+    }
+  } else {
+    L.push('_No aggregated evidence yet._')
+  }
+  L.push('')
+
+  L.push('## A4 · Joint-display matrix (pattern-matching)')
+  L.push('')
+  L.push('Expected evidence under each hypothesis by evidence type. Only the interview row is populated from synthetic data; the remaining rows are real-data-phase placeholders, making explicit what synthetic data can and cannot validate.')
+  L.push('')
+  const [ha, hb, hc] = m.hypotheses
+  L.push(`| Evidence type | Status | ${ha.short} | ${hb.short} | ${hc.short} |`)
+  L.push('| --- | --- | --- | --- | --- |')
+  for (const row of JOINT_DISPLAY_ROWS) {
+    const status = row.placeholder ? row.placeholderLabel ?? 'real-data phase' : 'populated · synthetic'
+    const cells = HYPOTHESIS_IDS.map((id) => {
+      const base = row.expected[id]
+      if (!row.placeholder && m.patterns.hypTotal > 0) {
+        return `${base} (${(m.patterns.shares[id] * 100).toFixed(0)}%)`
+      }
+      return base
+    })
+    L.push(`| ${mdEsc(row.label)} | ${status} | ${mdEsc(cells[0])} | ${mdEsc(cells[1])} | ${mdEsc(cells[2])} |`)
+  }
+  L.push('')
+  L.push('---')
+  L.push('')
+  L.push(`**${m.caveat}**`)
+  L.push('')
+  return L.join('\n')
+}
+
+export function appendixToHTML(m) {
+  const codebookRows = m.codebook
+    .map((c) => {
+      const grp = m.hypotheses.find((h) => h.id === c.group)?.short ?? c.group
+      return `<tr><td>${esc(c.label)}</td><td>${esc(grp)}</td><td>${esc(c.definition || '—')}</td></tr>`
+    })
+    .join('')
+
+  const relBlock = m.reliability
+    ? `<ul>
+  <li>Coded segments (N): ${m.reliability.n}</li>
+  <li>Observed agreement (p₀): ${(m.reliability.po * 100).toFixed(1)}%</li>
+  <li>Expected agreement (pₑ): ${(m.reliability.pe * 100).toFixed(1)}%</li>
+  <li>Cohen&#39;s κ: <strong>${m.reliability.kappa.toFixed(3)}</strong> — <strong>${esc(m.reliability.band)}</strong></li>
+  <li>Band cut-points: substantial ≥ ${m.reliability.thresholds.substantial}, strong ≥ ${m.reliability.thresholds.strong}</li>
+  ${m.reliability.citation ? `<li>${esc(m.reliability.citation)}</li>` : ''}
+</ul>`
+    : '<p><em>No coded segments in this workspace.</em></p>'
+
+  const patternRows =
+    m.patterns.hypTotal > 0
+      ? m.hypotheses
+          .map(
+            (h) =>
+              `<tr><td>${h.short} — ${esc(h.label)}</td><td>${m.patterns.overall[h.id].toFixed(1)}</td><td>${(m.patterns.shares[h.id] * 100).toFixed(0)}%</td></tr>`,
+          )
+          .join('')
+      : ''
+  const splitsBlock =
+    m.patterns.hypTotal > 0 && m.patterns.splits.length
+      ? `<p>Split (paradox) patterns — coexisting support for two hypotheses, a finding under paradox theory (Smith &amp; Lewis 2011):</p><ul>${m.patterns.splits
+          .map((p) => `<li>${esc(p.personaName)}: ${p.splitPair.join(' + ').toUpperCase()}</li>`)
+          .join('')}</ul>`
+      : ''
+
+  const jointRows = JOINT_DISPLAY_ROWS.map((row) => {
+    const status = row.placeholder ? row.placeholderLabel ?? 'real-data phase' : 'populated · synthetic'
+    const cells = HYPOTHESIS_IDS.map((id) => {
+      const base = row.expected[id]
+      return !row.placeholder && m.patterns.hypTotal > 0
+        ? `${esc(base)} <strong>(${(m.patterns.shares[id] * 100).toFixed(0)}%)</strong>`
+        : esc(base)
+    })
+    return `<tr${row.placeholder ? ' class="placeholder"' : ''}><td>${esc(row.label)}</td><td>${esc(status)}</td><td>${cells[0]}</td><td>${cells[1]}</td><td>${cells[2]}</td></tr>`
+  }).join('')
+
+  const chartFig = (title, svg, cap) =>
+    svg
+      ? `<figure class="chart"><h3>${esc(title)}</h3>${svg}<figcaption>${esc(cap)} <span class="cav-inline">SYNTHETIC pilot data — illustrates the method.</span></figcaption></figure>`
+      : ''
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Chapter-3 Appendix — SYNTHETIC instrument validation</title>
+<style>
+  body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #1f2328; }
+  h1, h2, h3 { font-family: 'Segoe UI', system-ui, sans-serif; }
+  .caveat { background: #fbedb8; border: 2px solid #e4c65b; padding: 12px 16px; font-weight: 700; margin: 1rem 0; }
+  .method { border-left: 4px solid #b03230; padding: 8px 14px; font-weight: 600; margin: 1rem 0; }
+  table { width: 100%; border-collapse: collapse; margin: 0.6rem 0 1.2rem; font-size: 0.9rem; }
+  th, td { border: 1px solid #d8d8d2; padding: 6px 9px; text-align: left; vertical-align: top; }
+  th { background: #f2f2ee; font-family: 'Segoe UI', system-ui, sans-serif; }
+  tr.placeholder { color: #8a8a84; background: #f7f7f4; }
+  .chart { margin: 1.2rem 0; padding: 12px 14px; border: 1px solid #e2e2de; border-radius: 8px; page-break-inside: avoid; }
+  .chart figcaption { font-size: 0.82rem; color: #555; margin-top: 6px; }
+  .chart .cav-inline { color: #7a5c00; font-weight: 600; }
+  @media print { .caveat { border-width: 3px; } table { font-size: 0.82rem; } }
+</style>
+</head>
+<body>
+<h1>Appendix — Pilot Instrument Validation (SYNTHETIC)</h1>
+<div class="caveat">${esc(m.caveat)}</div>
+<div class="method">${esc(APPENDIX_METHOD_NOTE)}</div>
+<p><em>Generated ${esc(new Date(m.generatedAt).toLocaleString())} · ${m.counts.personas} synthetic personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.</em></p>
+
+<h2>A1 · Codebook (a priori + emergent)</h2>
+<table><thead><tr><th>Code</th><th>Hypothesis</th><th>Definition</th></tr></thead><tbody>${codebookRows}</tbody></table>
+
+<h2>A2 · Inter-coder reliability</h2>
+${relBlock}
+${chartFig('Reliability over seeds', m.charts.reliability, 'Cohen’s κ per seed against the interpretation bands.')}
+
+<h2>A3 · Pattern-matching (distributed evidence)</h2>
+${patternRows ? `<table><thead><tr><th>Hypothesis</th><th>Weighted segments</th><th>Share</th></tr></thead><tbody>${patternRows}</tbody></table><p>Codebook coverage gap (emergent/unclassified): ${m.patterns.coverageGap.toFixed(1)} weighted segments.</p>${splitsBlock}` : '<p><em>No aggregated evidence yet.</em></p>'}
+${chartFig('Hypothesis distribution', m.charts.distribution, 'Per-persona coded-evidence shares with the aggregate.')}
+
+<h2>A4 · Joint-display matrix (pattern-matching)</h2>
+<p>Expected evidence under each hypothesis by evidence type. Only the interview row is populated from synthetic data; the remaining rows are real-data-phase placeholders.</p>
+<table><thead><tr><th>Evidence type</th><th>Status</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>
+${chartFig('Joint-display heatmap', m.charts.heatmap, 'Evidence strength per hypothesis; only the interview row is populated.')}
+
+<hr />
+<div class="caveat">${esc(m.caveat)}</div>
 </body>
 </html>`
 }
