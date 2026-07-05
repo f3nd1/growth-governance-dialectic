@@ -68,6 +68,14 @@ export function defaultWorkspace() {
       supabase: { url: '', anonKey: '' },
       developer: false,
       guidance: true,
+      reliability: {
+        // Cohen's kappa band cut-points; editable on the Reliability page.
+        thresholds: { strong: 0.8, substantial: 0.6 },
+        citation:
+          'Bands follow Landis & Koch (1977): κ 0.61–0.80 substantial, ≥ 0.81 almost perfect. ' +
+          'McHugh (2012) cautions these are lenient for high-stakes coding and suggests ≥ 0.80 ' +
+          'as a stricter floor. Adjust the cut-points to the convention you report against.',
+      },
     },
     calibration: { runs: [] }, // Phase 7
   }

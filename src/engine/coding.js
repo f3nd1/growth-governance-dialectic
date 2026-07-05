@@ -162,11 +162,19 @@ export function agreementStats(segments) {
   return { n, agreements: agree, po, pe, kappa }
 }
 
-export function kappaBand(kappa) {
-  if (kappa >= 0.8) {
+// Default band cut-points follow the Landis & Koch (1977) convention
+// (>= 0.81 near-perfect/"strong", 0.61–0.80 substantial). Configurable per
+// workspace so the labels rest on a citable, adjustable standard rather than
+// hard-coded magic numbers.
+export const DEFAULT_KAPPA_THRESHOLDS = { strong: 0.8, substantial: 0.6 }
+
+export function kappaBand(kappa, thresholds = DEFAULT_KAPPA_THRESHOLDS) {
+  const strong = thresholds?.strong ?? DEFAULT_KAPPA_THRESHOLDS.strong
+  const substantial = thresholds?.substantial ?? DEFAULT_KAPPA_THRESHOLDS.substantial
+  if (kappa >= strong) {
     return { label: 'Strong', advice: 'Agreement is strong — the codebook definitions discriminate well.' }
   }
-  if (kappa >= 0.6) {
+  if (kappa >= substantial) {
     return {
       label: 'Substantial',
       advice: 'Substantial but improvable — review the codes where disagreements cluster.',

@@ -91,8 +91,12 @@ export function hypothesisDistributionSVG(data, colors) {
 
 // ---------------------------------------------------------------- Chart B
 
-/** Cohen's kappa across seeds with moderate/substantial/strong band zones. */
-export function reliabilitySVG(data, colors) {
+/**
+ * Cohen's kappa across seeds with moderate/substantial/strong band zones.
+ * The band cut-points come from the configured thresholds so the chart's
+ * shaded zones always match the table's band labels.
+ */
+export function reliabilitySVG(data, colors, thresholds = { strong: 0.8, substantial: 0.6 }) {
   const W = 560
   const H = 260
   const mL = 46
@@ -106,10 +110,12 @@ export function reliabilitySVG(data, colors) {
   const n = pts.length
   const xFor = (i) => (n <= 1 ? mL + pw / 2 : mL + (i / (n - 1)) * pw)
 
+  const sub = thresholds?.substantial ?? 0.6
+  const str = thresholds?.strong ?? 0.8
   const bands = [
-    { lo: 0, hi: 0.6, fill: '#f6e7e5', label: 'moderate' },
-    { lo: 0.6, hi: 0.8, fill: '#f3eddc', label: 'substantial' },
-    { lo: 0.8, hi: 1, fill: '#e6f0ea', label: 'strong' },
+    { lo: 0, hi: sub, fill: '#f6e7e5', label: 'moderate' },
+    { lo: sub, hi: str, fill: '#f3eddc', label: 'substantial' },
+    { lo: str, hi: 1, fill: '#e6f0ea', label: 'strong' },
   ]
   let body = ''
   for (const b of bands) {
@@ -119,8 +125,8 @@ export function reliabilitySVG(data, colors) {
     body += `<text x="${mL + pw + 8}" y="${((yTop + yBot) / 2).toFixed(1)}" dy="0.35em" font-size="10" fill="#61676e">${b.label}</text>`
   }
 
-  // y axis ticks
-  for (const t of [0, 0.6, 0.8, 1]) {
+  // y axis ticks — 0, both cut-points, and 1
+  for (const t of [0, sub, str, 1]) {
     const y = yFor(t)
     body += `<line x1="${mL}" y1="${y}" x2="${mL + pw}" y2="${y}" stroke="#d0d0ca" stroke-width="1" stroke-dasharray="2 2" />`
     body += `<text x="${mL - 6}" y="${y}" dy="0.35em" text-anchor="end" font-size="10" fill="#61676e">${t.toFixed(1)}</text>`

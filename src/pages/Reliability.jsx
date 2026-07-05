@@ -1,8 +1,14 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
-import { useWorkspace } from '../store/dataStore'
-import { agreementStats, kappaBand, codeInterview, UNCLASSIFIED } from '../engine/coding'
+import { useWorkspace, update } from '../store/dataStore'
+import {
+  agreementStats,
+  kappaBand,
+  codeInterview,
+  UNCLASSIFIED,
+  DEFAULT_KAPPA_THRESHOLDS,
+} from '../engine/coding'
 import { runInterviews } from '../engine'
 import { ReliabilityChart } from '../components/AppCharts'
 
@@ -13,10 +19,34 @@ function codeLabel(codeId, codebook) {
 
 export default function Reliability() {
   const ws = useWorkspace()
+  const reliabilityCfg = ws.settings.reliability ?? {}
+  const thresholds = reliabilityCfg.thresholds ?? DEFAULT_KAPPA_THRESHOLDS
   const stats = agreementStats(ws.coding.segments)
-  const band = stats ? kappaBand(stats.kappa) : null
+  const band = stats ? kappaBand(stats.kappa, thresholds) : null
   const [personaId, setPersonaId] = useState(ws.personas[0]?.id ?? '')
   const [running, setRunning] = useState(false)
+
+  function setThreshold(key, value) {
+    update('settings', (s) => ({
+      ...s,
+      reliability: {
+        ...(s.reliability ?? {}),
+        thresholds: { ...(s.reliability?.thresholds ?? DEFAULT_KAPPA_THRESHOLDS), [key]: value },
+      },
+    }))
+  }
+
+  function setCitation(value) {
+    update('settings', (s) => ({
+      ...s,
+      reliability: { ...(s.reliability ?? {}), citation: value },
+    }))
+  }
+
+  const thresholdsValid =
+    thresholds.substantial > 0 &&
+    thresholds.substantial < thresholds.strong &&
+    thresholds.strong < 1
 
   // Per-code disagreement breakdown — points at the definitions to tighten.
   const byCode = {}
@@ -106,6 +136,59 @@ export default function Reliability() {
         </div>
       )}
 
+      <section className="card">
+        <h2>Interpretation bands (κ cut-points)</h2>
+        <p className="small muted">
+          The Strong / Substantial / Moderate labels — and the shaded zones in the chart
+          below — use these cut-points. Adjust them to the convention you report against.
+        </p>
+        <div className="grid-2" style={{ maxWidth: 460 }}>
+          <div className="field">
+            <label htmlFor="rel-substantial">“Substantial” at κ ≥</label>
+            <input
+              id="rel-substantial"
+              type="number" min="0" max="1" step="0.01"
+              value={thresholds.substantial}
+              onChange={(e) => setThreshold('substantial', Number(e.target.value))}
+            />
+          </div>
+          <div className="field">
+            <label htmlFor="rel-strong">“Strong” at κ ≥</label>
+            <input
+              id="rel-strong"
+              type="number" min="0" max="1" step="0.01"
+              value={thresholds.strong}
+              onChange={(e) => setThreshold('strong', Number(e.target.value))}
+            />
+          </div>
+        </div>
+        {!thresholdsValid && (
+          <p className="small" style={{ color: '#b03230' }}>
+            Cut-points must satisfy 0 &lt; substantial &lt; strong &lt; 1.
+          </p>
+        )}
+        <div className="field">
+          <label htmlFor="rel-citation">Reporting-convention note (citable)</label>
+          <textarea
+            id="rel-citation"
+            rows={3}
+            value={reliabilityCfg.citation ?? ''}
+            onChange={(e) => setCitation(e.target.value)}
+          />
+        </div>
+        <p>
+          <button
+            className="btn small secondary"
+            onClick={() => {
+              setThreshold('substantial', DEFAULT_KAPPA_THRESHOLDS.substantial)
+              setThreshold('strong', DEFAULT_KAPPA_THRESHOLDS.strong)
+            }}
+          >
+            Restore Landis &amp; Koch defaults (0.60 / 0.80)
+          </button>
+        </p>
+      </section>
+
       {!stats ? (
         <div className="card muted">
           No coded segments yet — <Link to="/analysis/coding">run the coders</Link> first.
@@ -124,9 +207,15 @@ export default function Reliability() {
                 </tbody>
               </table>
               <p style={{ marginTop: 10 }}>
-                Band: <strong>{band.label}</strong>
+                Band: <strong>{band.label}</strong>{' '}
+                <span className="muted small">
+                  (substantial ≥ {thresholds.substantial}, strong ≥ {thresholds.strong})
+                </span>
               </p>
               <p className="small muted">{band.advice}</p>
+              {reliabilityCfg.citation && (
+                <p className="small muted" style={{ fontStyle: 'italic' }}>{reliabilityCfg.citation}</p>
+              )}
               <p className="small muted">
                 Illustrative of the method on synthetic data — not a validated coefficient.
               </p>

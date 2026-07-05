@@ -26,12 +26,14 @@ export function buildReportModel(ws) {
   const distData = hypothesisDistributionData(ws)
   const relData = reliabilitySeriesData(ws)
   const heatData = heatmapData(ws)
+  const thresholds = ws.settings.reliability?.thresholds
+  const citation = ws.settings.reliability?.citation ?? ''
   return {
     // Charts are built from the same selectors as the on-screen charts, so
     // the exported report matches the app exactly. Null when there is no data.
     charts: {
       distribution: distData.hasData ? hypothesisDistributionSVG(distData, colors) : null,
-      reliability: relData.points.length ? reliabilitySVG(relData, colors) : null,
+      reliability: relData.points.length ? reliabilitySVG(relData, colors, thresholds) : null,
       heatmap: heatmapSVG(heatData, colors),
     },
     caveat: SYNTHETIC_CAVEAT, // non-removable
@@ -47,7 +49,13 @@ export function buildReportModel(ws) {
       overrides: ws.coding.segments.filter((s) => s.override).length,
     },
     reliability: stats
-      ? { ...stats, band: kappaBand(stats.kappa).label, advice: kappaBand(stats.kappa).advice }
+      ? {
+          ...stats,
+          band: kappaBand(stats.kappa, thresholds).label,
+          advice: kappaBand(stats.kappa, thresholds).advice,
+          thresholds: thresholds ?? { strong: 0.8, substantial: 0.6 },
+          citation,
+        }
       : null,
     patterns: {
       overall,
@@ -106,6 +114,10 @@ export function reportToMarkdown(m) {
     lines.push(`- N segments: ${m.reliability.n}`)
     lines.push(`- Observed agreement p₀: ${(m.reliability.po * 100).toFixed(1)}%`)
     lines.push(`- Cohen's kappa: ${m.reliability.kappa.toFixed(3)} — **${m.reliability.band}**`)
+    lines.push(
+      `- Band cut-points: substantial ≥ ${m.reliability.thresholds.substantial}, strong ≥ ${m.reliability.thresholds.strong}`,
+    )
+    if (m.reliability.citation) lines.push(`- ${m.reliability.citation}`)
     lines.push(`- ${m.reliability.advice}`)
   } else {
     lines.push('_No coded segments in this workspace yet._')

@@ -69,14 +69,15 @@ export function ReliabilityChart() {
       </EmptyChart>
     )
   }
-  const svg = reliabilitySVG(data, colors)
+  const thresholds = ws.settings.reliability?.thresholds
+  const svg = reliabilitySVG(data, colors, thresholds)
   const fallback = (
     <table className="data">
       <thead><tr><th>Seed</th><th>N segments</th><th>Cohen’s κ</th><th>Band</th></tr></thead>
       <tbody>
         {data.points.map((p) => (
           <tr key={p.seed}>
-            <td>{p.seed}</td><td>{p.n}</td><td>{p.kappa.toFixed(3)}</td><td>{kappaBand(p.kappa).label}</td>
+            <td>{p.seed}</td><td>{p.n}</td><td>{p.kappa.toFixed(3)}</td><td>{kappaBand(p.kappa, thresholds).label}</td>
           </tr>
         ))}
       </tbody>

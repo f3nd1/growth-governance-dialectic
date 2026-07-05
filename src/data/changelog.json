@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-05T00:01:49.122Z",
+      "action": "push",
+      "commit": "c558cd1",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "B2: configurable kappa bands + citation",
+      "summary": "Editable Strong/Substantial cut-points and reporting-convention note (Landis & Koch 1977 / McHugh 2012); threaded through table, chart zones, and export so labels stay consistent"
+    },
+    {
       "when": "2026-07-04T23:58:15.696Z",
       "action": "push",
       "commit": "5313da0",
