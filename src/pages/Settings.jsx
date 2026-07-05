@@ -199,6 +199,23 @@ export default function Settings() {
           />{' '}
           Guidance notes — show the methodological explainer boxes on each page
         </label>
+        <p style={{ marginTop: 12 }}>
+          <button
+            className="btn secondary"
+            onClick={() =>
+              update('settings', (s) => ({
+                ...s,
+                setupGuide: { ...(s.setupGuide ?? {}), dismissed: false },
+              }))
+            }
+          >
+            Run setup guide again
+          </button>
+          <span className="small muted" style={{ marginLeft: 8 }}>
+            Re-expands the guided checklist on Home. Progress is derived from your data, so
+            already-completed steps stay ticked.
+          </span>
+        </p>
       </section>
     </>
   )

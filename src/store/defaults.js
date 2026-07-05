@@ -68,6 +68,9 @@ export function defaultWorkspace() {
       supabase: { url: '', anonKey: '' },
       developer: false,
       guidance: true,
+      // Guided-setup: the ONLY persisted field is whether the card is minimised.
+      // All step progress is derived from data, never stored.
+      setupGuide: { dismissed: false },
       reliability: {
         // Cohen's kappa band cut-points; editable on the Reliability page.
         thresholds: { strong: 0.8, substantial: 0.6 },

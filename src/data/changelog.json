@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-07-05T00:05:43.173Z",
+      "action": "push",
+      "commit": "1067073",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "B3: guided setup checklist",
+      "summary": "Home SetupGuide (welcome, choose-a-path, reference sub-list, 6 derived milestones, minimise pill, sidebar nudge dot); progress derived not stored; setupSteps.js copy; Settings re-trigger"
+    },
+    {
       "when": "2026-07-05T00:01:49.122Z",
       "action": "push",
       "commit": "c558cd1",
