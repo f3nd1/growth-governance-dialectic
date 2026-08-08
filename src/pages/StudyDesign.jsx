@@ -20,15 +20,16 @@ export default function StudyDesign() {
     <>
       <PageHeader
         title="Study Design"
-        desc="Editable summary of the convergent mixed-methods single-case design. Every other page in the app points back to this as its reference."
+        desc="Editable summary of the fully qualitative single-case design. Every other page in the app points back to this as its reference."
       />
 
       {ws.settings.guidance && (
         <div className="notice">
-          This is the design the pilot exercises: two strands (qualitative interviews/focus
-          groups + quantitative financial/audit indicators), analysed independently and merged
-          in a pattern-matching joint display against WH1/WH2/WH3. The pilot runs only the
-          qualitative strand — on synthetic participants — to validate the instrument itself.
+          This is the design the pilot exercises: qualitative evidence — interviews (internal
+          staff, external investors and agents), focus groups, and governance/financial
+          records as documentary evidence — all thematically coded against one codebook and
+          merged in a pattern-matching joint display against WH1/WH2/WH3. The pilot runs the
+          interview strand on synthetic participants to validate the instrument itself.
         </div>
       )}
 

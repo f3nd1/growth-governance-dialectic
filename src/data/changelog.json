@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-08T10:37:39.677Z",
+      "action": "push",
+      "commit": "396b736",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Copy: fully-qualitative study design framing",
+      "summary": "Reframed the four mixed-methods strings (defaults.js study design, StudyDesign page, Home intro) to fully qualitative: records as documentary evidence, no quantitative strand"
+    },
+    {
       "when": "2026-08-08T10:32:36.075Z",
       "action": "push",
       "commit": "146bb57",

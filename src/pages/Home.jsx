@@ -15,7 +15,7 @@ export default function Home() {
       <SetupGuide />
 
       <div className="notice">
-        <strong>What this is:</strong> a dry run of the full mixed-methods pipeline
+        <strong>What this is:</strong> a dry run of the full qualitative pipeline
         (protocol → personas → interviews → dual coding → reliability → pattern-matching)
         on synthetic participants. <strong>What it is not:</strong> a source of findings.
         Nothing here says anything about the real institution.

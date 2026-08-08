@@ -15,14 +15,15 @@ export function defaultWorkspace() {
     },
     studyDesign: {
       title: 'The growth-vs-governance dialectic in an SME private education institution',
-      design: 'Convergent mixed-methods single-case study',
+      design: 'Qualitative single-case study',
       summary:
-        'A convergent mixed-methods single-case design examining how corporate governance ' +
+        'A fully qualitative single-case design examining how corporate governance ' +
         'practices interact with business growth pursuits in a small-to-medium private ' +
-        'education institution. Qualitative strand: semi-structured interviews and focus ' +
-        'groups with internal stakeholders. Quantitative strand: financial, enrolment and ' +
-        'audit/risk indicators. Strands are analysed independently and merged in a ' +
-        'pattern-matching joint display against three rival propositions.',
+        'education institution. Evidence is gathered through semi-structured interviews ' +
+        '(internal staff, and external investors and agents) and focus groups; governance ' +
+        'and financial records are treated as documentary evidence for thematic coding, ' +
+        'not as quantitative indicators. All evidence types are coded against the same ' +
+        'codebook and merged in a pattern-matching joint display against three rival propositions.',
       unitOfAnalysis: 'The institution as a single case; stakeholder groups as embedded units.',
       pilotPurpose:
         'This pilot validates the INSTRUMENT (protocol, codebook, dual-coding and ' +
