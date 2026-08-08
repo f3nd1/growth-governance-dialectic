@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-08T23:49:05.214Z",
+      "action": "push",
+      "commit": "34d942c",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Feature 1: fetch available models",
+      "summary": "Settings button fetches chat-capable models from OpenAI /models with active key, sorts newest-first, populates dropdowns; falls back to built-in list with inline error on failure; never logs the key"
+    },
+    {
       "when": "2026-08-08T10:37:39.677Z",
       "action": "push",
       "commit": "396b736",

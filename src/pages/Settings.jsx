@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, update } from '../store/dataStore'
-import { liveModeAvailable } from '../engine/llm'
+import { liveModeAvailable, listChatModels } from '../engine/llm'
 import { testSupabase, supabaseConfigured } from '../store/supabase'
 import { initRemoteSync } from '../store/initSync'
 import { loadDemoData, resetToEmpty, workspaceMode, MODE_LABELS } from '../engine/demo'
@@ -13,6 +13,26 @@ export default function Settings() {
   const [testResult, setTestResult] = useState(null)
   const [testing, setTesting] = useState(false)
   const [demoMsg, setDemoMsg] = useState('')
+  const [modelOptions, setModelOptions] = useState(MODELS)
+  const [fetching, setFetching] = useState(false)
+  const [fetchError, setFetchError] = useState('')
+
+  async function fetchModels() {
+    setFetching(true)
+    setFetchError('')
+    try {
+      setModelOptions(await listChatModels(ws.settings))
+    } catch (err) {
+      setModelOptions(MODELS) // fallback to the hardcoded list
+      setFetchError(String(err.message ?? err))
+    } finally {
+      setFetching(false)
+    }
+  }
+
+  // Keep the currently-selected model selectable even if it's not in the list.
+  const optionsWith = (current) =>
+    modelOptions.includes(current) ? modelOptions : [current, ...modelOptions]
 
   const envOpenAI = Boolean(import.meta.env.VITE_OPENAI_KEY)
   const envSupabase = Boolean(import.meta.env.VITE_SUPABASE_URL)
@@ -107,6 +127,22 @@ export default function Settings() {
             onChange={(e) => setOpenAI({ key: e.target.value })}
           />
         </div>
+        <p style={{ margin: '0 0 12px' }}>
+          <button className="btn secondary" onClick={fetchModels} disabled={fetching}>
+            {fetching ? 'Fetching…' : 'Fetch available models'}
+          </button>
+          {fetchError ? (
+            <span className="small" role="status" style={{ marginLeft: 8, color: '#b03230' }}>
+              {fetchError} Using built-in list.
+            </span>
+          ) : (
+            modelOptions !== MODELS && (
+              <span className="small muted" style={{ marginLeft: 8 }}>
+                {modelOptions.length} models fetched.
+              </span>
+            )
+          )}
+        </p>
         <div className="grid-2">
           <div className="field">
             <label htmlFor="set-model-analysis">Analysis model (interview generation)</label>
@@ -115,7 +151,7 @@ export default function Settings() {
               value={ws.settings.openai.analysisModel}
               onChange={(e) => setOpenAI({ analysisModel: e.target.value })}
             >
-              {MODELS.map((m) => <option key={m}>{m}</option>)}
+              {optionsWith(ws.settings.openai.analysisModel).map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
           <div className="field">
@@ -125,7 +161,7 @@ export default function Settings() {
               value={ws.settings.openai.utilityModel}
               onChange={(e) => setOpenAI({ utilityModel: e.target.value })}
             >
-              {MODELS.map((m) => <option key={m}>{m}</option>)}
+              {optionsWith(ws.settings.openai.utilityModel).map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
         </div>

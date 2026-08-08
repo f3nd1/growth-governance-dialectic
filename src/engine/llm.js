@@ -10,6 +10,25 @@ export function liveModeAvailable(settings) {
   return Boolean(settings.openai.enabled && getOpenAIKey(settings))
 }
 
+// Fetch chat-completion-capable model ids for the active key, newest first.
+// Throws with a key-free message on any failure. Never logs the key.
+export async function listChatModels(settings) {
+  const key = getOpenAIKey(settings)
+  if (!key) throw new Error('No OpenAI key set (add one to .env.local or Settings).')
+  const res = await fetch('https://api.openai.com/v1/models', {
+    headers: { Authorization: `Bearer ${key}` },
+  })
+  if (!res.ok) throw new Error(`OpenAI models request failed (HTTP ${res.status}).`)
+  const { data } = await res.json()
+  const EXCLUDE = /embed|whisper|tts|moderation|dall-e|image|audio|realtime|transcribe|davinci|babbage|search/i
+  const models = (data ?? [])
+    .filter((m) => /^(gpt|o1|o3|o4|chatgpt)/i.test(m.id) && !EXCLUDE.test(m.id))
+    .sort((a, b) => (b.created ?? 0) - (a.created ?? 0))
+    .map((m) => m.id)
+  if (!models.length) throw new Error('No chat-capable models returned for this key.')
+  return models
+}
+
 function buildSystemPrompt(persona, hypotheses) {
   const held = persona.held.map((h) => hypotheses[h]?.short).join(' and ')
   return [
