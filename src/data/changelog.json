@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-08T23:57:04.158Z",
+      "action": "push",
+      "commit": "ae61037",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Feature 2: AI Review Log page",
+      "summary": "aiReviewLog slice + logAICall at runInterviews and AI Calibration (live/simulated/single fallback entry); log page with summary bar, module+date+search filters, expandable prompt/output rows, Clear log; key never stored"
+    },
+    {
       "when": "2026-08-08T23:49:05.214Z",
       "action": "push",
       "commit": "34d942c",

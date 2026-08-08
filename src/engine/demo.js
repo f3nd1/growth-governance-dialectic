@@ -109,7 +109,8 @@ export const MODE_LABELS = {
 /** Load the deterministic demo pipeline. Preserves settings; idempotent. */
 export function loadDemoData() {
   const demo = buildDemoWorkspace()
-  setState((prev) => ({ ...demo, settings: prev.settings }))
+  // Preserve settings and the AI review log (an audit trail of real calls).
+  setState((prev) => ({ ...demo, settings: prev.settings, aiReviewLog: prev.aiReviewLog ?? [] }))
 }
 
 /**

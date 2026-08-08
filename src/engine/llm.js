@@ -52,8 +52,16 @@ function buildSystemPrompt(persona, hypotheses) {
     .join('\n')
 }
 
+/**
+ * Returns { answers, prompt, output, tokens } so callers can log the call.
+ * `prompt`/`output` are key-free; `tokens` is usage.total_tokens or null.
+ */
 export async function generateLiveInterview(persona, questions, hypotheses, settings) {
   const key = getOpenAIKey(settings)
+  const systemPrompt = buildSystemPrompt(persona, hypotheses)
+  const userPrompt =
+    'Interview questions (answer all, in order):\n' +
+    questions.map((q, i) => `${i + 1}. [${q.id}] ${q.text}`).join('\n')
   const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
@@ -64,13 +72,8 @@ export async function generateLiveInterview(persona, questions, hypotheses, sett
       model: settings.openai.analysisModel || 'gpt-4o',
       temperature: 0.9,
       messages: [
-        { role: 'system', content: buildSystemPrompt(persona, hypotheses) },
-        {
-          role: 'user',
-          content:
-            'Interview questions (answer all, in order):\n' +
-            questions.map((q, i) => `${i + 1}. [${q.id}] ${q.text}`).join('\n'),
-        },
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
       ],
     }),
   })
@@ -82,11 +85,17 @@ export async function generateLiveInterview(persona, questions, hypotheses, sett
 
   const data = await res.json()
   const content = data.choices?.[0]?.message?.content ?? ''
+  const tokens = data.usage?.total_tokens ?? null
+  const meta = {
+    prompt: `SYSTEM:\n${systemPrompt}\n\nUSER:\n${userPrompt}`,
+    output: content,
+    tokens,
+  }
   const jsonText = content.replace(/^```(json)?/m, '').replace(/```\s*$/m, '').trim()
   const parsed = JSON.parse(jsonText)
   if (!Array.isArray(parsed)) throw new Error('Model did not return a JSON array')
 
-  return questions.map((q, i) => {
+  const answers = questions.map((q, i) => {
     const a = parsed.find((x) => x.questionId === q.id) ?? parsed[i] ?? {}
     const lean = ['wh1', 'wh2', 'wh3', 'offscript'].includes(a.lean) ? a.lean : 'wh3'
     return {
@@ -101,4 +110,5 @@ export async function generateLiveInterview(persona, questions, hypotheses, sett
       offscript: lean === 'offscript',
     }
   })
+  return { answers, ...meta }
 }

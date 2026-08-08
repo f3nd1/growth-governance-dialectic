@@ -4,6 +4,7 @@ import PageHeader from '../components/PageHeader'
 import { useWorkspace, update } from '../store/dataStore'
 import { simulateInterview } from '../engine/simulator'
 import { generateLiveInterview, liveModeAvailable } from '../engine/llm'
+import { logAICall } from '../store/aiLog'
 
 export default function AICalibration() {
   const ws = useWorkspace()
@@ -21,11 +22,22 @@ export default function AICalibration() {
     if (!persona) return
     setRunning(true)
     setError(null)
+    const base = { purpose: `Persona Interview — ${persona.name}`, module: 'AI Calibration' }
     try {
       const offline = simulateInterview(persona, questions, seed)
+      logAICall({
+        ...base,
+        model: 'offline-simulator',
+        mode: 'simulated',
+        tokens: null,
+        prompt: `Offline deterministic simulator\nPersona: ${persona.name} · seed ${seed}\nQuestions:\n${questions.map((q, i) => `${i + 1}. ${q.text}`).join('\n')}`,
+        output: offline.map((a, i) => `Q${i + 1} [${a.lean}]: ${a.text}`).join('\n\n'),
+      })
       let liveAnswers = null
       if (live) {
-        liveAnswers = await generateLiveInterview(persona, questions, ws.hypotheses, ws.settings)
+        const meta = await generateLiveInterview(persona, questions, ws.hypotheses, ws.settings)
+        liveAnswers = meta.answers
+        logAICall({ ...base, model: ws.settings.openai.analysisModel || 'gpt-4o', mode: 'live', tokens: meta.tokens, prompt: meta.prompt, output: meta.output })
       }
       setComparison({ offline, live: liveAnswers, persona: persona.name, seed })
       const leanDist = (answers) => {
@@ -48,6 +60,8 @@ export default function AICalibration() {
         ].slice(0, 12),
       }))
     } catch (err) {
+      // Live attempt failed; the offline comparison stands in. Log one fallback entry.
+      logAICall({ ...base, model: 'offline-simulator', mode: 'live-failed-fallback', tokens: null, prompt: '(live call attempted)', output: '(fell back to offline comparison)', error: String(err.message ?? err) })
       setError(String(err.message ?? err))
     } finally {
       setRunning(false)

@@ -18,6 +18,7 @@ import PilotReport from './pages/PilotReport'
 import ExportCentre from './pages/ExportCentre'
 import Settings from './pages/Settings'
 import AICalibration from './pages/AICalibration'
+import AIReviewLog from './pages/AIReviewLog'
 import ChangeLog from './pages/ChangeLog'
 
 export default function App() {
@@ -43,6 +44,7 @@ export default function App() {
           <Route path="/outputs/export" element={<ExportCentre />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/settings/calibration" element={<AICalibration />} />
+          <Route path="/settings/ai-review-log" element={<AIReviewLog />} />
           <Route path="/settings/changelog" element={<ChangeLog />} />
           <Route path="*" element={<Home />} />
         </Route>

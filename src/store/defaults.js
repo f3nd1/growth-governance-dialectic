@@ -82,5 +82,6 @@ export function defaultWorkspace() {
       },
     },
     calibration: { runs: [] }, // Phase 7
+    aiReviewLog: [], // one entry per AI call (live or simulated), newest first
   }
 }

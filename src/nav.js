@@ -58,6 +58,7 @@ export const NAV_GROUPS = [
     items: [
       { path: '/settings', label: 'Settings' },
       { path: '/settings/calibration', label: 'AI Calibration' },
+      { path: '/settings/ai-review-log', label: 'AI Review Log' },
       { path: '/settings/changelog', label: 'Change Log' },
     ],
   },

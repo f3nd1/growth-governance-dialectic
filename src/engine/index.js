@@ -4,8 +4,19 @@
 import { simulateInterview } from './simulator'
 import { generateLiveInterview, liveModeAvailable } from './llm'
 import { getState, setState } from '../store/dataStore'
+import { logAICall } from '../store/aiLog'
 
 let counter = 0
+
+// Readable, key-free prompt/output summary for a simulated (offline) run.
+function simSummary(persona, questions, answers, seed) {
+  return {
+    prompt:
+      `Offline deterministic simulator\nPersona: ${persona.name} (${persona.role}, ${persona.group}) · seed ${seed}\n` +
+      `Questions:\n${questions.map((q, i) => `${i + 1}. ${q.text}`).join('\n')}`,
+    output: answers.map((a, i) => `Q${i + 1} [${a.lean}]: ${a.text}`).join('\n\n'),
+  }
+}
 
 /**
  * Runs the protocol for each persona id. Returns {interviews, errors}.
@@ -24,15 +35,31 @@ export async function runInterviews(personaIds, seed) {
 
     let answers = null
     let mode = 'offline'
+    let liveError = null
+    let liveMeta = null
     if (live) {
       try {
-        answers = await generateLiveInterview(persona, questions, ws.hypotheses, ws.settings)
+        liveMeta = await generateLiveInterview(persona, questions, ws.hypotheses, ws.settings)
+        answers = liveMeta.answers
         mode = 'live'
       } catch (err) {
+        liveError = err.message
         errors.push(`${persona.name}: live generation failed (${err.message}) — used offline simulator.`)
       }
     }
     if (!answers) answers = simulateInterview(persona, questions, seed)
+
+    // One log entry per attempt: live success, live-failed-fallback, or simulated.
+    const base = { purpose: `Persona Interview — ${persona.name}`, module: 'Fieldwork' }
+    if (mode === 'live') {
+      logAICall({ ...base, model: ws.settings.openai.analysisModel || 'gpt-4o', mode: 'live', tokens: liveMeta.tokens, prompt: liveMeta.prompt, output: liveMeta.output })
+    } else if (liveError) {
+      const sim = simSummary(persona, questions, answers, seed)
+      logAICall({ ...base, model: 'offline-simulator', mode: 'live-failed-fallback', tokens: null, prompt: sim.prompt, output: sim.output, error: liveError })
+    } else {
+      const sim = simSummary(persona, questions, answers, seed)
+      logAICall({ ...base, model: 'offline-simulator', mode: 'simulated', tokens: null, prompt: sim.prompt, output: sim.output })
+    }
 
     interviews.push({
       id: `iv-${Date.now().toString(36)}-${counter++}`,
