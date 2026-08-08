@@ -84,7 +84,7 @@ export default function PersonaBuilder() {
       {ws.settings.guidance && (
         <div className="notice">
           The <strong>weight profile</strong> sets how strongly the persona’s answers lean to
-          each working hypothesis (must sum to 1). <strong>Held hypotheses</strong> mark what
+          each rival proposition (must sum to 1). <strong>Held hypotheses</strong> mark what
           the persona genuinely believes — holding two at once creates a paradox persona ⚡,
           which the instrument must surface, not average away. A <strong>blind-spot probe</strong>
           answers off-script to test whether the codebook’s emergent bucket catches the unexpected.

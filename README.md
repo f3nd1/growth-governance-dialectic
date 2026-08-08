@@ -2,13 +2,17 @@
 
 **A doctoral research INSTRUMENT — not a source of findings.**
 
-This app is a **synthetic-participant pilot pipeline** for a mixed-methods
-doctoral study on the growth-vs-governance dialectic in an SME private
-education institution. It exists to **validate the data-collection and
+This app is a **synthetic-participant pilot pipeline** for a **fully
+qualitative** doctoral study on the growth-vs-governance dialectic in an SME
+private education institution. It exists to **validate the data-collection and
 analysis method** (interview protocol, a priori codebook, dual independent
 coding, reliability statistics, pattern-matching joint display) on
 clearly-labelled **SYNTHETIC** participants, **before** real fieldwork and
 **pending advisor and IRB approval**.
+
+The design is fully qualitative: governance and financial records are treated
+as **documentary evidence for thematic coding**, not as quantitative
+indicators or scored indices.
 
 Synthetic data cannot substitute for real stakeholder accounts. **No output
 of this app is a real finding about the institution.** Every screen, card,
@@ -67,9 +71,9 @@ given — a `service_role` key.
   interview generation uses one LLM call per persona. The AI Calibration
   page compares offline vs live output for the same persona.
 
-## The three working hypotheses
+## The three rival propositions
 
-Framed as **rival working propositions** (not statistical H0/H1):
+Framed as **rival propositions** (not statistical H0/H1):
 
 - **WH1** — governance NEGATIVELY affects business pursuits
 - **WH2** — governance POSITIVELY affects business pursuits

@@ -1,5 +1,5 @@
 // Pattern-matching aggregation: distributes coded evidence across the three
-// working hypotheses as weights, never winner-take-all. A contradictory
+// rival propositions as weights, never winner-take-all. A contradictory
 // (paradox) segment carries genuine evidence for two hypotheses and is split
 // 50/50 between them, so a paradox participant shows up in two columns.
 

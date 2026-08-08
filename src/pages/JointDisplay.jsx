@@ -16,7 +16,7 @@ export default function JointDisplay() {
     <>
       <PageHeader
         title="Joint Display"
-        desc="The Chapter 3 pattern-matching matrix: evidence types × working hypotheses. It makes explicit what synthetic data CAN validate (the qualitative instrument) and what it CANNOT (financial, audit and documentary strands)."
+        desc="The Chapter 3 pattern-matching matrix: evidence types × rival propositions. It makes explicit what synthetic data CAN validate (the qualitative instrument) and what it CANNOT (financial, audit and documentary strands)."
       />
 
       {ws.settings.guidance && (

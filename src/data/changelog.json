@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-08T10:24:39.041Z",
+      "action": "push",
+      "commit": "d910cd3",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Terminology: rival propositions; README fully qualitative",
+      "summary": "Replaced 'working hypotheses/propositions' phrase with 'rival propositions' in all user-facing copy (WH1-3 codes kept); README notes fully-qualitative design, records as documentary evidence"
+    },
+    {
       "when": "2026-07-05T00:09:44.942Z",
       "action": "push",
       "commit": "6ace3b0",

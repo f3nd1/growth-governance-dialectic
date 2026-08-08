@@ -50,7 +50,7 @@ export default function StudyDesign() {
         <h2>How the rest of the app uses this</h2>
         <ul className="small">
           <li><strong>Interview Protocol</strong> operationalises the qualitative strand (RQ2/RQ3).</li>
-          <li><strong>Codebook</strong> holds the a priori codes derived from the three working hypotheses.</li>
+          <li><strong>Codebook</strong> holds the a priori codes derived from the three rival propositions.</li>
           <li><strong>Personas</strong> are synthetic stand-ins for the embedded stakeholder groups.</li>
           <li><strong>Joint Display</strong> reproduces the Chapter 3 pattern-matching matrix; only its qualitative rows can be populated by this pilot.</li>
         </ul>

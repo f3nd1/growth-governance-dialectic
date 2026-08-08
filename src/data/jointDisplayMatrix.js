@@ -1,5 +1,5 @@
 // The Chapter 3 pattern-matching matrix: expected evidence for each evidence
-// type under each working hypothesis. Shared by the Joint Display page and the
+// type under each rival proposition. Shared by the Joint Display page and the
 // Chapter-3 appendix export so the two can never diverge. Only qualitative
 // rows can be populated by the synthetic pilot; the rest await the real-data
 // phase.

@@ -37,7 +37,7 @@ export default function PilotReport() {
       </section>
 
       <section className="card">
-        <h2>2 · Working hypotheses</h2>
+        <h2>2 · Rival propositions</h2>
         {m.hypotheses.map((h) => (
           <p key={h.id} style={{ borderLeft: `4px solid ${h.color}`, paddingLeft: 10 }}>
             <strong>{h.label}.</strong> {h.description}

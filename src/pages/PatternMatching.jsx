@@ -21,7 +21,7 @@ export default function PatternMatching() {
   if (ws.coding.segments.length === 0) {
     return (
       <>
-        <PageHeader title="Pattern-Matching" desc="Aggregates coded evidence into the three working hypotheses as distributed weight." />
+        <PageHeader title="Pattern-Matching" desc="Aggregates coded evidence into the three rival propositions as distributed weight." />
         <div className="card muted">
           Nothing to aggregate yet — <Link to="/analysis/coding">code some interviews</Link> first.
         </div>

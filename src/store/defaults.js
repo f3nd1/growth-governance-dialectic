@@ -22,7 +22,7 @@ export function defaultWorkspace() {
         'education institution. Qualitative strand: semi-structured interviews and focus ' +
         'groups with internal stakeholders. Quantitative strand: financial, enrolment and ' +
         'audit/risk indicators. Strands are analysed independently and merged in a ' +
-        'pattern-matching joint display against three rival working hypotheses.',
+        'pattern-matching joint display against three rival propositions.',
       unitOfAnalysis: 'The institution as a single case; stakeholder groups as embedded units.',
       pilotPurpose:
         'This pilot validates the INSTRUMENT (protocol, codebook, dual-coding and ' +

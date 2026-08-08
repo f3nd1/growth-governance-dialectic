@@ -31,7 +31,7 @@ export default function Codebook() {
     <>
       <PageHeader
         title="Codebook"
-        desc="A priori codes derived from the three working hypotheses, plus an emergent bucket for inductive codes found during coding."
+        desc="A priori codes derived from the three rival propositions, plus an emergent bucket for inductive codes found during coding."
       />
 
       {ws.settings.guidance && (

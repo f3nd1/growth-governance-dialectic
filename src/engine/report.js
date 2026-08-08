@@ -90,7 +90,7 @@ export function reportToMarkdown(m) {
   lines.push('')
   lines.push(`Pilot purpose: ${m.studyDesign.pilotPurpose}`)
   lines.push('')
-  lines.push('## 2 · Working hypotheses (rival propositions)')
+  lines.push('## 2 · Rival propositions (rival propositions)')
   lines.push('')
   for (const h of m.hypotheses) lines.push(`- **${h.label}** — ${h.description}`)
   lines.push('')

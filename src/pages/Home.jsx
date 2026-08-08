@@ -22,9 +22,9 @@ export default function Home() {
       </div>
 
       <section className="card">
-        <h2>Working hypotheses (rival propositions)</h2>
+        <h2>Rival propositions (rival propositions)</h2>
         <p className="muted small">
-          Framed as rival working propositions, not statistical H0/H1 — the pilot tests
+          Framed as rival propositions, not statistical H0/H1 — the pilot tests
           whether the instrument can discriminate between them (including when two hold at once).
         </p>
         {Object.values(ws.hypotheses).map((h) => (
