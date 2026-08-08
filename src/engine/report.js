@@ -11,7 +11,6 @@ import {
   heatmapData,
 } from './vizData'
 import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
-import { JOINT_DISPLAY_ROWS } from '../data/jointDisplayMatrix'
 
 export const SYNTHETIC_CAVEAT =
   'SYNTHETIC PILOT — INSTRUMENT VALIDATION ONLY. All participants, transcripts, codes and ' +
@@ -37,6 +36,7 @@ export function buildReportModel(ws) {
       reliability: relData.points.length ? reliabilitySVG(relData, colors, thresholds) : null,
       heatmap: heatmapSVG(heatData, colors),
     },
+    jointDisplay: heatData.rows,
     caveat: SYNTHETIC_CAVEAT, // non-removable
     generatedAt: new Date().toISOString(),
     studyDesign: ws.studyDesign,
@@ -90,7 +90,7 @@ export function reportToMarkdown(m) {
   lines.push('')
   lines.push(`Pilot purpose: ${m.studyDesign.pilotPurpose}`)
   lines.push('')
-  lines.push('## 2 · Rival propositions (rival propositions)')
+  lines.push('## 2 · Rival propositions')
   lines.push('')
   for (const h of m.hypotheses) lines.push(`- **${h.label}** — ${h.description}`)
   lines.push('')
@@ -304,19 +304,16 @@ export function appendixToMarkdown(m) {
 
   L.push('## A4 · Joint-display matrix (pattern-matching)')
   L.push('')
-  L.push('Expected evidence under each hypothesis by evidence type. Only the interview row is populated from synthetic data; the remaining rows are real-data-phase placeholders, making explicit what synthetic data can and cannot validate.')
+  L.push('Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from synthetic data; documents and focus groups are real-data-phase placeholders, making explicit what synthetic data can and cannot validate.')
   L.push('')
   const [ha, hb, hc] = m.hypotheses
   L.push(`| Evidence type | Status | ${ha.short} | ${hb.short} | ${hc.short} |`)
   L.push('| --- | --- | --- | --- | --- |')
-  for (const row of JOINT_DISPLAY_ROWS) {
-    const status = row.placeholder ? row.placeholderLabel ?? 'real-data phase' : 'populated · synthetic'
+  for (const row of m.jointDisplay) {
+    const status = row.populated ? 'populated · synthetic' : row.placeholderLabel ?? 'real-data phase'
     const cells = HYPOTHESIS_IDS.map((id) => {
       const base = row.expected[id]
-      if (!row.placeholder && m.patterns.hypTotal > 0) {
-        return `${base} (${(m.patterns.shares[id] * 100).toFixed(0)}%)`
-      }
-      return base
+      return row.populated ? `${base} (${(row.shares[id] * 100).toFixed(0)}%)` : base
     })
     L.push(`| ${mdEsc(row.label)} | ${status} | ${mdEsc(cells[0])} | ${mdEsc(cells[1])} | ${mdEsc(cells[2])} |`)
   }
@@ -363,15 +360,15 @@ export function appendixToHTML(m) {
           .join('')}</ul>`
       : ''
 
-  const jointRows = JOINT_DISPLAY_ROWS.map((row) => {
-    const status = row.placeholder ? row.placeholderLabel ?? 'real-data phase' : 'populated · synthetic'
+  const jointRows = m.jointDisplay.map((row) => {
+    const status = row.populated ? 'populated · synthetic' : row.placeholderLabel ?? 'real-data phase'
     const cells = HYPOTHESIS_IDS.map((id) => {
       const base = row.expected[id]
-      return !row.placeholder && m.patterns.hypTotal > 0
-        ? `${esc(base)} <strong>(${(m.patterns.shares[id] * 100).toFixed(0)}%)</strong>`
+      return row.populated
+        ? `${esc(base)} <strong>(${(row.shares[id] * 100).toFixed(0)}%)</strong>`
         : esc(base)
     })
-    return `<tr${row.placeholder ? ' class="placeholder"' : ''}><td>${esc(row.label)}</td><td>${esc(status)}</td><td>${cells[0]}</td><td>${cells[1]}</td><td>${cells[2]}</td></tr>`
+    return `<tr${row.populated ? '' : ' class="placeholder"'}><td>${esc(row.label)}</td><td>${esc(status)}</td><td>${cells[0]}</td><td>${cells[1]}</td><td>${cells[2]}</td></tr>`
   }).join('')
 
   const chartFig = (title, svg, cap) =>

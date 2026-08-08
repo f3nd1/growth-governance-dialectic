@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-08T10:29:48.672Z",
+      "action": "push",
+      "commit": "acaacce",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Joint Display: Chapter 3 Table 2 four rows",
+      "summary": "Documents / Internal interviews / External interviews (investors, agents) / Focus groups; interview rows populated split by internal-vs-external; documents & FGD placeholders; unified matrix module"
+    },
+    {
       "when": "2026-08-08T10:24:39.041Z",
       "action": "push",
       "commit": "d910cd3",

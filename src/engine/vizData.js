@@ -6,6 +6,7 @@
 import { agreementStats } from './coding'
 import { aggregateEvidence } from './patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
+import { JOINT_DISPLAY_ROWS, EXTERNAL_GROUPS } from '../data/jointDisplayMatrix'
 
 /** Colours keyed wh1/wh2/wh3, pulled from the workspace hypotheses. */
 export function hypothesisColors(ws) {
@@ -62,32 +63,43 @@ export function reliabilitySeriesData(ws) {
   return { points, pooled: pooledStats ? pooledStats.kappa : null }
 }
 
-// Chapter 3 evidence rows; only the interview row is populated by the pilot.
-const HEATMAP_ROWS = [
-  { id: 'interviews', label: 'Interviews', populated: true },
-  { id: 'focus', label: 'Focus groups', populated: false },
-  { id: 'financial', label: 'Financial data', populated: false },
-  { id: 'audit', label: 'Audit / risk data', populated: false },
-  { id: 'reports', label: 'Company reports', populated: false },
-]
+// Hypothesis shares over an arbitrary segment subset, via the same selector
+// the tables use — so a subset row can never disagree with the whole.
+function sharesFor(segments, codebook) {
+  const { overall } = aggregateEvidence(segments, codebook)
+  const t = overall.wh1 + overall.wh2 + overall.wh3
+  return {
+    total: t,
+    shares: t
+      ? { wh1: overall.wh1 / t, wh2: overall.wh2 / t, wh3: overall.wh3 / t }
+      : { wh1: 0, wh2: 0, wh3: 0 },
+  }
+}
 
 /**
- * Chart C input — heatmap rows. Interview row intensity = overall hypothesis
- * shares from aggregateEvidence (the Joint Display selector); other rows are
- * real-data-phase placeholders.
+ * Chart C / Joint Display input — the Chapter 3 matrix rows with expected
+ * evidence and, for populated rows, the hypothesis shares of the matching
+ * synthetic segment subset (internal staff vs external investors/agents).
+ * Placeholder rows carry null shares (real-data phase).
  */
 export function heatmapData(ws) {
-  const { overall } = aggregateEvidence(ws.coding.segments, ws.codebook)
-  const hypTotal = overall.wh1 + overall.wh2 + overall.wh3
-  const shares = {
-    wh1: hypTotal ? overall.wh1 / hypTotal : 0,
-    wh2: hypTotal ? overall.wh2 / hypTotal : 0,
-    wh3: hypTotal ? overall.wh3 / hypTotal : 0,
+  const groupById = new Map(ws.personas.map((p) => [p.id, p.group]))
+  const isExternal = (s) => EXTERNAL_GROUPS.includes(groupById.get(s.personaId))
+  const external = ws.coding.segments.filter(isExternal)
+  const internal = ws.coding.segments.filter((s) => !isExternal(s))
+  const bySource = {
+    internal: sharesFor(internal, ws.codebook),
+    external: sharesFor(external, ws.codebook),
   }
-  const rows = HEATMAP_ROWS.map((r) => ({
+  const rows = JOINT_DISPLAY_ROWS.map((r) => ({
+    id: r.id,
     label: r.label,
-    populated: r.populated,
-    shares: r.populated ? shares : null,
+    populated: r.populatedBy != null,
+    populatedBy: r.populatedBy,
+    placeholderLabel: r.placeholderLabel,
+    expected: r.expected,
+    shares: r.populatedBy ? bySource[r.populatedBy].shares : null,
+    segmentCount: r.populatedBy ? bySource[r.populatedBy].total : 0,
   }))
-  return { rows, hasData: hypTotal > 0 }
+  return { rows, hasData: ws.coding.segments.length > 0 }
 }
