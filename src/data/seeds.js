@@ -52,6 +52,13 @@ export function defaultProtocolQuestions() {
       rq: 'RQ3',
       source: 'Mayer, Davis & Schoorman (1995) — organisational trust; agent-channel literature',
     },
+    {
+      id: 'q8',
+      order: 8,
+      text: 'Did the institution’s governance maturity or certification status factor into your decision to invest?',
+      rq: 'RQ3',
+      source: 'Mayer, Davis & Schoorman (1995) — organisational trust; investor-confidence literature',
+    },
   ]
 }
 
@@ -147,9 +154,10 @@ export const STAKEHOLDER_GROUPS = [
   { id: 'support', label: 'Support' },
   { id: 'ph-ops', label: 'PH-ops' },
   { id: 'agent', label: 'Agent' },
+  { id: 'investor', label: 'Investor' },
 ]
 
-// ~8 synthetic personas spanning all stakeholder groups, incl. one paradox
+// ~9 synthetic personas spanning all stakeholder groups, incl. one paradox
 // holder (⚡ holds WH1 and WH2 at once) and one blind-spot probe.
 export function defaultPersonas() {
   return [
@@ -250,6 +258,19 @@ export function defaultPersonas() {
       blindSpot: false,
       voice:
         'External channel partner; weighs registration status and fee-protection when deciding which institutions to represent.',
+      synthetic: true
+    },
+    {
+      id: 'I01',
+      name: 'Rachel Bennett (synthetic)',
+      role: 'Investor',
+      group: 'investor',
+      tenureYears: 3,
+      weights: { wh1: 0.15, wh2: 0.65, wh3: 0.2 },
+      held: ['wh2'],
+      blindSpot: false,
+      voice:
+        'External capital provider; assessed whether governance maturity and certification de-risked the investment, and credits them with her confidence to back the institution.',
       synthetic: true
     },
   ]

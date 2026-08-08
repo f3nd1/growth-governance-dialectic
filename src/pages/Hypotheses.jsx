@@ -13,7 +13,7 @@ export default function Hypotheses() {
     <>
       <PageHeader
         title="Hypotheses"
-        desc="Three rival working propositions — not statistical H0/H1. Persona weights, answer tagging, coding and pattern-matching all key off these, using each proposition’s colour consistently app-wide."
+        desc="Three rival propositions — not statistical H0/H1. Persona weights, answer tagging, coding and pattern-matching all key off these, using each proposition’s colour consistently app-wide."
       />
 
       {ws.settings.guidance && (

@@ -1,7 +1,7 @@
 // Deterministic demo-data builder + workspace-mode detection.
 //
-// "Load demo data" reproduces the known-good end-to-end state (8 personas →
-// 56 coded segments → κ≈0.86 Strong → split pattern on the paradox persona)
+// "Load demo data" reproduces the known-good end-to-end state (9 personas →
+// 72 coded segments → κ≈0.88 Strong → split pattern on the paradox persona)
 // so a fresh visitor can explore the whole pipeline immediately. It reuses
 // the SAME simulator and coder the live pipeline uses, with fixed IDs/seed/
 // timestamp so the result is fully deterministic and idempotent — loading

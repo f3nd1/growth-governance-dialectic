@@ -8,7 +8,7 @@ import { hashSeed, mulberry32, pick, weightedPick } from './rng'
 
 // Question themes keyed by default protocol order; custom questions fall
 // back to the generic bank.
-const THEMES = ['daily', 'initiative', 'incident', 'external', 'tension', 'counterfactual', 'agentTrust']
+const THEMES = ['daily', 'initiative', 'incident', 'external', 'tension', 'counterfactual', 'agentTrust', 'investorTrust']
 
 const BANK = {
   daily: {
@@ -107,6 +107,20 @@ const BANK = {
     wh3: [
       'It is one line in their checklist among many — present but rarely decisive next to commissions and processing speed.',
       'Some agents mention it, most do not. I cannot honestly say it moves their behaviour much either way.',
+    ],
+  },
+  investorTrust: {
+    wh1: [
+      'As an investor I saw the compliance load as a cost centre — money and management time going to auditors instead of into growth. It gave me pause.',
+      'Honestly the governance overhead worried me: it reads as friction that slows the institution down when it should be scaling.',
+    ],
+    wh2: [
+      'The institution’s governance maturity and certification were decisive for me — a clean audit trail and fee-protection standing are exactly what de-risk the capital.',
+      'I would not have put money in without the accreditation. Governance maturity signalled a board I could trust to protect my investment.',
+    ],
+    wh3: [
+      'My decision came down to the numbers and the market. Governance status was neither here nor there in my model.',
+      'I looked at enrolment trends and unit economics; the compliance posture did not really factor into the investment either way.',
     ],
   },
   generic: {

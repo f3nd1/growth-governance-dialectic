@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-08T10:32:36.075Z",
+      "action": "push",
+      "commit": "146bb57",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Personas: investor group + persona + Q8",
+      "summary": "Seeded investor persona I01 (WH2-weighted) + investor stakeholder group; Q8 investor-confidence question with investorTrust simulator bank; counts updated to 9 personas / 72 segments / κ≈0.88"
+    },
+    {
       "when": "2026-08-08T10:29:48.672Z",
       "action": "push",
       "commit": "acaacce",
