@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-09T09:50:29.599Z",
+      "action": "push",
+      "commit": "a2d499e",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Group 4: 13 persona role archetypes",
+      "summary": "Replaced 9 seeded personas with 13 archetypes across 8 reworked stakeholder groups; two paradox holders (P02, P12), blind-spot probe P13; weight profiles validated to sum to 1.0 on load; counts updated"
+    },
+    {
       "when": "2026-08-09T09:47:46.844Z",
       "action": "push",
       "commit": "7499b7c",

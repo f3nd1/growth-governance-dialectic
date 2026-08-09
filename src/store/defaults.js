@@ -5,6 +5,7 @@ import {
   defaultProtocolQuestions,
   defaultCodebookCodes,
   defaultPersonas,
+  assertPersonaWeights,
   DEFAULT_OPENING_SCRIPT,
   DEFAULT_CLOSING_SCRIPT,
 } from '../data/seeds'
@@ -71,7 +72,7 @@ export function defaultWorkspace() {
       closingScript: DEFAULT_CLOSING_SCRIPT,
     },
     codebook: { codes: defaultCodebookCodes() },
-    personas: defaultPersonas(),
+    personas: assertPersonaWeights(defaultPersonas()),
     interviews: [], // Phase 4
     coding: { segments: [], overridesLog: [] }, // Phase 5
     settings: {

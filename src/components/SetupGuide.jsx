@@ -68,7 +68,7 @@ export default function SetupGuide() {
           </p>
           <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: 0 }}>
             <button className="btn" onClick={loadDemoData}>
-              Load demo data (9 personas → coded → κ)
+              Load demo data (13 personas → coded → κ)
             </button>
             <Link className="btn secondary" to="/design/study">Start from empty →</Link>
           </p>

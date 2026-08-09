@@ -253,130 +253,204 @@ export const CODE_GROUPS = [
 ]
 
 export const STAKEHOLDER_GROUPS = [
-  { id: 'leader', label: 'Leader' },
-  { id: 'manager', label: 'Manager' },
+  { id: 'shareholder', label: 'Shareholder' },
+  { id: 'senior-leader', label: 'Senior leader' },
+  { id: 'academic', label: 'Academic' },
   { id: 'teacher', label: 'Teacher' },
   { id: 'support', label: 'Support' },
-  { id: 'ph-ops', label: 'PH-ops' },
+  { id: 'ph-ops', label: 'PH operations' },
   { id: 'agent', label: 'Agent' },
-  { id: 'investor', label: 'Investor' },
+  { id: 'multi-role', label: 'Multi-role' },
 ]
 
-// ~9 synthetic personas spanning all stakeholder groups, incl. one paradox
-// holder (⚡ holds WH1 and WH2 at once) and one blind-spot probe.
+// 13 synthetic role archetypes spanning every stakeholder group, including two
+// paradox holders (P02, P12 — hold WH1 and WH2 at once) and one blind-spot probe
+// (P13). Weights must sum to 1.0; validated on load by assertPersonaWeights().
 export function defaultPersonas() {
   return [
     {
-      id: 'p1',
-      name: 'Dr Elena Marquez (synthetic)',
-      role: 'Principal / Academic Director',
-      group: 'leader',
-      tenureYears: 12,
-      weights: { wh1: 0.25, wh2: 0.6, wh3: 0.15 },
+      id: 'P01',
+      name: 'Dana Reyes (synthetic)',
+      role: 'Board member / shareholder',
+      group: 'shareholder',
+      tenureYears: 3,
+      weights: { wh1: 0.2, wh2: 0.65, wh3: 0.15 },
       held: ['wh2'],
       blindSpot: false,
-      voice: 'Strategic, board-facing; cites accreditation wins and long-term stability.',
-      synthetic: true
+      voice:
+        'Invested during the capability-building phase. Assessed the college on governance evidence because there was no revenue to assess. Credits certification with de-risking the capital decision. Impatient about how long certification took, but does not blame governance for that — blames the regulator\'s timeline.',
+      synthetic: true,
     },
     {
-      id: 'p2',
+      id: 'P02',
       name: 'Marcus Tay (synthetic)',
-      role: 'Head of Admissions & Marketing',
-      group: 'manager',
-      tenureYears: 6,
-      weights: { wh1: 0.45, wh2: 0.45, wh3: 0.1 },
+      role: 'Senior leader (commercial + governance)',
+      group: 'senior-leader',
+      tenureYears: 5,
+      weights: { wh1: 0.4, wh2: 0.5, wh3: 0.1 },
       held: ['wh1', 'wh2'],
       blindSpot: false,
       voice:
-        'Growth-driven and candid; complains about approval delays in one breath and credits EduTrust standing for agent deals in the next. Genuinely holds both positions.',
-      synthetic: true
+        'Accountable for both commercial results and compliance outcomes — the paradox lives in his job description. Genuinely believes certification is why agents take the college seriously, AND genuinely resents that audit season stops everything else for weeks. Will state both within the same interview without noticing the contradiction.',
+      synthetic: true,
     },
     {
-      id: 'p3',
-      name: 'Priya Nair (synthetic)',
-      role: 'Compliance & Quality Manager',
-      group: 'manager',
+      id: 'P03',
+      name: 'Priya Nathan (synthetic)',
+      role: 'Academic Director',
+      group: 'academic',
       tenureYears: 4,
-      weights: { wh1: 0.1, wh2: 0.7, wh3: 0.2 },
+      weights: { wh1: 0.3, wh2: 0.55, wh3: 0.15 },
       held: ['wh2'],
       blindSpot: false,
-      voice: 'Process-proud; frames every control as protecting students and the licence to operate.',
-      synthetic: true
+      voice:
+        'Sees academic governance as inseparable from programme quality. Frames documentation as what makes new programme approvals possible at all. Mild frustration that governance is treated as an administrative task rather than an academic one.',
+      synthetic: true,
     },
     {
-      id: 'p4',
-      name: 'Samuel Ong (synthetic)',
-      role: 'Senior Lecturer, Business Programmes',
+      id: 'P04',
+      name: 'Ellen Koh (synthetic)',
+      role: 'Teacher (long tenure)',
       group: 'teacher',
-      tenureYears: 8,
-      weights: { wh1: 0.3, wh2: 0.2, wh3: 0.5 },
-      held: ['wh3'],
-      blindSpot: false,
-      voice: 'Classroom-focused; sees governance as paperwork that happens to other people.',
-      synthetic: true
-    },
-    {
-      id: 'p5',
-      name: 'Aisha Rahman (synthetic)',
-      role: 'Adjunct Lecturer',
-      group: 'teacher',
-      tenureYears: 2,
+      tenureYears: 6,
       weights: { wh1: 0.55, wh2: 0.2, wh3: 0.25 },
       held: ['wh1'],
       blindSpot: false,
-      voice: 'Time-poor; experiences audits and documentation as unpaid overhead crowding out teaching prep.',
-      synthetic: true
+      voice:
+        'Long-serving teacher. Experiences governance almost entirely as added admin — forms, evidence collection, audit preparation — with little visible connection to students. Not hostile, but unconvinced. Will say \'I\'m sure it matters to someone, just not to my classroom.\'',
+      synthetic: true,
     },
     {
-      id: 'p6',
-      name: 'Gerald Lim (synthetic)',
-      role: 'Finance & Administration Officer',
+      id: 'P05',
+      name: 'Sam Oduya (synthetic)',
+      role: 'Teacher (launch-phase joiner)',
+      group: 'teacher',
+      tenureYears: 1,
+      weights: { wh1: 0.35, wh2: 0.3, wh3: 0.35 },
+      held: ['wh3'],
+      blindSpot: false,
+      voice:
+        'Joined during the launch transition. Walked into systems already built and has no memory of life before them, so has no baseline to compare against. Tends to attribute outcomes to market conditions or luck. Useful for testing whether the codebook handles \'I wasn\'t here for that.\'',
+      synthetic: true,
+    },
+    {
+      id: 'P06',
+      name: 'Wendy Lim (synthetic)',
+      role: 'Student support officer',
       group: 'support',
-      tenureYears: 5,
-      weights: { wh1: 0.4, wh2: 0.25, wh3: 0.35 },
+      tenureYears: 3,
+      weights: { wh1: 0.25, wh2: 0.5, wh3: 0.25 },
+      held: ['wh2'],
+      blindSpot: false,
+      voice:
+        'Student-facing. Notices that students and parents ask about certification, and that having it makes conversations easier. Also notices the volume of records she now has to keep. Nets out positive but not uncritically.',
+      synthetic: true,
+    },
+    {
+      id: 'P07',
+      name: 'Ramon Cruz (synthetic)',
+      role: 'Operations lead, offshore team',
+      group: 'ph-ops',
+      tenureYears: 3.5,
+      weights: { wh1: 0.3, wh2: 0.55, wh3: 0.15 },
+      held: ['wh2'],
+      blindSpot: false,
+      voice:
+        'Offshore operations lead, longest tenure on the team. Built many of the systems that operationalise compliance. Sees governance and systems work as the same job. Proud of the automation; frames it as what lets a small team meet requirements that would otherwise need double the headcount.',
+      synthetic: true,
+    },
+    {
+      id: 'P08',
+      name: 'Bea Santos (synthetic)',
+      role: 'HR & finance, offshore team',
+      group: 'ph-ops',
+      tenureYears: 2,
+      weights: { wh1: 0.45, wh2: 0.35, wh3: 0.2 },
       held: ['wh1'],
       blindSpot: false,
-      voice: 'Detail-oriented; lives inside the fee-protection and reporting workflows and feels their weight.',
-      synthetic: true
+      voice:
+        'HR and finance, offshore. Feels the cost side most directly — sees money going out for consultants, certifications, and audit prep while revenue was still nil. Supportive in principle, strained in practice. Best source for the sequencing-cost code.',
+      synthetic: true,
     },
     {
-      id: 'p7',
-      name: 'Joy Villanueva (synthetic)',
-      role: 'Overseas Operations Coordinator (PH)',
+      id: 'P09',
+      name: 'Jorge Medina (synthetic)',
+      role: 'Marketing, offshore team (new joiner)',
       group: 'ph-ops',
-      tenureYears: 3,
-      weights: { wh1: 0.34, wh2: 0.33, wh3: 0.33 },
+      tenureYears: 0.8,
+      weights: { wh1: 0.25, wh2: 0.25, wh3: 0.5 },
       held: ['wh3'],
+      blindSpot: false,
+      voice:
+        'Marketing, joined under a year ago. Governance feels like someone else\'s department. Attributes enrolment growth to campaign work and market recovery. Genuinely does not perceive a link — not defensive about it, just doesn\'t see one.',
+      synthetic: true,
+    },
+    {
+      id: 'P10',
+      name: 'Kai Zhang (synthetic)',
+      role: 'Recruitment agent (certification-led)',
+      group: 'agent',
+      tenureYears: null,
+      weights: { wh1: 0.05, wh2: 0.8, wh3: 0.15 },
+      held: ['wh2'],
+      blindSpot: false,
+      voice:
+        'Agent who screens institutions on certification before anything else. Will not refer to a school without valid standing. Explicit that tier matters and that parents ask. Strong, clean WH2 signal from outside the institution.',
+      synthetic: true,
+    },
+    {
+      id: 'P11',
+      name: 'Nina Farrow (synthetic)',
+      role: 'Recruitment agent (sceptical)',
+      group: 'agent',
+      tenureYears: null,
+      weights: { wh1: 0.2, wh2: 0.3, wh3: 0.5 },
+      held: ['wh3'],
+      blindSpot: false,
+      voice:
+        'Agent who says certification is table stakes, not a differentiator — everyone credible has it, so it decides nothing. Refers based on commission, responsiveness and student outcomes. Useful counterweight to Kai Zhang; tests whether the codebook can hold \'it matters but doesn\'t differentiate.\'',
+      synthetic: true,
+    },
+    {
+      id: 'P12',
+      name: 'Theo Alvarez (synthetic)',
+      role: 'Shareholder who also acts as agent',
+      group: 'multi-role',
+      tenureYears: 4,
+      weights: { wh1: 0.35, wh2: 0.45, wh3: 0.2 },
+      held: ['wh1', 'wh2'],
+      blindSpot: false,
+      voice:
+        'Shareholder who also brings students. Sees governance one way as an investor (de-risking, evidence of viability) and another way as an agent (slow approvals, paperwork before he can place a student). Holds both without resolving them. Tests whether segmented multi-role interviews produce codeable data.',
+      synthetic: true,
+    },
+    {
+      id: 'P13',
+      name: 'Robin Ige (synthetic)',
+      role: 'Blind-spot probe',
+      group: 'support',
+      tenureYears: 1,
+      weights: { wh1: 0.3, wh2: 0.3, wh3: 0.4 },
+      held: ['wh1', 'wh3'],
       blindSpot: true,
       voice:
-        'BLIND-SPOT PROBE: deliberately off-script. Talks about cross-border logistics, informal WhatsApp approvals, currency issues and family expectations — themes the a priori codebook may not capture. Tests the emergent bucket.',
-      synthetic: true
-    },
-    {
-      id: 'p8',
-      name: 'Kenji Sato (synthetic)',
-      role: 'Regional Recruitment Agent',
-      group: 'agent',
-      tenureYears: 7,
-      weights: { wh1: 0.1, wh2: 0.65, wh3: 0.25 },
-      held: ['wh2'],
-      blindSpot: false,
-      voice:
-        'External channel partner; weighs registration status and fee-protection when deciding which institutions to represent.',
-      synthetic: true
-    },
-    {
-      id: 'I01',
-      name: 'Rachel Bennett (synthetic)',
-      role: 'Investor',
-      group: 'investor',
-      tenureYears: 3,
-      weights: { wh1: 0.15, wh2: 0.65, wh3: 0.2 },
-      held: ['wh2'],
-      blindSpot: false,
-      voice:
-        'External capital provider; assessed whether governance maturity and certification de-risked the investment, and credits them with her confidence to back the institution.',
-      synthetic: true
+        'Deliberately off-script. Answers in terms the a priori codebook does not anticipate — talks about governance as identity and staff morale rather than as cost or benefit; says it changed how people talk to each other rather than what the business achieved. Exists to test whether the emergent bucket catches what the deductive codes miss. If Robin\'s answers all get forced into existing codes, the codebook is too greedy.',
+      synthetic: true,
     },
   ]
+}
+
+// Weight profiles condition generation, so a profile that does not sum to 1
+// would silently skew a persona. Fail loudly instead.
+export function assertPersonaWeights(personas) {
+  const bad = personas.filter((p) => {
+    const sum = p.weights.wh1 + p.weights.wh2 + p.weights.wh3
+    return Math.abs(sum - 1) > 0.005
+  })
+  if (bad.length) {
+    throw new Error(
+      'Persona weight profiles must sum to 1.0: ' + bad.map((p) => p.id).join(', '),
+    )
+  }
+  return personas
 }

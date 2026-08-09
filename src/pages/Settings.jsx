@@ -69,7 +69,7 @@ export default function Settings() {
           Current workspace: <strong>{MODE_LABELS[workspaceMode(ws)]}</strong>
         </p>
         <p className="small muted">
-          “Load demo data” populates the entire pipeline — 9 synthetic personas, a full
+          “Load demo data” populates the entire pipeline — 13 synthetic personas, a full
           run-all interview pass at a fixed seed, complete dual-coding, reliability and
           pattern-matching — so you can explore end-to-end at once. It is deterministic:
           loading twice produces the identical state (72 coded segments, κ≈0.88 Strong,

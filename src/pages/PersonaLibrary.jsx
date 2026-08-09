@@ -25,12 +25,12 @@ export default function PersonaLibrary() {
         <button
           className="btn secondary"
           onClick={() => {
-            if (window.confirm('Reset to the default 9 synthetic personas? This replaces the current persona library, discarding any personas you have added or edited. Existing interviews are kept. This cannot be undone.')) {
+            if (window.confirm('Reset to the default 13 synthetic personas? This replaces the current persona library, discarding any personas you have added or edited. Existing interviews are kept. This cannot be undone.')) {
               update('personas', () => defaultPersonas())
             }
           }}
         >
-          Reset to default 9
+          Reset to default 13
         </button>
       </p>
 
