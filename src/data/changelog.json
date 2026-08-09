@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-09T10:06:29.434Z",
+      "action": "push",
+      "commit": "3f68a05",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Group 3 follow-up: emergent-candidate router",
+      "summary": "Unmatched segments cluster by shared vocabulary into candidate emergent codes (2+ personas/interviews) with proposed label+definition; orphans stay unclassified and counted; researcher-approve step on Codebook page; derived-only, kappa untouched"
+    },
+    {
       "when": "2026-08-09T09:50:29.599Z",
       "action": "push",
       "commit": "a2d499e",

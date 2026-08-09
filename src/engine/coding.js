@@ -20,7 +20,7 @@ const STOPWORDS = new Set([
   'into', 'more', 'than', 'been', 'were', 'over', 'because',
 ])
 
-function words(text) {
+export function words(text) {
   return text
     .toLowerCase()
     .replace(/[^a-z\s-]/g, ' ')

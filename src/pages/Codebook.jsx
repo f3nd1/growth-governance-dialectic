@@ -1,15 +1,26 @@
+import { Fragment, useState } from 'react'
+import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, update } from '../store/dataStore'
 import { defaultCodebookCodes, CODE_GROUPS } from '../data/seeds'
+import { findEmergentCandidates, candidateToCode } from '../engine/emergent'
 
 let nextId = 100
 
 export default function Codebook() {
   const ws = useWorkspace()
   const codes = ws.codebook.codes
+  const [openCandidate, setOpenCandidate] = useState(null)
+
+  // Derived, never stored: recomputed from the current segments and codebook.
+  const { candidates, counts } = findEmergentCandidates(ws.coding.segments, ws.codebook)
 
   function setCodes(next) {
     update('codebook', (cb) => ({ ...cb, codes: next }))
+  }
+
+  function approve(candidate) {
+    setCodes([...codes, candidateToCode(candidate)])
   }
 
   function patchCode(id, patch) {
@@ -42,6 +53,76 @@ export default function Codebook() {
           and tightening the codebook in response, is a primary goal of this pilot.
         </div>
       )}
+
+      <section className="card">
+        <h2>Candidate emergent codes ({candidates.length})</h2>
+        <p className="small muted">
+          Segments no a priori code matched, grouped by shared language. A group spanning two
+          or more personas is a <strong>candidate</strong> — a recurring theme nobody has named
+          yet. A segment with no thematic sibling stays <strong>unclassified</strong>, which is a
+          legitimate result, not a failure. Candidates are proposals only: nothing enters the
+          codebook until you approve it, and approving does not retroactively change how the two
+          coders coded — re-code from the{' '}
+          <Link to="/analysis/coding">Coding</Link> page to apply a new code.
+        </p>
+        <p className="small">
+          {counts.candidateSegments} segment{counts.candidateSegments === 1 ? '' : 's'} in
+          candidate themes · {counts.unclassifiedSegments} genuinely unclassified
+        </p>
+
+        {ws.coding.segments.length === 0 ? (
+          <p className="muted">
+            Nothing coded yet — <Link to="/analysis/coding">run the coders</Link> first.
+          </p>
+        ) : candidates.length === 0 ? (
+          <p className="muted">
+            No recurring off-script themes found. Any unmatched segments had no thematic sibling.
+          </p>
+        ) : (
+          <table className="data">
+            <thead>
+              <tr><th>Proposed label</th><th>Segments</th><th>Personas</th><th /></tr>
+            </thead>
+            <tbody>
+              {candidates.map((c) => (
+                <Fragment key={c.id}>
+                  <tr>
+                    <td><strong>{c.label}</strong></td>
+                    <td>{c.segments.length}</td>
+                    <td className="small">{c.personaNames.map((n) => n.replace(' (synthetic)', '')).join(', ')}</td>
+                    <td style={{ whiteSpace: 'nowrap' }}>
+                      <button
+                        className="btn small secondary"
+                        aria-expanded={openCandidate === c.id}
+                        onClick={() => setOpenCandidate(openCandidate === c.id ? null : c.id)}
+                      >
+                        {openCandidate === c.id ? 'Hide' : 'Review'}
+                      </button>{' '}
+                      <button className="btn small" onClick={() => approve(c)}>
+                        Approve as emergent code
+                      </button>
+                    </td>
+                  </tr>
+                  {openCandidate === c.id && (
+                    <tr>
+                      <td colSpan={4}>
+                        <p className="small muted" style={{ marginTop: 0 }}>{c.definition}</p>
+                        <ul className="small">
+                          {c.segments.map((s) => (
+                            <li key={s.id}>
+                              <strong>{s.personaName.replace(' (synthetic)', '')}</strong> Q{s.questionIndex + 1}: {s.text}
+                            </li>
+                          ))}
+                        </ul>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </section>
 
       {CODE_GROUPS.map((g) => {
         const groupCodes = codes.filter((c) => c.group === g.id)
