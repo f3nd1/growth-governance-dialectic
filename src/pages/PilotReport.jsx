@@ -47,14 +47,23 @@ export default function PilotReport() {
 
       <section className="card">
         <h2>3 · Interview protocol under validation</h2>
+        {m.openingScript && (
+          <p className="small muted"><strong>Opening script:</strong> {m.openingScript}</p>
+        )}
         <ol>
           {m.protocol.map((q) => (
             <li key={q.id} style={{ marginBottom: 6 }}>
               {q.text}
               <div className="small muted">{q.rq} · {q.source}</div>
+              {(q.probes ?? []).length > 0 && (
+                <div className="small muted">Probes: {q.probes.join(' · ')}</div>
+              )}
             </li>
           ))}
         </ol>
+        {m.closingScript && (
+          <p className="small muted"><strong>Closing script:</strong> {m.closingScript}</p>
+        )}
       </section>
 
       <section className="card">

@@ -42,6 +42,8 @@ export function buildReportModel(ws) {
     studyDesign: ws.studyDesign,
     hypotheses: HYPOTHESIS_IDS.map((id) => ws.hypotheses[id]),
     protocol: [...ws.protocol.questions].sort((a, b) => a.order - b.order),
+    openingScript: ws.protocol.openingScript ?? '',
+    closingScript: ws.protocol.closingScript ?? '',
     codebook: ws.codebook.codes,
     counts: {
       personas: ws.personas.length,
@@ -96,10 +98,19 @@ export function reportToMarkdown(m) {
   lines.push('')
   lines.push('## 3 · Interview protocol under validation')
   lines.push('')
+  if (m.openingScript) {
+    lines.push('**Opening script (read verbatim):** ' + m.openingScript)
+    lines.push('')
+  }
   m.protocol.forEach((q, i) => {
     lines.push(`${i + 1}. ${q.text}`)
     lines.push(`   - Maps to ${q.rq} · Source: ${q.source}`)
+    for (const pr of q.probes ?? []) lines.push(`   - Probe: ${pr}`)
   })
+  if (m.closingScript) {
+    lines.push('')
+    lines.push('**Closing script (read verbatim):** ' + m.closingScript)
+  }
   lines.push('')
   lines.push('## 4 · Codebook')
   lines.push('')

@@ -47,7 +47,7 @@ export default function InterviewProtocol() {
     <>
       <PageHeader
         title="Interview Protocol"
-        desc="The instrument under validation: 7 semi-structured questions — six on the internal experience of governance, one on agent trust — each mapped to a research question and its literature source."
+        desc="The instrument under validation: 9 semi-structured questions — six on the internal experience of governance, one phase-reflection question, one on agent trust, one on investor confidence — each mapped to a research question and its literature source."
       />
 
       {ws.settings.guidance && (
@@ -58,17 +58,33 @@ export default function InterviewProtocol() {
         </div>
       )}
 
+      <section className="card">
+        <h2>Opening script (read verbatim, before questions)</h2>
+        <p className="small muted">
+          Consent and recording permission. Part of the instrument — validated alongside the questions.
+        </p>
+        <div className="field">
+          <label htmlFor="pq-opening" className="sr-only">Opening script</label>
+          <textarea
+            id="pq-opening"
+            rows={7}
+            value={ws.protocol.openingScript ?? ''}
+            onChange={(e) => update('protocol', (p) => ({ ...p, openingScript: e.target.value }))}
+          />
+        </div>
+      </section>
+
       <p>
         <button className="btn secondary" onClick={addQuestion}>+ Add question</button>{' '}
         <button
           className="btn secondary"
           onClick={() => {
-            if (window.confirm('Restore the default 7 protocol questions? This replaces the current protocol and discards any edits you have made. This cannot be undone.')) {
+            if (window.confirm('Restore the default 9 protocol questions? This replaces the current protocol and discards any edits you have made. This cannot be undone.')) {
               setQuestions(defaultProtocolQuestions())
             }
           }}
         >
-          Restore default 7
+          Restore default 9
         </button>
       </p>
 
@@ -77,7 +93,9 @@ export default function InterviewProtocol() {
           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
             <h2 style={{ whiteSpace: 'nowrap' }}>Q{i + 1}</h2>
             <span className="tag" style={{ color: 'var(--accent)' }}>{q.rq}</span>
+            {q.id === 'q7-phase' && <span className="tag" style={{ color: 'var(--accent)' }}>phase reflection</span>}
             {q.id === 'q7' && <span className="tag" style={{ color: 'var(--wh2)' }}>agent trust</span>}
+            {q.id === 'q8' && <span className="tag" style={{ color: 'var(--wh2)' }}>investor confidence</span>}
             <span style={{ flex: 1 }} />
             <button className="btn small secondary" onClick={() => move(q.id, -1)} disabled={i === 0} aria-label={`Move Q${i + 1} up`}>↑</button>
             <button className="btn small secondary" onClick={() => move(q.id, 1)} disabled={i === questions.length - 1} aria-label={`Move Q${i + 1} down`}>↓</button>
@@ -115,8 +133,35 @@ export default function InterviewProtocol() {
               />
             </div>
           </div>
+          <div className="field">
+            <label htmlFor={`pq-probes-${q.id}`}>Probes (one per line — used only if the answer needs opening up)</label>
+            <textarea
+              id={`pq-probes-${q.id}`}
+              rows={3}
+              value={(q.probes ?? []).join('\n')}
+              onChange={(e) =>
+                patchQ(q.id, { probes: e.target.value.split('\n').filter((l) => l.trim()) })
+              }
+            />
+          </div>
         </section>
       ))}
+
+      <section className="card">
+        <h2>Closing script (read verbatim, after questions)</h2>
+        <p className="small muted">
+          Catch-all prompt plus quote-checking consent.
+        </p>
+        <div className="field">
+          <label htmlFor="pq-closing" className="sr-only">Closing script</label>
+          <textarea
+            id="pq-closing"
+            rows={5}
+            value={ws.protocol.closingScript ?? ''}
+            onChange={(e) => update('protocol', (p) => ({ ...p, closingScript: e.target.value }))}
+          />
+        </div>
+      </section>
     </>
   )
 }

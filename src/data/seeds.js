@@ -21,6 +21,27 @@ export const RESEARCH_QUESTIONS = [
   },
 ]
 
+// Consent + wrap-up scripts read verbatim around the question set. Part of the
+// instrument under validation, not decoration.
+export const DEFAULT_OPENING_SCRIPT =
+  'Thank you for making time. Before we start, I want to confirm a few things. This ' +
+  'interview is part of a doctoral study about how this college balanced growing as a ' +
+  'business against meeting its regulatory and quality requirements, between 2023 and ' +
+  '2026. Taking part is completely voluntary. You can skip any question for any reason, ' +
+  'and you can stop at any point. Nothing you say will affect your job, your standing ' +
+  'here, or your working relationship with anyone. Your name will not appear anywhere — ' +
+  'you will be given a code, and identifying details are removed when I type this up. I ' +
+  'would like to audio-record this so I can transcribe it accurately. The recording is ' +
+  'deleted as soon as the transcript is checked. Are you happy for me to record? [WAIT ' +
+  'FOR EXPLICIT YES — then begin recording] [After recording starts] Just for the record ' +
+  '— can you confirm you consent to take part and to being recorded?'
+
+export const DEFAULT_CLOSING_SCRIPT =
+  'That’s everything I wanted to ask. Two last things. Is there anything I didn’t ask ' +
+  'about that you think matters to this — anything I’m missing? And: if I want to use a ' +
+  'direct quote from what you’ve said, I’ll check with you first that you’re comfortable ' +
+  'it can’t be traced back to you. Is that alright? Thank you — this was genuinely helpful.'
+
 export function defaultProtocolQuestions() {
   return [
     {
@@ -29,6 +50,11 @@ export function defaultProtocolQuestions() {
       text: 'Walk me through how governance or compliance requirements show up in your day-to-day work at the institution.',
       rq: 'RQ1',
       source: 'Tricker (2019) — corporate governance practice in SMEs',
+      probes: [
+        'Can you give me a specific example from the last month or two?',
+        'Who else is involved when that happens?',
+        'Has that changed since you joined / over the last two years?',
+      ],
     },
     {
       id: 'q2',
@@ -36,6 +62,11 @@ export function defaultProtocolQuestions() {
       text: 'Tell me about a recent growth or commercial initiative you were involved in. What role, if any, did governance play in it?',
       rq: 'RQ1',
       source: 'Uhlaner, Wright & Huse (2007) — governance in SME growth contexts',
+      probes: [
+        'Did governance help it along, hold it up, or neither?',
+        'Was there a point where you had to wait for an approval or a document?',
+        'Looking back, would it have gone differently without that step?',
+      ],
     },
     {
       id: 'q3',
@@ -43,6 +74,11 @@ export function defaultProtocolQuestions() {
       text: 'Describe a specific time when a governance or compliance requirement changed a business decision — its timing, its shape, or its outcome.',
       rq: 'RQ1',
       source: 'Yin (2018) — critical-incident probing in case study interviews',
+      probes: [
+        'What was the decision originally going to be?',
+        'What changed it?',
+        'In hindsight, was that a good or bad thing for the college?',
+      ],
     },
     {
       id: 'q4',
@@ -50,6 +86,10 @@ export function defaultProtocolQuestions() {
       text: 'In your experience, how do students, parents and partner organisations respond to the institution’s governance and accreditation standing?',
       rq: 'RQ3',
       source: 'Spence (1973); Connelly et al. (2011) — signalling theory',
+      probes: [
+        'Has anyone ever asked you directly about EduTrust or registration?',
+        'Did that change after we got certified?',
+      ],
     },
     {
       id: 'q5',
@@ -57,6 +97,11 @@ export function defaultProtocolQuestions() {
       text: 'Where do growth pressure and governance requirements collide for you personally, and how do you handle that tension?',
       rq: 'RQ1',
       source: 'Smith & Lewis (2011) — paradox theory (dynamic equilibrium)',
+      probes: [
+        'Is that a daily thing or an occasional thing?',
+        'What do you do when both are urgent?',
+        'Who do you go to?',
+      ],
     },
     {
       id: 'q6',
@@ -64,20 +109,46 @@ export function defaultProtocolQuestions() {
       text: 'If the governance and compliance apparatus disappeared tomorrow, what would honestly change for the business side — better or worse?',
       rq: 'RQ2',
       source: 'Yin (2018) — counterfactual probing for rival explanations',
+      probes: [
+        'What\'s the first thing that would go faster?',
+        'What\'s the first thing that would go wrong?',
+      ],
+    },
+    {
+      id: 'q7-phase',
+      order: 7,
+      text: 'Thinking across the time you’ve been here — the earlier period when we were building systems and certifications, and the later period when students started coming in — did the relationship between governance work and business work feel different in those two periods? How?',
+      rq: 'RQ3',
+      source: 'Smith (2014) — dynamic decision making across time; Yin (2018) — temporal pattern matching',
+      probes: [
+        'When did it feel heaviest?',
+        'Did anything shift once certification came through?',
+        '(For staff who joined later) What did you walk into? What surprised you?',
+      ],
     },
     {
       id: 'q7',
-      order: 7,
+      order: 8,
       text: 'When recruitment agents decide whether to work with the institution, how much does its governance and registration standing matter to their trust?',
       rq: 'RQ3',
       source: 'Mayer, Davis & Schoorman (1995) — organisational trust; agent-channel literature',
+      probes: [
+        'Does the certification tier (one-year vs four-year) make a difference?',
+        'What do the students or parents you deal with ask about?',
+        'Would you refer differently to a school without it?',
+      ],
     },
     {
       id: 'q8',
-      order: 8,
+      order: 9,
       text: 'Did the institution’s governance maturity or certification status factor into your decision to invest?',
       rq: 'RQ1',
       source: 'Mayer, Davis & Schoorman (1995) — organisational trust; investor-confidence literature',
+      probes: [
+        'What would have worried you if it hadn\'t been in place?',
+        'Was it decisive, or one factor among many?',
+        'Did your view change between your first involvement and now?',
+      ],
     },
   ]
 }

@@ -47,6 +47,9 @@ function mergeWithDefaults(loaded) {
   // Instrument content saved by an earlier app version may predate seeding —
   // fall back to seeds when a section is empty (pages offer explicit
   // "restore defaults" for deliberate resets).
+  // Fill in protocol keys added after a workspace was saved (e.g. scripts),
+  // without discarding the user's own questions.
+  merged.protocol = { ...base.protocol, ...merged.protocol }
   if (!merged.protocol?.questions?.length) merged.protocol = base.protocol
   if (!merged.codebook?.codes?.length) merged.codebook = base.codebook
   if (!merged.personas?.length) merged.personas = base.personas

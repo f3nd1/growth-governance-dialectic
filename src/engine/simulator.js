@@ -8,7 +8,9 @@ import { hashSeed, mulberry32, pick, weightedPick } from './rng'
 
 // Question themes keyed by default protocol order; custom questions fall
 // back to the generic bank.
-const THEMES = ['daily', 'initiative', 'incident', 'external', 'tension', 'counterfactual', 'agentTrust', 'investorTrust']
+// Index-aligned with the seeded protocol order — inserting a question here
+// without adding its theme would silently shift every later question's bank.
+const THEMES = ['daily', 'initiative', 'incident', 'external', 'tension', 'counterfactual', 'phaseReflection', 'agentTrust', 'investorTrust']
 
 const BANK = {
   daily: {
@@ -107,6 +109,20 @@ const BANK = {
     wh3: [
       'It is one line in their checklist among many — present but rarely decisive next to commissions and processing speed.',
       'Some agents mention it, most do not. I cannot honestly say it moves their behaviour much either way.',
+    ],
+  },
+  phaseReflection: {
+    wh1: [
+      'The building period was relentless — all cost, no students, endless documentation. Once enrolment started the paperwork did not shrink, it just competed with real work instead of filling an empty diary.',
+      'Honestly it felt heaviest before we had anyone to teach. We were resourcing an audit trail for a business that did not exist yet, and that ordering hurt.',
+    ],
+    wh2: [
+      'In the first period governance was the product — it was the only thing we could show anyone. Once students arrived it turned into the floor we stood on, and both periods needed it.',
+      'The relationship changed once certification came through: before, it was a hurdle we were clearing; after, it was the reason agents and parents would even talk to us.',
+    ],
+    wh3: [
+      'I am not sure the relationship changed so much as my attention did — the compliance side ran the same way in both periods, I just noticed it less once teaching started.',
+      'Both periods felt similar from where I sat. Different workload, same disconnect between the compliance track and the commercial one.',
     ],
   },
   investorTrust: {

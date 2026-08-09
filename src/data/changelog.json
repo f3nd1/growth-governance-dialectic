@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-09T09:47:03.932Z",
+      "action": "push",
+      "commit": "9692cf6",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Group 2: protocol scripts, probes, phase-reflection question",
+      "summary": "Opening/closing consent scripts in schema+page+exports; probes on all questions; new phase-reflection Q7 (agent/investor move to Q8/Q9) with matching simulator theme bank; description corrected to 9 questions"
+    },
+    {
       "when": "2026-08-09T09:44:40.236Z",
       "action": "push",
       "commit": "559b7e1",
