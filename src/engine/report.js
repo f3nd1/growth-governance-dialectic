@@ -11,6 +11,7 @@ import {
   heatmapData,
 } from './vizData'
 import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
+import { rqList } from '../data/seeds'
 
 export const SYNTHETIC_CAVEAT =
   'SYNTHETIC PILOT — INSTRUMENT VALIDATION ONLY. All participants, transcripts, codes and ' +
@@ -104,7 +105,7 @@ export function reportToMarkdown(m) {
   }
   m.protocol.forEach((q, i) => {
     lines.push(`${i + 1}. ${q.text}`)
-    lines.push(`   - Maps to ${q.rq} · Source: ${q.source}`)
+    lines.push(`   - Maps to ${rqList(q.rq).join(', ')} · Source: ${q.source}`)
     for (const pr of q.probes ?? []) lines.push(`   - Probe: ${pr}`)
   })
   if (m.closingScript) {

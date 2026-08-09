@@ -1,6 +1,6 @@
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, update } from '../store/dataStore'
-import { defaultProtocolQuestions, RESEARCH_QUESTIONS } from '../data/seeds'
+import { defaultProtocolQuestions, RESEARCH_QUESTIONS, rqList } from '../data/seeds'
 
 let nextId = 100
 
@@ -33,7 +33,7 @@ export default function InterviewProtocol() {
         id: `q-custom-${nextId++}-${questions.length}`,
         order: (questions[questions.length - 1]?.order ?? 0) + 1,
         text: '',
-        rq: 'RQ1',
+        rq: ['RQ1'],
         source: '',
       },
     ])
@@ -92,7 +92,9 @@ export default function InterviewProtocol() {
         <section className="card" key={q.id}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
             <h2 style={{ whiteSpace: 'nowrap' }}>Q{i + 1}</h2>
-            <span className="tag" style={{ color: 'var(--accent)' }}>{q.rq}</span>
+            {rqList(q.rq).map((r) => (
+              <span key={r} className="tag" style={{ color: 'var(--accent)' }}>{r}</span>
+            ))}
             {q.id === 'q7-phase' && <span className="tag" style={{ color: 'var(--accent)' }}>phase reflection</span>}
             {q.id === 'q7' && <span className="tag" style={{ color: 'var(--wh2)' }}>agent trust</span>}
             {q.id === 'q8' && <span className="tag" style={{ color: 'var(--wh2)' }}>investor confidence</span>}
@@ -112,16 +114,46 @@ export default function InterviewProtocol() {
           </div>
           <div className="grid-2">
             <div className="field">
-              <label htmlFor={`pq-rq-${q.id}`}>Maps to research question</label>
-              <select
-                id={`pq-rq-${q.id}`}
-                value={q.rq}
-                onChange={(e) => patchQ(q.id, { rq: e.target.value })}
-              >
-                {RESEARCH_QUESTIONS.map((r) => (
-                  <option key={r.id} value={r.id}>{r.label}</option>
-                ))}
-              </select>
+              <fieldset style={{ border: 'none', padding: 0, margin: 0 }}>
+                <legend
+                  style={{
+                    padding: 0,
+                    fontSize: '0.8rem',
+                    fontWeight: 600,
+                    color: 'var(--muted)',
+                    marginBottom: 3,
+                  }}
+                >
+                  Maps to research question{rqList(q.rq).length > 1 ? 's' : ''} (one or more)
+                </legend>
+                {RESEARCH_QUESTIONS.map((r) => {
+                  const selected = rqList(q.rq).includes(r.id)
+                  const isLast = selected && rqList(q.rq).length === 1
+                  return (
+                    <label key={r.id} className="small" style={{ display: 'block', margin: '4px 0' }}>
+                      <input
+                        type="checkbox"
+                        checked={selected}
+                        // A question must map to at least one RQ.
+                        disabled={isLast}
+                        onChange={() =>
+                          patchQ(q.id, {
+                            rq: selected
+                              ? rqList(q.rq).filter((x) => x !== r.id)
+                              : [...rqList(q.rq), r.id].sort(),
+                          })
+                        }
+                      />{' '}
+                      {r.label}
+                    </label>
+                  )
+                })}
+                {rqList(q.rq).length === 1 && (
+                  <p className="small muted" style={{ margin: '2px 0 0' }}>
+                    At least one mapping is required — add another before removing this one.
+                  </p>
+                )}
+              </fieldset>
             </div>
             <div className="field">
               <label htmlFor={`pq-src-${q.id}`}>Literature source</label>

@@ -4,6 +4,7 @@ import WeightBar from '../components/WeightBar'
 import { useWorkspace } from '../store/dataStore'
 import { buildReportModel } from '../engine/report'
 import { HYPOTHESIS_IDS } from '../store/defaults'
+import { rqList } from '../data/seeds'
 
 export default function PilotReport() {
   const ws = useWorkspace()
@@ -54,7 +55,7 @@ export default function PilotReport() {
           {m.protocol.map((q) => (
             <li key={q.id} style={{ marginBottom: 6 }}>
               {q.text}
-              <div className="small muted">{q.rq} · {q.source}</div>
+              <div className="small muted">{rqList(q.rq).join(', ')} · {q.source}</div>
               {(q.probes ?? []).length > 0 && (
                 <div className="small muted">Probes: {q.probes.join(' · ')}</div>
               )}

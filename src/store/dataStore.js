@@ -4,6 +4,7 @@
 
 import { useSyncExternalStore } from 'react'
 import { defaultWorkspace } from './defaults'
+import { rqList } from '../data/seeds'
 
 const STORAGE_KEY = 'ggd-workspace-v1'
 
@@ -51,6 +52,12 @@ function mergeWithDefaults(loaded) {
   // without discarding the user's own questions.
   merged.protocol = { ...base.protocol, ...merged.protocol }
   if (!merged.protocol?.questions?.length) merged.protocol = base.protocol
+  // A question's `rq` was a single string before multi-mapping; widen the
+  // legacy shape on load so no read site has to branch on it.
+  merged.protocol = {
+    ...merged.protocol,
+    questions: merged.protocol.questions.map((q) => ({ ...q, rq: rqList(q.rq) })),
+  }
   if (!merged.codebook?.codes?.length) merged.codebook = base.codebook
   if (!merged.personas?.length) merged.personas = base.personas
   return merged

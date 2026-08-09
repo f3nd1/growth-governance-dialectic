@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-09T23:52:24.518Z",
+      "action": "push",
+      "commit": "ee15e66",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Protocol: multi-RQ mapping per question",
+      "summary": "rq widened from string to array with full mappings restored (Q2/Q3/Q5 RQ1+RQ3, Q4/Q8 RQ2+RQ3, Q9 RQ1+RQ2); checkbox editor matching persona held-propositions pattern, multi-tag display, legacy string migrated on load via rqList()"
+    },
+    {
       "when": "2026-08-09T10:06:29.434Z",
       "action": "push",
       "commit": "3f68a05",
