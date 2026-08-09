@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-09T09:44:40.236Z",
+      "action": "push",
+      "commit": "559b7e1",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Group 1: correct RQ option set + re-map questions",
+      "summary": "Replaced wrong RQ2/RQ3 labels with the dissertation's RQ1/RQ2/RQ3; extracted RESEARCH_QUESTIONS shared constant; re-mapped all 8 seeded questions (single-value: multi-mapping not representable in schema)"
+    },
+    {
       "when": "2026-08-08T23:57:04.158Z",
       "action": "push",
       "commit": "ae61037",

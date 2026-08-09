@@ -1,6 +1,6 @@
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, update } from '../store/dataStore'
-import { defaultProtocolQuestions } from '../data/seeds'
+import { defaultProtocolQuestions, RESEARCH_QUESTIONS } from '../data/seeds'
 
 let nextId = 100
 
@@ -33,7 +33,7 @@ export default function InterviewProtocol() {
         id: `q-custom-${nextId++}-${questions.length}`,
         order: (questions[questions.length - 1]?.order ?? 0) + 1,
         text: '',
-        rq: 'RQ2',
+        rq: 'RQ1',
         source: '',
       },
     ])
@@ -100,8 +100,9 @@ export default function InterviewProtocol() {
                 value={q.rq}
                 onChange={(e) => patchQ(q.id, { rq: e.target.value })}
               >
-                <option value="RQ2">RQ2 — internal experience of the governance–growth relationship</option>
-                <option value="RQ3">RQ3 — external/trust signalling of governance standing</option>
+                {RESEARCH_QUESTIONS.map((r) => (
+                  <option key={r.id} value={r.id}>{r.label}</option>
+                ))}
               </select>
             </div>
             <div className="field">

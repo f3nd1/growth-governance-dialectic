@@ -1,27 +1,47 @@
 // Seed content for the instrument being validated. All of it is editable in
 // the app; these are the starting points the pilot exercises.
 
+// The dissertation's three research questions. Shared so the protocol page's
+// dropdown and anything displaying a question's mapping stay in step.
+export const RESEARCH_QUESTIONS = [
+  {
+    id: 'RQ1',
+    label:
+      'RQ1 — influence of value-driven governance on the transition from investor-funded readiness to early market entry',
+  },
+  {
+    id: 'RQ2',
+    label:
+      'RQ2 — risks and opportunities of commercial development while governance capability was still being built',
+  },
+  {
+    id: 'RQ3',
+    label:
+      'RQ3 — interaction of governance capability and commercial development across the four phases',
+  },
+]
+
 export function defaultProtocolQuestions() {
   return [
     {
       id: 'q1',
       order: 1,
       text: 'Walk me through how governance or compliance requirements show up in your day-to-day work at the institution.',
-      rq: 'RQ2',
+      rq: 'RQ1',
       source: 'Tricker (2019) — corporate governance practice in SMEs',
     },
     {
       id: 'q2',
       order: 2,
       text: 'Tell me about a recent growth or commercial initiative you were involved in. What role, if any, did governance play in it?',
-      rq: 'RQ2',
+      rq: 'RQ1',
       source: 'Uhlaner, Wright & Huse (2007) — governance in SME growth contexts',
     },
     {
       id: 'q3',
       order: 3,
       text: 'Describe a specific time when a governance or compliance requirement changed a business decision — its timing, its shape, or its outcome.',
-      rq: 'RQ2',
+      rq: 'RQ1',
       source: 'Yin (2018) — critical-incident probing in case study interviews',
     },
     {
@@ -35,7 +55,7 @@ export function defaultProtocolQuestions() {
       id: 'q5',
       order: 5,
       text: 'Where do growth pressure and governance requirements collide for you personally, and how do you handle that tension?',
-      rq: 'RQ2',
+      rq: 'RQ1',
       source: 'Smith & Lewis (2011) — paradox theory (dynamic equilibrium)',
     },
     {
@@ -56,7 +76,7 @@ export function defaultProtocolQuestions() {
       id: 'q8',
       order: 8,
       text: 'Did the institution’s governance maturity or certification status factor into your decision to invest?',
-      rq: 'RQ3',
+      rq: 'RQ1',
       source: 'Mayer, Davis & Schoorman (1995) — organisational trust; investor-confidence literature',
     },
   ]
