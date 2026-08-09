@@ -161,21 +161,21 @@ export function defaultCodebookCodes() {
       group: 'wh1',
       label: 'Resource diversion',
       definition:
-        'Speaker describes time, money or staff attention being pulled away from teaching or commercial work specifically to satisfy governance/compliance demands. Must name a resource and where it went.',
+        'Speaker describes time, money, or staff attention being pulled away from teaching, recruitment, or commercial work specifically in order to satisfy governance or compliance demands. Must name a resource AND where it went. EXCLUDE general complaints about being busy with no governance cause named.',
     },
     {
       id: 'c-bureaucracy',
       group: 'wh1',
       label: 'Bureaucracy',
       definition:
-        'Speaker describes paperwork, approvals, forms or procedural steps experienced as burdensome overhead, without a compensating benefit named in the same segment.',
+        'Speaker describes paperwork, approvals, forms, or procedural steps experienced as burdensome overhead, with no compensating benefit named in the same segment. EXCLUDE where the speaker names a benefit in the same breath — code that as Decision quality or Stability instead.',
     },
     {
       id: 'c-decision-delay',
       group: 'wh1',
       label: 'Decision delay',
       definition:
-        'Speaker attributes a slowed, deferred or missed business decision or opportunity to a governance step (approval, audit, board cycle, regulator response).',
+        'Speaker attributes a slowed, deferred, or missed business decision or opportunity to a governance step (approval, audit, board cycle, regulator response). Must link a specific decision to a specific governance step. EXCLUDE delays attributed to market, staffing, or external parties.',
     },
     // WH2 — governance enables growth
     {
@@ -183,28 +183,42 @@ export function defaultCodebookCodes() {
       group: 'wh2',
       label: 'Stability',
       definition:
-        'Speaker credits governance with predictability, continuity or protection from shocks (financial controls, risk registers, succession clarity) that lets the business operate or plan.',
+        'Speaker credits governance with predictability, continuity, or protection from shocks (financial controls, risk registers, succession clarity, documented process) that lets the business operate or plan. EXCLUDE generic praise with no mechanism named.',
     },
     {
       id: 'c-trust-signal',
       group: 'wh2',
       label: 'Trust signal',
       definition:
-        'Speaker describes governance/accreditation status functioning as a signal that wins or retains students, parents, agents, partners or regulators.',
+        'Speaker describes governance or accreditation status functioning as a signal that wins or retains students, parents, agents, partners, investors, or regulators. Must name who is receiving the signal.',
     },
     {
       id: 'c-decision-quality',
       group: 'wh2',
       label: 'Decision quality',
       definition:
-        'Speaker credits a governance mechanism (board scrutiny, documented process, risk review) with a better-considered or better-evidenced business decision.',
+        'Speaker credits a governance mechanism (board scrutiny, documented process, risk review, audit finding) with a better-considered or better-evidenced business decision. Must name the mechanism.',
     },
     {
       id: 'c-enabled-growth',
       group: 'wh2',
       label: 'Enabled growth',
       definition:
-        'Speaker links a concrete growth outcome (new programme, market, partnership, enrolment gain) to governance standing as a precondition or enabler.',
+        'Speaker links a concrete growth outcome (new programme, new market, partnership, enrolment gain, capital raised) to governance standing as a precondition or enabler. Must name the outcome.',
+    },
+    {
+      id: 'c-sequencing-cost',
+      group: 'wh1',
+      label: 'Sequencing cost',
+      definition:
+        'Speaker describes governance capability being built ahead of the business it was meant to support, and names a cost of that ordering (capital consumed before revenue, staff hired ahead of students, systems built before use). Specific to the pre-launch and launch-transition phases.',
+    },
+    {
+      id: 'c-investability',
+      group: 'wh2',
+      label: 'Investability',
+      definition:
+        'Speaker describes governance capability, certification, or audit readiness as a factor in attracting, reassuring, or retaining investors or shareholders — governance as evidence of viability before revenue exists.',
     },
     // WH3 — no discernible effect
     {
@@ -212,21 +226,21 @@ export function defaultCodebookCodes() {
       group: 'wh3',
       label: 'Separate function',
       definition:
-        'Speaker frames governance as a parallel or back-office track that neither helps nor hinders their business-facing work.',
+        'Speaker frames governance as a parallel or back-office track that neither helps nor hinders their own business-facing work. EXCLUDE where the speaker also names an effect elsewhere in the same segment.',
     },
     {
       id: 'c-external-attribution',
       group: 'wh3',
       label: 'External attribution',
       definition:
-        'Speaker attributes business outcomes to external factors (market demand, visa policy, competition, economy) rather than anything governance-related.',
+        'Speaker attributes business outcomes to external factors (market demand, visa policy, competition, economy, investor timing, regulatory schedules) rather than anything governance-related.',
     },
     {
       id: 'c-no-link',
       group: 'wh3',
       label: 'No link perceived',
       definition:
-        'Speaker explicitly says they see no connection between governance and business results, or cannot recall governance affecting an outcome either way.',
+        'Speaker explicitly says they see no connection between governance and business results, or cannot recall governance affecting an outcome either way. Must be an explicit statement, not an inference from silence.',
     },
   ]
 }

@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-09T09:47:46.844Z",
+      "action": "push",
+      "commit": "7499b7c",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Group 3: tightened codebook definitions + 2 new codes",
+      "summary": "All 10 definitions rewritten with EXCLUDE / must-name boundaries; added WH1 Sequencing cost and WH2 Investability (12 codes total)"
+    },
+    {
       "when": "2026-08-09T09:47:03.932Z",
       "action": "push",
       "commit": "9692cf6",
