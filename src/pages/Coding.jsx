@@ -260,6 +260,8 @@ export default function Coding() {
           <span className="muted small">
             {segments.length} segments · {disagreements.length} disagreements ·{' '}
             {segments.filter((s) => s.override).length} manual overrides
+            {segments.some((s) => s.tied) &&
+              ` · ${segments.filter((s) => s.tied).length} tied top match`}
           </span>
         </p>
         {data.interviews.length === 0 && (
@@ -622,7 +624,14 @@ export default function Coding() {
                         {!data.isReal && s.contradictory && ' ⚡'}
                         <div className="small muted" style={{ maxWidth: 420 }}>{s.text}</div>
                       </td>
-                      <td><CodeName codeId={s.coderA} codebook={ws.codebook} hypotheses={ws.hypotheses} /></td>
+                      <td>
+                        <CodeName codeId={s.coderA} codebook={ws.codebook} hypotheses={ws.hypotheses} />
+                        {s.tied && (
+                          <div className="small muted" title="Two definitions matched this text equally well">
+                            tied — decided by tie-break, not by the text
+                          </div>
+                        )}
+                      </td>
                       <td>
                         <CodeName codeId={s.coderB} codebook={ws.codebook} hypotheses={ws.hypotheses} />
                         {disagree && <div className="small" style={{ color: '#b03230' }}>disagree</div>}

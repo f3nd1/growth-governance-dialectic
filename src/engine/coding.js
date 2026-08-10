@@ -73,42 +73,64 @@ export function definitionQuality(code) {
 // only the text and the codebook, and search ALL groups at once — which
 // proposition a segment supports is an output of coding, not an input to it.
 
-/** All codes scored by definition/label overlap with the text, best first. */
+/**
+ * All codes scored by definition/label overlap with the text, best first.
+ *
+ * TIE-BREAKING IS PART OF THE METHOD, so it is stated rather than incidental.
+ * Equal scores are resolved by code LABEL, not by internal id: an id is an
+ * implementation detail that changes when a code is deleted and re-added (a
+ * slug id becomes a generated one), and a research result must not turn on
+ * that. Labels are the researcher's own words, visible on the Codebook page,
+ * and survive a delete-and-re-add unchanged. Id is the last resort only when
+ * two codes carry the identical label, where no stable answer exists.
+ *
+ * The resolution is still arbitrary in the sense that any tie-break is — which
+ * is why a tie is RECORDED on the segment rather than quietly resolved.
+ */
 function rankCodes(text, codes) {
   return codes
     .map((c) => ({ code: c, score: overlapScore(text, c) }))
-    .sort((a, b) => b.score - a.score || a.code.id.localeCompare(b.code.id))
+    .sort(
+      (a, b) =>
+        b.score - a.score ||
+        a.code.label.localeCompare(b.code.label, 'en') ||
+        a.code.id.localeCompare(b.code.id),
+    )
+}
+
+/** True when the top two codes match the text equally well — i.e. the codebook
+ *  does not discriminate here and the winner is decided by the tie-break. */
+function topIsTied(ranked) {
+  const [first, second] = ranked
+  return Boolean(first && second && first.score > 0 && first.score === second.score)
 }
 
 /**
- * Coder A (text-only): the best-matching code anywhere in the codebook, and
+ * Both text-only coders, from one ranking.
+ *
+ * Coder A takes the best-matching code anywhere in the codebook, and
  * UNCLASSIFIED when nothing matches at all. The minimum score of 1 matters —
  * the synthetic path can fall back on the pre-tagged group, so a zero-overlap
  * answer still lands somewhere plausible; with no pre-tag, accepting a
- * zero-overlap "best" match would be assigning a hypothesis to text that
+ * zero-overlap "best" match would be assigning a proposition to text that
  * contains no evidence for it.
- */
-function coderATextOnly(text, codebook) {
-  const [best] = rankCodes(text, codebook.codes)
-  return best && best.score > 0 ? best.code.id : UNCLASSIFIED
-}
-
-/**
- * Coder B (text-only): agrees when the leading code is a clear winner, and
- * takes the runner-up when the top two match the text equally well. Kappa
- * against Coder A therefore measures how sharply the codebook DISCRIMINATES on
- * this material — overlapping definitions produce ties, ties produce
- * disagreement. It is deterministic and uses no random draw.
+ *
+ * Coder B agrees when the leading code is a clear winner and takes the
+ * runner-up when the top two match equally well, so kappa against Coder A
+ * measures how sharply the codebook DISCRIMINATES on this material. It is
+ * deterministic and uses no random draw.
  *
  * This is a machine consistency check, NOT human inter-rater reliability, and
- * the reliability page and exports say so in real mode.
+ * the Reliability page and exports say so in real mode.
  */
-function coderBTextOnly(text, codebook, codeAId) {
-  if (codeAId === UNCLASSIFIED) return UNCLASSIFIED
+function textOnlyCoding(text, codebook) {
   const ranked = rankCodes(text, codebook.codes)
   const [first, second] = ranked
-  if (!second || first.score > second.score) return codeAId
-  return second.code.id
+  const coderA = first && first.score > 0 ? first.code.id : UNCLASSIFIED
+  const tied = topIsTied(ranked)
+  const coderB =
+    coderA === UNCLASSIFIED ? UNCLASSIFIED : tied ? second.code.id : coderA
+  return { coderA, coderB, tied, topScore: first?.score ?? 0 }
 }
 
 function coderAFor(answer, codebook, rng) {
@@ -170,7 +192,7 @@ function coderBFor(answer, codebook, codeAId, rng) {
 export function codeInterview(interview, codebook, { fromTextOnly = false } = {}) {
   return interview.answers.map((answer, idx) => {
     if (fromTextOnly) {
-      const coderA = coderATextOnly(answer.text, codebook)
+      const { coderA, coderB, tied } = textOnlyCoding(answer.text, codebook)
       return {
         id: `${interview.id}:${idx}`,
         interviewId: interview.id,
@@ -180,7 +202,10 @@ export function codeInterview(interview, codebook, { fromTextOnly = false } = {}
         questionIndex: idx,
         text: answer.text,
         coderA,
-        coderB: coderBTextOnly(answer.text, codebook, coderA),
+        coderB,
+        // The two definitions matched equally well, so the winner came from the
+        // tie-break rather than from the text. Recorded so it is visible.
+        tied,
         override: null,
         synthetic: false,
         real: true,
