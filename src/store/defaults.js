@@ -83,6 +83,19 @@ export function defaultWorkspace() {
       // Guided-setup: the ONLY persisted field is whether the card is minimised.
       // All step progress is derived from data, never stored.
       setupGuide: { dismissed: false },
+      patternMatching: {
+        // Evidence share a proposition must reach to count as supported.
+        splitThreshold: 0.3,
+        note:
+          'No established convention exists for evidence-share cut-points in qualitative ' +
+          'pattern matching. Yin (2018) treats pattern matching as a qualitative judgement ' +
+          'of predicted against observed patterns rather than a numeric test, and neither ' +
+          'Miles, Huberman & Saldaña (2020) nor Smith & Lewis (2011) specify a share ' +
+          'threshold. This cut-point is therefore a researcher decision to state and justify ' +
+          'in the write-up, not a standard to cite. Note that with three propositions an even ' +
+          'spread is 0.33 each, so any cut-point below 0.33 marks a perfectly even ' +
+          'distribution as supporting all three.',
+      },
       reliability: {
         // Cohen's kappa band cut-points; editable on the Reliability page.
         thresholds: { strong: 0.8, substantial: 0.6 },

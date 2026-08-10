@@ -7,6 +7,16 @@ import { effectiveCode, UNCLASSIFIED } from './coding'
 
 const COLUMNS = ['wh1', 'wh2', 'wh3', 'emergent', UNCLASSIFIED]
 
+/**
+ * Share of a participant's hypothesis-relevant evidence a proposition must reach
+ * to count as supported. Two or more supported propositions = a split pattern.
+ *
+ * There is NO established convention for this cut-point — see the note in
+ * settings.patternMatching. It is a researcher decision, configurable per
+ * workspace, and must be stated in the write-up rather than cited.
+ */
+export const DEFAULT_SPLIT_THRESHOLD = 0.3
+
 function emptyTally() {
   return Object.fromEntries(COLUMNS.map((c) => [c, 0]))
 }
@@ -20,7 +30,7 @@ function groupOf(codeId, codebook) {
  * Returns { perPersona, overall, topCodes } where each tally maps
  * wh1/wh2/wh3/emergent/unclassified -> weighted segment count.
  */
-export function aggregateEvidence(segments, codebook) {
+export function aggregateEvidence(segments, codebook, splitThreshold = DEFAULT_SPLIT_THRESHOLD) {
   const perPersona = new Map()
   const overall = emptyTally()
   const codeCounts = {}
@@ -61,7 +71,7 @@ export function aggregateEvidence(segments, codebook) {
       wh2: hypTotal ? p.tally.wh2 / hypTotal : 0,
       wh3: hypTotal ? p.tally.wh3 / hypTotal : 0,
     }
-    const supported = Object.entries(shares).filter(([, v]) => v >= 0.3)
+    const supported = Object.entries(shares).filter(([, v]) => v >= splitThreshold)
     const split = supported.length >= 2
     return {
       ...p,

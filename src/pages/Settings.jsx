@@ -5,6 +5,7 @@ import { liveModeAvailable, listChatModels } from '../engine/llm'
 import { testSupabase, supabaseConfigured } from '../store/supabase'
 import { initRemoteSync } from '../store/initSync'
 import { loadDemoData, resetToEmpty, workspaceMode, MODE_LABELS } from '../engine/demo'
+import { DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
 
 const MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini']
 
@@ -16,6 +17,7 @@ export default function Settings() {
   const [modelOptions, setModelOptions] = useState(MODELS)
   const [fetching, setFetching] = useState(false)
   const [fetchError, setFetchError] = useState('')
+  const splitThreshold = ws.settings.patternMatching?.splitThreshold ?? DEFAULT_SPLIT_THRESHOLD
 
   async function fetchModels() {
     setFetching(true)
@@ -215,6 +217,67 @@ export default function Settings() {
             {testResult.message}
           </p>
         )}
+      </section>
+
+      <section className="card">
+        <h2>Pattern-matching</h2>
+        <p className="small muted">
+          A participant counts as supporting a proposition once that proposition reaches this
+          share of their hypothesis-relevant coded evidence. Two or more supported propositions
+          are reported as a <strong>split (paradox) pattern</strong>.
+        </p>
+        <div className="field" style={{ maxWidth: 260 }}>
+          <label htmlFor="set-split-threshold">Split-pattern cut-point (evidence share)</label>
+          <input
+            id="set-split-threshold"
+            type="number" min="0.05" max="0.95" step="0.01"
+            value={splitThreshold}
+            onChange={(e) =>
+              update('settings', (s) => ({
+                ...s,
+                patternMatching: { ...(s.patternMatching ?? {}), splitThreshold: Number(e.target.value) },
+              }))
+            }
+          />
+        </div>
+        {(splitThreshold <= 0 || splitThreshold >= 1) && (
+          <p className="small" role="alert" style={{ color: '#b03230' }}>
+            Must be between 0 and 1.
+          </p>
+        )}
+        {splitThreshold < 1 / 3 && (
+          <p className="small muted">
+            Below {(1 / 3).toFixed(2)} (an even three-way spread), so a participant with evenly
+            distributed evidence will be reported as supporting all three propositions.
+          </p>
+        )}
+        <div className="field">
+          <label htmlFor="set-split-note">Justification note (carried into the Pilot Report)</label>
+          <textarea
+            id="set-split-note"
+            rows={5}
+            value={ws.settings.patternMatching?.note ?? ''}
+            onChange={(e) =>
+              update('settings', (s) => ({
+                ...s,
+                patternMatching: { ...(s.patternMatching ?? {}), note: e.target.value },
+              }))
+            }
+          />
+        </div>
+        <p>
+          <button
+            className="btn small secondary"
+            onClick={() =>
+              update('settings', (s) => ({
+                ...s,
+                patternMatching: { ...(s.patternMatching ?? {}), splitThreshold: DEFAULT_SPLIT_THRESHOLD },
+              }))
+            }
+          >
+            Restore default ({DEFAULT_SPLIT_THRESHOLD})
+          </button>
+        </p>
       </section>
 
       <section className="card">

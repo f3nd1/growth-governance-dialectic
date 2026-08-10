@@ -21,7 +21,11 @@ export const SYNTHETIC_CAVEAT =
 
 export function buildReportModel(ws) {
   const stats = agreementStats(ws.coding.segments)
-  const { personas, overall, topCodes } = aggregateEvidence(ws.coding.segments, ws.codebook)
+  const { personas, overall, topCodes } = aggregateEvidence(
+    ws.coding.segments,
+    ws.codebook,
+    ws.settings.patternMatching?.splitThreshold,
+  )
   const hypTotal = overall.wh1 + overall.wh2 + overall.wh3
   const colors = hypothesisColors(ws)
   const distData = hypothesisDistributionData(ws)
@@ -70,6 +74,8 @@ export function buildReportModel(ws) {
       splits: personas.filter((p) => p.split),
       topCodes: topCodes.slice(0, 8),
       coverageGap: overall.emergent + overall.unclassified,
+      splitThreshold: ws.settings.patternMatching?.splitThreshold ?? 0.3,
+      splitNote: ws.settings.patternMatching?.note ?? '',
     },
   }
 }
@@ -145,6 +151,10 @@ export function reportToMarkdown(m) {
       )
     }
     lines.push(`- Codebook coverage gap (emergent/unclassified): ${m.patterns.coverageGap.toFixed(1)} segments`)
+    lines.push(
+      `- Split-pattern cut-point: a proposition counts as supported at an evidence share of ${m.patterns.splitThreshold} or above`,
+    )
+    if (m.patterns.splitNote) lines.push(`- ${m.patterns.splitNote}`)
     lines.push('')
     if (m.patterns.splits.length) {
       lines.push('### Split patterns (paradox findings)')

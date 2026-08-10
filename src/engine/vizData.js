@@ -18,7 +18,11 @@ export function hypothesisColors(ws) {
  * Reads aggregateEvidence (the Pattern-Matching page's selector).
  */
 export function hypothesisDistributionData(ws) {
-  const { personas, overall } = aggregateEvidence(ws.coding.segments, ws.codebook)
+  const { personas, overall } = aggregateEvidence(
+    ws.coding.segments,
+    ws.codebook,
+    ws.settings.patternMatching?.splitThreshold,
+  )
   const hypTotal = overall.wh1 + overall.wh2 + overall.wh3
   const aggregateShares = {
     wh1: hypTotal ? overall.wh1 / hypTotal : 0,

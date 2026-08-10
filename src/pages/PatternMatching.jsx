@@ -2,13 +2,18 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import WeightBar from '../components/WeightBar'
 import { useWorkspace } from '../store/dataStore'
-import { aggregateEvidence } from '../engine/patterns'
+import { aggregateEvidence, DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { HypothesisDistributionChart } from '../components/AppCharts'
 
 export default function PatternMatching() {
   const ws = useWorkspace()
-  const { personas, overall, topCodes } = aggregateEvidence(ws.coding.segments, ws.codebook)
+  const splitThreshold = ws.settings.patternMatching?.splitThreshold ?? DEFAULT_SPLIT_THRESHOLD
+  const { personas, overall, topCodes } = aggregateEvidence(
+    ws.coding.segments,
+    ws.codebook,
+    splitThreshold,
+  )
   const splits = personas.filter((p) => p.split)
 
   const hypTotal = overall.wh1 + overall.wh2 + overall.wh3
@@ -87,6 +92,19 @@ export default function PatternMatching() {
             </tr>
           </tbody>
         </table>
+      </section>
+
+      <section className="card">
+        <h2>Split-pattern cut-point</h2>
+        <p className="small">
+          A proposition counts as supported at an evidence share of{' '}
+          <strong>{splitThreshold}</strong> or above; two or more supported propositions are
+          reported as a split pattern. <Link to="/settings">Change it in Settings</Link>.
+        </p>
+        <p className="small muted">
+          This cut-point is a <strong>researcher decision, not a standard</strong>.{' '}
+          {ws.settings.patternMatching?.note}
+        </p>
       </section>
 
       {splits.length > 0 && (

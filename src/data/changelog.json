@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:13:47.346Z",
+      "action": "push",
+      "commit": "f98c523",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Pattern-matching: configurable split cut-point",
+      "summary": "splitThreshold moved from a hardcoded 0.3 into settings.patternMatching and threaded through page, chart and exports; ships an honest note that no citable convention exists; warns below the 0.33 even-spread point; report states the cut-point used"
+    },
+    {
       "when": "2026-08-10T04:05:01.424Z",
       "action": "push",
       "commit": "57547ea",
