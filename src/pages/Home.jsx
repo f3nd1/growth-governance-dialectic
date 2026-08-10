@@ -28,7 +28,8 @@ export default function Home() {
           whether the instrument can discriminate between them (including when two hold at once).
         </p>
         {Object.values(ws.hypotheses).map((h) => (
-          <p key={h.id} style={{ borderLeft: `4px solid ${h.color}`, paddingLeft: 10 }}>
+          <p key={h.id} style={{ borderTop: '1px solid var(--line)', paddingTop: 8 }}>
+            <span className="swatch" style={{ background: h.color }} aria-hidden="true" />
             <strong>{h.label}.</strong> {h.description}
           </p>
         ))}

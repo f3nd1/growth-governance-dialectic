@@ -108,7 +108,7 @@ export default function PatternMatching() {
       </section>
 
       {splits.length > 0 && (
-        <section className="card" style={{ borderLeft: '5px solid #7c3aed' }}>
+        <section className="card">
           <h2>⚡ Split patterns detected</h2>
           {splits.map((p) => (
             <p key={p.personaId}>

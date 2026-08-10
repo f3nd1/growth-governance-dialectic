@@ -274,6 +274,18 @@ table.data th { color: var(--muted); font-size: 0.76rem; text-transform: upperca
   border: 1px solid currentColor;
 }
 
+/* Colour key for a rival proposition. Carries the semantic WH1/WH2/WH3 colour
+   without a side-tab accent border; always paired with the label in text, so
+   colour is never the only cue. */
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 7px;
+  flex: none;
+}
+
 .muted { color: var(--muted); }
 .small { font-size: 0.82rem; }
 

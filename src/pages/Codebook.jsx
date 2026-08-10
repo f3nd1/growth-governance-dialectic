@@ -128,9 +128,12 @@ export default function Codebook() {
         const groupCodes = codes.filter((c) => c.group === g.id)
         const color = ws.hypotheses[g.id]?.color ?? '#7c3aed'
         return (
-          <section className="card" key={g.id} style={{ borderLeft: `5px solid ${color}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ margin: 0 }}>{g.label}</h2>
+          <section className="card" key={g.id}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--line)', paddingBottom: 8 }}>
+              <h2 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                <span className="swatch" style={{ background: color }} aria-hidden="true" />
+                {g.label}
+              </h2>
               <button className="btn small secondary" onClick={() => addCode(g.id)}>
                 + Add code
               </button>

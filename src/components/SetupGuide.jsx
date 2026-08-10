@@ -48,7 +48,7 @@ export default function SetupGuide() {
   }
 
   return (
-    <section className="card" aria-labelledby="setup-guide-title" style={{ borderLeft: '5px solid var(--accent)' }}>
+    <section className="card" aria-labelledby="setup-guide-title">
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 12 }}>
         <h2 id="setup-guide-title" style={{ margin: 0, flex: 1 }}>
           {SETUP_WELCOME.title} <span className="muted small">· {done}/{total}</span>

@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:20:26.219Z",
+      "action": "push",
+      "commit": "64bf4cd",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Retire side-tab accent borders",
+      "summary": "Hypothesis-colour left borders replaced with a .swatch colour chip plus a 1px rule on Hypotheses, Codebook, Home and Pilot Report; non-semantic card accents dropped; the not-real-findings disclaimer bar left intact in app and export"
+    },
+    {
       "when": "2026-08-10T04:18:33.769Z",
       "action": "push",
       "commit": "db327e9",

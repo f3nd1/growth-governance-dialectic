@@ -28,9 +28,12 @@ export default function Hypotheses() {
       {HYPOTHESIS_IDS.map((id) => {
         const h = ws.hypotheses[id]
         return (
-          <section className="card" key={id} style={{ borderLeft: `5px solid ${h.color}` }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-              <h2 style={{ margin: 0 }}>{h.short}</h2>
+          <section className="card" key={id}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, borderBottom: '1px solid var(--line)', paddingBottom: 8 }}>
+              <h2 style={{ margin: 0, display: 'flex', alignItems: 'center' }}>
+                <span className="swatch" style={{ background: h.color }} aria-hidden="true" />
+                {h.short}
+              </h2>
               <label className="small muted" style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 Colour
                 <input
