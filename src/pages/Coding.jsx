@@ -50,17 +50,36 @@ export default function Coding() {
   const uncoded = data.interviews.filter((iv) => !codedInterviewIds.has(iv.id))
   const disagreements = segments.filter((s) => s.coderA !== s.coderB)
 
+  const overrideCount = segments.filter((s) => s.override).length
+
   function codeAll(recode) {
+    // Re-coding re-derives what the CODERS think. Overrides are what the
+    // RESEARCHER decided, and are carried across by segment id — the ids are
+    // stable, so each override rejoins the same answer. The override log is
+    // kept too: it used to be emptied on re-code, which destroyed the audit
+    // trail as well as the decisions.
+    const priorOverrides = new Map(
+      segments.filter((s) => s.override).map((s) => [s.id, s.override]),
+    )
+    if (recode && priorOverrides.size > 0) {
+      const ok = window.confirm(
+        `Re-code all ${data.interviews.length} transcripts?\n\n` +
+          `Coder A and Coder B will be re-run against the current codebook, so codes may ` +
+          `change.\n\n` +
+          `Your ${priorOverrides.size} manual override${priorOverrides.size === 1 ? '' : 's'} ` +
+          `will be KEPT and re-attached, and the override log is preserved. Clear an ` +
+          `individual override from its row if you want the fresh coder result instead.`,
+      )
+      if (!ok) return
+    }
     const targets = recode ? data.interviews : uncoded
     const fresh = targets.flatMap((iv) =>
-      codeInterview(iv, ws.codebook, { fromTextOnly: data.isReal }),
+      codeInterview(iv, ws.codebook, { fromTextOnly: data.isReal, priorOverrides }),
     )
     updateActive('coding', (c) => ({
       ...c,
-      segments: recode
-        ? fresh
-        : [...c.segments, ...fresh],
-      overridesLog: recode ? [] : c.overridesLog,
+      segments: recode ? fresh : [...c.segments, ...fresh],
+      overridesLog: c.overridesLog,
     }))
   }
 
@@ -266,7 +285,7 @@ export default function Coding() {
             Code {uncoded.length} uncoded interview{uncoded.length === 1 ? '' : 's'}
           </button>
           <button className="btn secondary" onClick={() => codeAll(true)} disabled={data.interviews.length === 0}>
-            Re-code everything
+            Re-code everything{overrideCount > 0 ? ` (keeps ${overrideCount} override${overrideCount === 1 ? '' : 's'})` : ''}
           </button>
           <span className="muted small">
             {segments.length} segments · {disagreements.length} disagreements ·{' '}

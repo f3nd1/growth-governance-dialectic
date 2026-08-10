@@ -262,8 +262,18 @@ function coderBFor(answer, codebook, codeAId, rng) {
  * text, and none of `lean`, `secondaryLean` or `contradictory` is read or
  * written. The flag is explicit rather than inferred from a missing field so
  * that no future transcript shape can silently re-open the pre-tagged path.
+ *
+ * `priorOverrides` is a Map of segment id -> override, carried across a
+ * re-code. An override is the researcher's judgement, not a coder output;
+ * re-running the coders re-derives what the CODERS think and has no business
+ * discarding what the RESEARCHER decided. Segment ids are stable
+ * (`interviewId:answerIndex`), so an override rejoins the same answer.
  */
-export function codeInterview(interview, codebook, { fromTextOnly = false } = {}) {
+export function codeInterview(
+  interview,
+  codebook,
+  { fromTextOnly = false, priorOverrides = new Map() } = {},
+) {
   return interview.answers.map((answer, idx) => {
     if (fromTextOnly) {
       const { coderA, coderB, tied, nonAnswer } = textOnlyCoding(answer.text, codebook)
@@ -282,7 +292,7 @@ export function codeInterview(interview, codebook, { fromTextOnly = false } = {}
         tied,
         // No codeable content — a role disclaimer, not a position.
         nonAnswer,
-        override: null,
+        override: priorOverrides.get(`${interview.id}:${idx}`) ?? null,
         synthetic: false,
         real: true,
       }
@@ -303,7 +313,7 @@ export function codeInterview(interview, codebook, { fromTextOnly = false } = {}
       contradictory: Boolean(answer.contradictory),
       coderA,
       coderB,
-      override: null,
+      override: priorOverrides.get(`${interview.id}:${idx}`) ?? null,
       synthetic: true,
     }
   })
