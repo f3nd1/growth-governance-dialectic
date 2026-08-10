@@ -1,5 +1,7 @@
+import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, update, activeData } from '../store/dataStore'
+import { staleSyntheticProse } from '../engine/storedProse'
 
 const FIELDS = [
   { key: 'title', label: 'Working title', rows: 2 },
@@ -12,6 +14,8 @@ const FIELDS = [
 export default function StudyDesign() {
   const ws = useWorkspace()
   const isReal = activeData(ws).isReal
+  // Your text, not the app's — so this reports rather than rewrites.
+  const stale = staleSyntheticProse(ws)
 
   function setField(key, value) {
     update('studyDesign', (sd) => ({ ...sd, [key]: value }))
@@ -31,6 +35,29 @@ export default function StudyDesign() {
           records as documentary evidence — all thematically coded against one codebook and
           merged in a pattern-matching joint display against WH1/WH2/WH3. The pilot runs the
           interview strand on {isReal ? 'real consented participants' : 'synthetic participants to validate the instrument itself'}.
+        </div>
+      )}
+
+      {stale.length > 0 && (
+        <div className="notice" role="alert" style={{ borderLeftColor: '#b03230' }}>
+          <p style={{ margin: '0 0 6px', fontWeight: 700 }}>
+            {stale.length} stored field{stale.length === 1 ? '' : 's'} still describe
+            {stale.length === 1 ? 's' : ''} a synthetic pilot, while the workspace is in real
+            mode.
+          </p>
+          <p className="small" style={{ margin: '0 0 6px' }}>
+            These are printed verbatim in the Pilot Report, under the confidentiality header —
+            so the same document asserts real participant data and then denies any findings
+            about the institution. This is your text and the app will not rewrite it; edit the
+            fields below (or the note in <Link to="/settings">Settings</Link>).
+          </p>
+          <ul className="small" style={{ margin: 0 }}>
+            {stale.map((f) => (
+              <li key={f.key}>
+                <strong>{f.label}</strong> ({f.where}){f.excerpt ? <> — “{f.excerpt}”</> : null}
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 

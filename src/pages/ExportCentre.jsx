@@ -1,6 +1,8 @@
 import { useRef, useState } from 'react'
 import PageHeader from '../components/PageHeader'
+import { Link } from 'react-router-dom'
 import { useWorkspace, replaceWorkspace } from '../store/dataStore'
+import { staleSyntheticProse } from '../engine/storedProse'
 import {
   buildReportModel,
   reportToMarkdown,
@@ -103,6 +105,9 @@ export default function ExportCentre() {
 
   const stamp = new Date().toISOString().slice(0, 10)
   const isReal = ws.mode === 'real'
+  // Warned about at the point the document is produced, since that is where a
+  // stale methods statement stops being a draft and becomes a claim.
+  const stale = staleSyntheticProse(ws)
   // Real exports are named for what they are, and carry the confidentiality
   // header INSTEAD of the synthetic caveat — never both, and never neither.
   const tag = isReal ? 'REAL-CONFIDENTIAL' : 'SYNTHETIC'
@@ -240,6 +245,25 @@ export default function ExportCentre() {
       >
         {isReal ? REAL_CONFIDENTIALITY_HEADER : SYNTHETIC_CAVEAT}
       </div>
+
+      {stale.length > 0 && (
+        <div className="notice" role="alert" style={{ borderLeftColor: '#b03230' }}>
+          <p style={{ margin: '0 0 6px', fontWeight: 700 }}>
+            {stale.length} stored field{stale.length === 1 ? '' : 's'} in this workspace still
+            describe{stale.length === 1 ? 's' : ''} a synthetic pilot.
+          </p>
+          <p className="small" style={{ margin: 0 }}>
+            {stale.map((f) => f.label).join(', ')} — printed verbatim in the Pilot Report below
+            the confidentiality header. Exporting now produces a document that claims real
+            participant data at the top and denies findings about the institution in the body.
+            Edit them on <Link to="/design/study">Study Design</Link>
+            {stale.some((f) => f.where === 'Settings') && (
+              <> and in <Link to="/settings">Settings</Link></>
+            )}{' '}
+            first. The app will not rewrite your text for you.
+          </p>
+        </div>
+      )}
 
       <div className="grid-2">
         <section className="card">
