@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-10T07:52:21.985Z",
+      "action": "push",
+      "commit": "560a497",
+      "branch": "main",
+      "message": "Coding: show Before → Now on a decided proposal, not Current vs Proposed",
+      "summary": "An accepted definition proposal no longer displays identical text under Current and Proposed: decided rows read the before-text from the decision log and show Before against Now, with the model's original wording kept visible when the researcher edited it."
+    },
+    {
       "when": "2026-08-10T07:48:35.241Z",
       "action": "push",
       "commit": "4868f98",
