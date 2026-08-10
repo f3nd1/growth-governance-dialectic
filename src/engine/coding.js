@@ -73,6 +73,75 @@ export function definitionQuality(code) {
 // only the text and the codebook, and search ALL groups at once — which
 // proposition a segment supports is an output of coding, not an input to it.
 
+// ------------------------------------------------------------ non-answers
+//
+// A role disclaimer is not evidence. It arrives when a participant is asked a
+// question outside their role and says so, and it carries no position on any
+// proposition. Left to the word-overlap scorer these were being coded, because
+// code definitions contain PROCEDURAL vocabulary — "code this only when the
+// ANSWER explicitly contrasts…" — and a disclaimer that says "I would not
+// offer a substantive view" shares the word "answer" with it. The overlap is
+// between the definition's instructions to the coder and the disclaimer's
+// grammar, with no relation to content whatsoever.
+//
+// Detection is therefore explicit rather than left to the score reaching zero,
+// and it is deliberately CONSERVATIVE: an answer counts as a non-answer only
+// when EVERY sentence in it is a disclaimer. "Not applicable to me, but I did
+// see the board defer the launch twice" keeps its substantive second clause and
+// is coded normally.
+
+const DISCLAIMER = new RegExp(
+  [
+    'not applicable',
+    'not asked',
+    'n/?a\\b',
+    'no first-?hand (basis|knowledge|experience)',
+    'do(es)? not have a first-?hand',
+    'would not offer a substantive',
+    'not (a|an|the) [a-z ,-]{0,40}(agent|investor|shareholder|member|part of)',
+    'not participating',
+    'not speaking as',
+    'no comment',
+    'cannot (answer|comment|say)',
+    'can\'t (answer|comment|say)',
+    'would not know',
+    'not (my|the) (area|remit|department|role|responsibility)',
+    'sits with (another|a different)',
+    'outside my',
+    'no (view|opinion|basis) (on|for)',
+    'i am not the right person',
+  ].join('|'),
+  'i',
+)
+
+/**
+ * True when the text carries no codeable content. Empty text counts; so does
+ * text whose every sentence is a disclaimer.
+ *
+ * JUDGEMENT CALL, stated rather than buried: "I would not know, that sits with
+ * another department" is treated as a non-answer, though a human coder might
+ * read it as evidence for Separate function. Detected segments stay visible and
+ * overridable, so that reading remains available to the researcher — it is just
+ * no longer asserted automatically by a word-overlap accident.
+ */
+export function isNonAnswer(text) {
+  const t = String(text ?? '').trim()
+  if (!t) return true
+  // Split on sentences AND on contrastive conjunctions: "Not applicable to me,
+  // but I did see the board defer the launch" is one sentence carrying a
+  // disclaimer and a substantive observation, and only the disclaimer half is
+  // a disclaimer.
+  const units = t
+    .split(/(?<=[.!?])\s+|\n+|\b(?:but|however|although|though|yet|whereas|that said)\b/i)
+    .map((x) => x.trim())
+    .filter(Boolean)
+    // Fragments too short to carry a position are ignored either way, so a
+    // trailing "no." cannot turn a disclaimer into a substantive answer.
+    .filter((x) => x.split(/\s+/).filter((w) => w.length > 2).length >= 3)
+  if (!units.length) return true
+  return units.every((x) => DISCLAIMER.test(x))
+}
+
 /**
  * All codes scored by definition/label overlap with the text, best first.
  *
@@ -124,13 +193,18 @@ function topIsTied(ranked) {
  * the Reliability page and exports say so in real mode.
  */
 function textOnlyCoding(text, codebook) {
+  // Checked before scoring: a disclaimer has no content to score, so any score
+  // it produces is an artifact of the definitions' procedural wording.
+  if (isNonAnswer(text)) {
+    return { coderA: UNCLASSIFIED, coderB: UNCLASSIFIED, tied: false, nonAnswer: true }
+  }
   const ranked = rankCodes(text, codebook.codes)
   const [first, second] = ranked
   const coderA = first && first.score > 0 ? first.code.id : UNCLASSIFIED
   const tied = topIsTied(ranked)
   const coderB =
     coderA === UNCLASSIFIED ? UNCLASSIFIED : tied ? second.code.id : coderA
-  return { coderA, coderB, tied, topScore: first?.score ?? 0 }
+  return { coderA, coderB, tied, nonAnswer: false }
 }
 
 function coderAFor(answer, codebook, rng) {
@@ -192,7 +266,7 @@ function coderBFor(answer, codebook, codeAId, rng) {
 export function codeInterview(interview, codebook, { fromTextOnly = false } = {}) {
   return interview.answers.map((answer, idx) => {
     if (fromTextOnly) {
-      const { coderA, coderB, tied } = textOnlyCoding(answer.text, codebook)
+      const { coderA, coderB, tied, nonAnswer } = textOnlyCoding(answer.text, codebook)
       return {
         id: `${interview.id}:${idx}`,
         interviewId: interview.id,
@@ -206,6 +280,8 @@ export function codeInterview(interview, codebook, { fromTextOnly = false } = {}
         // The two definitions matched equally well, so the winner came from the
         // tie-break rather than from the text. Recorded so it is visible.
         tied,
+        // No codeable content — a role disclaimer, not a position.
+        nonAnswer,
         override: null,
         synthetic: false,
         real: true,

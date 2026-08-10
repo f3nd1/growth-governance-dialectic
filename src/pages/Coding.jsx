@@ -231,6 +231,16 @@ export default function Coding() {
       />
 
       {data.isReal && (
+        <>
+        <div className="notice" role="note">
+          <strong>Non-answers are not coded.</strong> A role disclaimer — “not applicable, I am
+          not a recruitment agent” — carries no position on any proposition, so it is marked{' '}
+          <em>non-answer</em> and left unclassified rather than forced into a code by word
+          overlap with a definition’s procedural wording. They are excluded from the agreement
+          figure on the <Link to="/analysis/reliability">Reliability</Link> page. If you judge
+          one of them substantive, override it — the override still decides.
+        </div>
+
         <div className="notice" role="note">
           <strong>These are two machine passes, not two human coders.</strong> The agreement
           figure on the Reliability page measures how sharply the codebook discriminates on
@@ -238,6 +248,7 @@ export default function Coding() {
           human coder; treat every code below as a first pass to be reviewed, and use the
           override column — it is your audit trail.
         </div>
+        </>
       )}
 
       {ws.settings.guidance && (
@@ -262,6 +273,8 @@ export default function Coding() {
             {segments.filter((s) => s.override).length} manual overrides
             {segments.some((s) => s.tied) &&
               ` · ${segments.filter((s) => s.tied).length} tied top match`}
+            {segments.some((s) => s.nonAnswer) &&
+              ` · ${segments.filter((s) => s.nonAnswer).length} non-answers (not coded)`}
           </span>
         </p>
         {data.interviews.length === 0 && (
@@ -621,6 +634,9 @@ export default function Coding() {
                       <td>
                         <strong>{s.personaName.replace(' (synthetic)', '')}</strong>{' '}
                         <span className="muted">Q{s.questionIndex + 1}</span>
+                        {s.nonAnswer && (
+                          <span className="tag muted" style={{ marginLeft: 6 }}>non-answer</span>
+                        )}
                         {!data.isReal && s.contradictory && ' ⚡'}
                         <div className="small muted" style={{ maxWidth: 420 }}>{s.text}</div>
                       </td>
