@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-10T11:17:09.969Z",
+      "action": "push",
+      "commit": "03ac3d0",
+      "branch": "main",
+      "message": "Real coding: resolve score ties by code label, not by internal id",
+      "summary": "Equal-scoring codes were resolved by internal id string, so deleting and re-adding a code changed coding output; ties now resolve by code label and are recorded and displayed on the segment rather than silently decided."
+    },
+    {
       "when": "2026-08-10T09:00:01.813Z",
       "action": "push",
       "commit": "def4ee9",
