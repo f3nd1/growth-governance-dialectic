@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:41:43.839Z",
+      "action": "push",
+      "commit": "5450d90",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Pattern-matching: revert cut-point to 0.3",
+      "summary": "Default returned to 0.3 for paradox sensitivity (0.34 lost 5 of 7 splits incl. authored paradox persona P12); even-spread over-counting kept as a documented known limitation rather than resolved by raising the floor"
+    },
+    {
       "when": "2026-08-10T04:35:02.257Z",
       "action": "push",
       "commit": "b1f09b9",

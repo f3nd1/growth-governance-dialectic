@@ -85,14 +85,19 @@ export function defaultWorkspace() {
       setupGuide: { dismissed: false },
       patternMatching: {
         // Evidence share a proposition must reach to count as supported.
-        splitThreshold: 0.34,
+        splitThreshold: 0.3,
         note:
-          'The default of 0.34 sits just above the even-spread point across three ' +
-          'propositions (1/3 = 0.3333...). A participant whose coded evidence is evenly ' +
-          'distributed is therefore not recorded as supporting all three, which would say ' +
-          'nothing. The test is "share at or above the cut-point", so a cut-point at or below ' +
-          '0.333 would count an exactly even participant for every proposition — 0.34 excludes ' +
-          'them. No established convention exists for evidence-share cut-points in qualitative ' +
+          'The default of 0.3 is set for sensitivity. Detecting coexistence — a participant ' +
+          'holding two propositions at once — is this study\'s primary analytic goal, and a ' +
+          'stricter cut-point under-detects it: at 0.34 the demo corpus falls from seven split ' +
+          'patterns to two, losing one of the two personas authored as paradox cases. ' +
+          'KNOWN LIMITATION: 0.3 sits below the even-spread point across three propositions ' +
+          '(1/3 = 0.3333...), and the test is "share at or above the cut-point", so a ' +
+          'participant whose evidence is evenly distributed is recorded as supporting all ' +
+          'three even though that says nothing. This is accepted and reported rather than ' +
+          'resolved by raising the floor, because raising it costs genuine paradox cases; ' +
+          'read split patterns alongside the per-participant shares rather than on their own. ' +
+          'No established convention exists for evidence-share cut-points in qualitative ' +
           'pattern matching: Yin (2018) treats pattern matching as a qualitative judgement of ' +
           'predicted against observed patterns rather than a numeric test, and neither Miles, ' +
           'Huberman & Saldaña (2020) nor Smith & Lewis (2011) specify a share threshold. This ' +
