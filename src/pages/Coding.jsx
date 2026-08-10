@@ -424,20 +424,62 @@ export default function Coding() {
                           <p className="small muted" style={{ margin: '0 0 6px' }}>{pr.rationale}</p>
                         )}
 
-                        <p className="small" style={{ margin: '0 0 2px' }}><strong>Current</strong></p>
-                        <p className="small muted" style={{ margin: '0 0 6px' }}>
-                          {live?.definition || '(no definition written)'}
-                        </p>
-                        <p className="small" style={{ margin: '0 0 2px' }}><strong>Proposed</strong></p>
-                        {draft === undefined ? (
-                          <p className="small" style={{ margin: '0 0 6px' }}>{pr.proposedDefinition}</p>
+                        {/* Once decided, "Current" is the accepted text, so showing it
+                            against the proposal prints the same paragraph twice and reads
+                            as though nothing happened. Decided rows show what the
+                            definition WAS, from the decision log, against what it is now. */}
+                        {done ? (
+                          done.decision === 'rejected' ? (
+                            <>
+                              <p className="small" style={{ margin: '0 0 2px' }}>
+                                <strong>Definition — unchanged</strong>
+                              </p>
+                              <p className="small muted" style={{ margin: '0 0 6px' }}>
+                                {done.before || '(no definition written)'}
+                              </p>
+                              <p className="small" style={{ margin: '0 0 2px' }}>
+                                <strong>Rejected proposal</strong>
+                              </p>
+                              <p className="small muted" style={{ margin: '0 0 6px', textDecoration: 'line-through' }}>
+                                {done.proposed}
+                              </p>
+                            </>
+                          ) : (
+                            <>
+                              <p className="small" style={{ margin: '0 0 2px' }}><strong>Before</strong></p>
+                              <p className="small muted" style={{ margin: '0 0 6px' }}>
+                                {done.before || '(no definition written)'}
+                              </p>
+                              <p className="small" style={{ margin: '0 0 2px' }}><strong>Now</strong></p>
+                              <p className="small" style={{ margin: '0 0 6px' }}>{done.after}</p>
+                              {done.decision === 'accepted-edited' && (
+                                <>
+                                  <p className="small" style={{ margin: '0 0 2px' }}>
+                                    <strong>The model proposed</strong>
+                                  </p>
+                                  <p className="small muted" style={{ margin: '0 0 6px' }}>{done.proposed}</p>
+                                </>
+                              )}
+                            </>
+                          )
                         ) : (
-                          <textarea
-                            aria-label={`Edit proposed definition for ${pr.codeLabel}`}
-                            rows={3}
-                            value={draft}
-                            onChange={(e) => setEditing((x) => ({ ...x, [pr.id]: e.target.value }))}
-                          />
+                          <>
+                            <p className="small" style={{ margin: '0 0 2px' }}><strong>Current</strong></p>
+                            <p className="small muted" style={{ margin: '0 0 6px' }}>
+                              {live?.definition || '(no definition written)'}
+                            </p>
+                            <p className="small" style={{ margin: '0 0 2px' }}><strong>Proposed</strong></p>
+                            {draft === undefined ? (
+                              <p className="small" style={{ margin: '0 0 6px' }}>{pr.proposedDefinition}</p>
+                            ) : (
+                              <textarea
+                                aria-label={`Edit proposed definition for ${pr.codeLabel}`}
+                                rows={3}
+                                value={draft}
+                                onChange={(e) => setEditing((x) => ({ ...x, [pr.id]: e.target.value }))}
+                              />
+                            )}
+                          </>
                         )}
 
                         {done ? (
