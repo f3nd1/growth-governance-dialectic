@@ -26,7 +26,9 @@ export default function Coding() {
 
   function codeAll(recode) {
     const targets = recode ? data.interviews : uncoded
-    const fresh = targets.flatMap((iv) => codeInterview(iv, ws.codebook))
+    const fresh = targets.flatMap((iv) =>
+      codeInterview(iv, ws.codebook, { fromTextOnly: data.isReal }),
+    )
     updateActive('coding', (c) => ({
       ...c,
       segments: recode
@@ -63,8 +65,22 @@ export default function Coding() {
     <>
       <PageHeader
         title="Coding"
-        desc="Two independent coders classify every synthetic transcript segment against the codebook. Coder A is the primary keyword classifier; Coder B is a second heuristic pass whose reliability depends on how sharp your code definitions are."
+        desc={
+          data.isReal
+            ? 'Two automated passes classify every entered segment against the codebook from the TEXT ALONE. No participant attribute, and no hypothesis assigned in advance, is consulted — which proposition a segment supports is decided here.'
+            : 'Two independent coders classify every synthetic transcript segment against the codebook. Coder A is the primary keyword classifier; Coder B is a second heuristic pass whose reliability depends on how sharp your code definitions are.'
+        }
       />
+
+      {data.isReal && (
+        <div className="notice" role="note">
+          <strong>These are two machine passes, not two human coders.</strong> The agreement
+          figure on the Reliability page measures how sharply the codebook discriminates on
+          this text, not inter-rater reliability. Real fieldwork still requires a second
+          human coder; treat every code below as a first pass to be reviewed, and use the
+          override column — it is your audit trail.
+        </div>
+      )}
 
       {ws.settings.guidance && (
         <div className="notice">
@@ -115,7 +131,7 @@ export default function Coding() {
             <table className="data">
               <thead>
                 <tr>
-                  <th style={{ minWidth: 260 }}>Segment (synthetic)</th>
+                  <th style={{ minWidth: 260 }}>Segment{data.isReal ? '' : ' (synthetic)'}</th>
                   <th>Coder A</th>
                   <th>Coder B</th>
                   <th>Override (logged)</th>
@@ -129,7 +145,7 @@ export default function Coding() {
                       <td>
                         <strong>{s.personaName.replace(' (synthetic)', '')}</strong>{' '}
                         <span className="muted">Q{s.questionIndex + 1}</span>
-                        {s.contradictory && ' ⚡'}
+                        {!data.isReal && s.contradictory && ' ⚡'}
                         <div className="small muted" style={{ maxWidth: 420 }}>{s.text}</div>
                       </td>
                       <td><CodeName codeId={s.coderA} codebook={ws.codebook} hypotheses={ws.hypotheses} /></td>
@@ -164,7 +180,7 @@ export default function Coding() {
           <h2>Override log</h2>
           <table className="data">
             <thead>
-              <tr><th>When</th><th>Persona</th><th>From</th><th>To</th></tr>
+              <tr><th>When</th><th>{data.isReal ? 'Participant' : 'Persona'}</th><th>From</th><th>To</th></tr>
             </thead>
             <tbody>
               {data.coding.overridesLog.slice(0, 20).map((o, i) => (

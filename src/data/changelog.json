@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T05:03:20.577Z",
+      "action": "push",
+      "commit": "aa8ce1d",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Real data mode 2/4: participant records, transcript entry, mode-scoped nav",
+      "summary": "Adds pseudonymised real-participant records (no name, no weight profile, no held propositions) and a per-question transcript entry screen with no generation; synthetic and real pages are mutually exclusive in the nav; all analysis reads/writes go through the mode-scoped accessors."
+    },
+    {
       "when": "2026-08-10T04:57:07.447Z",
       "action": "push",
       "commit": "bfba65b",

@@ -66,6 +66,51 @@ export function definitionQuality(code) {
   return lengthFactor * (hasCriteria ? 1 : 0.8)
 }
 
+// ------------------------------------------------------- text-only coding
+//
+// REAL DATA PATH. A real answer arrives with no researcher-assigned hypothesis:
+// there is no `lean`, and there must not be one. These two coders therefore see
+// only the text and the codebook, and search ALL groups at once — which
+// proposition a segment supports is an output of coding, not an input to it.
+
+/** All codes scored by definition/label overlap with the text, best first. */
+function rankCodes(text, codes) {
+  return codes
+    .map((c) => ({ code: c, score: overlapScore(text, c) }))
+    .sort((a, b) => b.score - a.score || a.code.id.localeCompare(b.code.id))
+}
+
+/**
+ * Coder A (text-only): the best-matching code anywhere in the codebook, and
+ * UNCLASSIFIED when nothing matches at all. The minimum score of 1 matters —
+ * the synthetic path can fall back on the pre-tagged group, so a zero-overlap
+ * answer still lands somewhere plausible; with no pre-tag, accepting a
+ * zero-overlap "best" match would be assigning a hypothesis to text that
+ * contains no evidence for it.
+ */
+function coderATextOnly(text, codebook) {
+  const [best] = rankCodes(text, codebook.codes)
+  return best && best.score > 0 ? best.code.id : UNCLASSIFIED
+}
+
+/**
+ * Coder B (text-only): agrees when the leading code is a clear winner, and
+ * takes the runner-up when the top two match the text equally well. Kappa
+ * against Coder A therefore measures how sharply the codebook DISCRIMINATES on
+ * this material — overlapping definitions produce ties, ties produce
+ * disagreement. It is deterministic and uses no random draw.
+ *
+ * This is a machine consistency check, NOT human inter-rater reliability, and
+ * the reliability page and exports say so in real mode.
+ */
+function coderBTextOnly(text, codebook, codeAId) {
+  if (codeAId === UNCLASSIFIED) return UNCLASSIFIED
+  const ranked = rankCodes(text, codebook.codes)
+  const [first, second] = ranked
+  if (!second || first.score > second.score) return codeAId
+  return second.code.id
+}
+
 function coderAFor(answer, codebook, rng) {
   if (answer.lean === 'offscript') {
     const best = bestCodeInGroup(answer.text, codebook.codes, 'emergent', rng)
@@ -114,9 +159,33 @@ function coderBFor(answer, codebook, codeAId, rng) {
   return other ? other.id : UNCLASSIFIED
 }
 
-/** Produce dual-coded segments for one interview. Deterministic. */
-export function codeInterview(interview, codebook) {
+/**
+ * Produce dual-coded segments for one interview. Deterministic.
+ *
+ * `fromTextOnly` selects the real-data path: both coders see only the answer
+ * text, and none of `lean`, `secondaryLean` or `contradictory` is read or
+ * written. The flag is explicit rather than inferred from a missing field so
+ * that no future transcript shape can silently re-open the pre-tagged path.
+ */
+export function codeInterview(interview, codebook, { fromTextOnly = false } = {}) {
   return interview.answers.map((answer, idx) => {
+    if (fromTextOnly) {
+      const coderA = coderATextOnly(answer.text, codebook)
+      return {
+        id: `${interview.id}:${idx}`,
+        interviewId: interview.id,
+        personaId: interview.personaId,
+        personaName: interview.personaName,
+        questionId: answer.questionId,
+        questionIndex: idx,
+        text: answer.text,
+        coderA,
+        coderB: coderBTextOnly(answer.text, codebook, coderA),
+        override: null,
+        synthetic: false,
+        real: true,
+      }
+    }
     const rng = mulberry32(hashSeed(`${interview.id}:${answer.questionId}:${idx}:${interview.seed}`))
     const coderA = coderAFor(answer, codebook, rng)
     const coderB = coderBFor(answer, codebook, coderA, rng)

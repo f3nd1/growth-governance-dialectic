@@ -39,7 +39,11 @@ export default function PatternMatching() {
     <>
       <PageHeader
         title="Pattern-Matching"
-        desc="Coded evidence aggregated across all synthetic interviews as DISTRIBUTED weight per hypothesis — never winner-take-all, so a paradox participant legitimately appears in two columns."
+        desc={
+          data.isReal
+            ? 'Coded evidence aggregated across all entered transcripts as DISTRIBUTED weight per proposition — never winner-take-all, so a participant whose answers genuinely span two propositions appears in two columns.'
+            : 'Coded evidence aggregated across all synthetic interviews as DISTRIBUTED weight per hypothesis — never winner-take-all, so a paradox participant legitimately appears in two columns.'
+        }
       />
 
       {ws.settings.guidance && (
@@ -53,12 +57,12 @@ export default function PatternMatching() {
       )}
 
       <section className="card">
-        <h2>Distribution chart (synthetic)</h2>
+        <h2>Distribution chart{data.isReal ? '' : ' (synthetic)'}</h2>
         <HypothesisDistributionChart />
       </section>
 
       <section className="card">
-        <h2>Overall evidence distribution (synthetic)</h2>
+        <h2>Overall evidence distribution{data.isReal ? '' : ' (synthetic)'}</h2>
         <WeightBar weights={overallShares} height={22} kind="coded" caption />
         <table className="data" style={{ marginTop: 12 }}>
           <thead>
@@ -129,11 +133,11 @@ export default function PatternMatching() {
       )}
 
       <section className="card" style={{ overflowX: 'auto' }}>
-        <h2>Per-participant distribution (synthetic)</h2>
+        <h2>Per-participant distribution{data.isReal ? '' : ' (synthetic)'}</h2>
         <table className="data">
           <thead>
             <tr>
-              <th>Synthetic participant</th>
+              <th>{data.isReal ? 'Participant' : 'Synthetic participant'}</th>
               <th style={{ minWidth: 160 }}>Coded evidence</th>
               {HYPOTHESIS_IDS.map((id) => (
                 <th key={id} style={{ color: ws.hypotheses[id].color }}>{ws.hypotheses[id].short}</th>
@@ -146,7 +150,8 @@ export default function PatternMatching() {
             {personas.map((p) => (
               <tr key={p.personaId}>
                 <td>
-                  {p.personaName.replace(' (synthetic)', '')} <span className="stamp">syn</span>
+                  {p.personaName.replace(' (synthetic)', '')}{' '}
+                  {!data.isReal && <span className="stamp">syn</span>}
                 </td>
                 <td><WeightBar weights={p.shares} height={12} kind="coded" /></td>
                 {HYPOTHESIS_IDS.map((id) => (

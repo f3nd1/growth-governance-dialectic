@@ -125,8 +125,19 @@ export default function Reliability() {
     <>
       <PageHeader
         title="Reliability"
-        desc="Inter-coder agreement over every dual-coded segment, reported on the pilot. Manual overrides are excluded — reliability is about the two independent passes."
+        desc="Agreement between the two coding passes over every dual-coded segment. Manual overrides are excluded — this is about the two independent passes."
       />
+
+      {data.isReal && (
+        <div className="notice" role="note">
+          <strong>This κ is not inter-rater reliability.</strong> On real transcripts both
+          passes are automated: Coder A takes the best-matching code, Coder B takes the
+          runner-up whenever the top two match the text equally well. The figure therefore
+          measures how sharply the <Link to="/design/codebook">codebook</Link> discriminates
+          on this material — a low value means overlapping definitions. Reported inter-rater
+          reliability requires a second human coder and cannot be produced by this tool.
+        </div>
+      )}
 
       {ws.settings.guidance && (
         <div className="notice">
@@ -256,6 +267,7 @@ export default function Reliability() {
         </>
       )}
 
+      {!data.isReal && (
       <section className="card">
         <h2>Stability test — same persona, two seeds</h2>
         <p className="small muted">
@@ -337,6 +349,7 @@ export default function Reliability() {
           </>
         )}
       </section>
+      )}
     </>
   )
 }
