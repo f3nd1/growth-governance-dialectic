@@ -37,22 +37,47 @@ export async function listChatModels(settings) {
  * out of it: that path is the synthetic pipeline and is not exercised by any
  * offline test, so it is left byte-identical.
  */
+/**
+ * fetch() rejects with a bare `TypeError: Failed to fetch` for every
+ * browser-side block — the reason is only ever in the console, never in the
+ * exception. This turns that dead end into the actual shortlist, because the
+ * three causes have completely different fixes and only one of them needs a
+ * server.
+ */
+export const FETCH_BLOCKED_HELP =
+  'The request never reached OpenAI — the browser blocked or dropped it before a response ' +
+  'came back. The browser console says which of these it was:\n' +
+  '· "Refused to connect … Content Security Policy" — the site\'s host is sending a CSP that ' +
+  'omits api.openai.com. Fix it in the host\'s headers (connect-src), not in this app.\n' +
+  '· "blocked by CORS policy" — the API refused this origin. That cannot be fixed from the ' +
+  'browser and would need a small server-side relay.\n' +
+  '· nothing logged at all — the request was dropped by a network filter, VPN, or a ' +
+  'privacy/ad-blocking extension blocking api.openai.com.\n' +
+  'This is not a mixed-content problem: the page and the API are both HTTPS.'
+
 export async function chatComplete({ settings, system, user, temperature = 0.2 }) {
   const key = getOpenAIKey(settings)
   if (!key) throw new Error('No OpenAI key set (add one to .env.local or Settings).')
   const model = settings.openai.analysisModel || 'gpt-4o'
-  const res = await fetch('https://api.openai.com/v1/chat/completions', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
-    body: JSON.stringify({
-      model,
-      temperature,
-      messages: [
-        { role: 'system', content: system },
-        { role: 'user', content: user },
-      ],
-    }),
-  })
+  let res
+  try {
+    res = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+      body: JSON.stringify({
+        model,
+        temperature,
+        messages: [
+          { role: 'system', content: system },
+          { role: 'user', content: user },
+        ],
+      }),
+    })
+  } catch (err) {
+    // A TypeError here is a browser-side block, not an API error: no HTTP
+    // response exists to inspect, so the status-code path below cannot help.
+    throw new Error(`${err.message ?? err}. ${FETCH_BLOCKED_HELP}`)
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => '')
     throw new Error(`OpenAI ${res.status}: ${body.slice(0, 200)}`)

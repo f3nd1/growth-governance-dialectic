@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, update, setMode } from '../store/dataStore'
 import { liveModeAvailable, listChatModels } from '../engine/llm'
@@ -143,18 +144,29 @@ export default function Settings() {
       </section>
       )}
 
-      {ws.mode === 'real' ? (
-        <section className="card">
-          <h2>OpenAI (live generation)</h2>
-          <p className="small muted" style={{ marginBottom: 0 }}>
-            Unavailable in real mode. Real transcripts are typed in and coded locally, so
-            nothing on the real-data path calls a model, fetches a model list, or makes any
-            network request at all. Switch to synthetic mode to configure live generation.
-          </p>
-        </section>
-      ) : (
       <section className="card">
-        <h2>OpenAI (live generation)</h2>
+        <h2>OpenAI{ws.mode === 'real' ? '' : ' (live generation)'}</h2>
+
+        {ws.mode === 'real' && (
+          <div className="notice" role="note" style={{ borderLeftColor: '#6d1f1d', fontWeight: 700 }}>
+            <p style={{ margin: '0 0 6px' }}>
+              A key here enables the coder-disagreement diagnostic on the{' '}
+              <Link to="/analysis/coding">Coding</Link> page. Running it{' '}
+              <strong>transmits real participant answer text to OpenAI</strong>, where it is
+              processed on their servers under their terms and retention policy. The diagnostic
+              asks you to confirm that every single time.
+            </p>
+            <p className="small" style={{ margin: 0, fontWeight: 400 }}>
+              Nothing else in real mode sends participant data anywhere: transcripts are typed
+              in, coded and stored locally, and the real dataset is never synced. Fetching the
+              model list below sends your key but no participant data. Only add a key if
+              sending interview material to a third party is permitted by your ethics approval
+              and participant consent — and note that a key typed here is stored in this
+              browser and is readable by anyone with access to it, so prefer{' '}
+              <code>VITE_OPENAI_KEY</code> in <code>.env.local</code> where you can.
+            </p>
+          </div>
+        )}
         <p className="small">
           Status:{' '}
           {live ? (
@@ -224,7 +236,6 @@ export default function Settings() {
           </div>
         </div>
       </section>
-      )}
 
       <section className="card">
         <h2>Supabase (workspace sync)</h2>

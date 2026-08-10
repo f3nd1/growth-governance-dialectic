@@ -263,11 +263,9 @@ export default function Coding() {
                 <p className="small" style={{ color: '#b03230' }}>
                   <strong>No OpenAI key configured, so this is disabled.</strong> There is no
                   offline version of this diagnostic: the simulator cannot judge your definitions,
-                  and a fabricated analysis would be worse than none. Add a key to{' '}
-                  <code>.env.local</code> as <code>VITE_OPENAI_KEY</code>, or enable live AI in{' '}
-                  <Link to="/settings">Settings</Link> — the OpenAI settings are editable in
-                  synthetic mode only, deliberately, so a key cannot be pasted in while real
-                  participant data is on screen.
+                  and a fabricated analysis would be worse than none. Add a key as{' '}
+                  <code>VITE_OPENAI_KEY</code> in <code>.env.local</code>, or enable live AI and
+                  paste one into <Link to="/settings">Settings</Link>.
                 </p>
               )}
 
@@ -282,10 +280,18 @@ export default function Coding() {
               )}
 
               {diagnosticError && (
-                <p className="small" role="alert" style={{ color: '#b03230' }}>
-                  The call failed: {diagnosticError} — nothing was changed, and the attempt is in
-                  the <Link to="/settings/ai-review-log">AI Review Log</Link>.
-                </p>
+                <div role="alert" style={{ color: '#b03230' }}>
+                  <p className="small" style={{ margin: '0 0 4px', fontWeight: 700 }}>
+                    The call failed — nothing was changed, and the attempt is logged in the{' '}
+                    <Link to="/settings/ai-review-log">AI Review Log</Link>.
+                  </p>
+                  <p
+                    className="small"
+                    style={{ margin: 0, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}
+                  >
+                    {diagnosticError}
+                  </p>
+                </div>
               )}
             </>
           )}
