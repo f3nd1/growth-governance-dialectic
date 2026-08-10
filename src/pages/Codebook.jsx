@@ -14,6 +14,7 @@ export default function Codebook() {
 
   // Derived, never stored: recomputed from the current segments and codebook.
   const { candidates, counts } = findEmergentCandidates(activeData(ws).coding.segments, ws.codebook)
+  const decisions = activeData(ws).codebookDecisions
 
   function setCodes(next) {
     update('codebook', (cb) => ({ ...cb, codes: next }))
@@ -185,6 +186,61 @@ export default function Codebook() {
           </section>
         )
       })}
+
+
+      {decisions.length > 0 && (
+        <section className="card" style={{ overflowX: 'auto' }}>
+          <h2>Decision log ({decisions.length})</h2>
+          <p className="small muted">
+            Every accept, edit or reject of a definition change proposed by the{' '}
+            <Link to="/analysis/coding">disagreement diagnostic</Link>, newest first, with the
+            definition text before and after. Attribution is self-declared — this app has no
+            accounts. Accepting a change never re-coded anything: segments coded before a change
+            still carry the codes assigned under the earlier wording.
+          </p>
+          <table className="data">
+            <thead>
+              <tr>
+                <th>When</th>
+                <th>By</th>
+                <th>Code</th>
+                <th>Decision</th>
+                <th style={{ minWidth: 260 }}>Before → after</th>
+              </tr>
+            </thead>
+            <tbody>
+              {decisions.map((d) => (
+                <tr key={d.id}>
+                  <td className="small">{new Date(d.when).toLocaleString()}</td>
+                  <td className="small">{d.decidedBy}</td>
+                  <td className="small">
+                    <strong>{d.codeLabel}</strong>
+                    <div className="muted">{d.proposalTitle}</div>
+                  </td>
+                  <td className="small" style={{ color: d.decision === 'rejected' ? '#b03230' : '#2f9e44' }}>
+                    {d.decision === 'rejected'
+                      ? 'rejected'
+                      : d.decision === 'accepted-edited'
+                        ? 'accepted (edited)'
+                        : 'accepted'}
+                  </td>
+                  <td className="small">
+                    <div className="muted">{d.before || '(no definition)'}</div>
+                    {d.decision === 'rejected' ? (
+                      <div className="muted">→ unchanged</div>
+                    ) : (
+                      <div>→ {d.after}</div>
+                    )}
+                    {d.decision === 'accepted-edited' && (
+                      <div className="muted">model proposed: {d.proposed}</div>
+                    )}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
 
       <p>
         <button

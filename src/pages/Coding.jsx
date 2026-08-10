@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
-import { activeData, updateActive, useWorkspace } from '../store/dataStore'
+import { activeData, update, updateActive, useWorkspace } from '../store/dataStore'
 import { codeInterview, UNCLASSIFIED } from '../engine/coding'
 import { chatComplete, liveModeAvailable } from '../engine/llm'
 import { logAICall } from '../store/aiLog'
 import {
   buildDiagnosticPrompt,
   diagnosticToMarkdown,
+  parseProposals,
+  stripProposalBlock,
   MAX_INPUT_TOKENS,
 } from '../engine/codingDiagnostic'
 
@@ -39,6 +41,9 @@ export default function Coding() {
   const [diagnosing, setDiagnosing] = useState(false)
   const [diagnostic, setDiagnostic] = useState(null)
   const [diagnosticError, setDiagnosticError] = useState('')
+  // Per-proposal UI state, keyed by proposal id. Decisions are recorded in the
+  // workspace; this only tracks which row is open for editing.
+  const [editing, setEditing] = useState({})
 
   const segments = data.coding.segments
   const codedInterviewIds = new Set(segments.map((s) => s.interviewId))
@@ -114,7 +119,11 @@ export default function Coding() {
         user: built.user,
       })
       const record = {
-        analysis: res.content,
+        // Proposal ids come from the model and repeat between runs ("p1", "p2"),
+        // so a decision is only ever matched within the run that produced it.
+        runId: `diag-${Date.now().toString(36)}`,
+        analysis: stripProposalBlock(res.content),
+        proposals: parseProposals(res.content, ws.codebook),
         stats: built.stats,
         model: res.model,
         tokens: res.tokens,
@@ -147,6 +156,50 @@ export default function Coding() {
       setDiagnosing(false)
     }
   }
+
+  // ----------------------------------------------- acting on proposals
+  // Only ever writes codebook.codes[].definition and appends a decision
+  // record. Coded segments are deliberately untouched: changing a definition
+  // does not change what the coders already decided, and silently re-coding
+  // would destroy the before/after comparison that motivates the change.
+  function recordDecision(proposal, decision, appliedText) {
+    const code = ws.codebook.codes.find((c) => c.id === proposal.codeId)
+    updateActive('codebookDecisions', (log) => [
+      {
+        id: `dec-${Date.now().toString(36)}-${log.length}`,
+        when: new Date().toISOString(),
+        runId: diagnostic?.runId ?? null,
+        decidedBy: (ws.settings.researcherId || '').trim() || '(unattributed)',
+        decision, // 'accepted' | 'accepted-edited' | 'rejected'
+        proposalId: proposal.id,
+        proposalTitle: proposal.title,
+        proposalRationale: proposal.rationale,
+        codeId: proposal.codeId,
+        codeLabel: code?.label ?? proposal.codeLabel,
+        before: code?.definition ?? '',
+        proposed: proposal.proposedDefinition,
+        after: decision === 'rejected' ? (code?.definition ?? '') : appliedText,
+      },
+      ...(log ?? []),
+    ])
+  }
+
+  function decide(proposal, decision, appliedText) {
+    recordDecision(proposal, decision, appliedText)
+    if (decision !== 'rejected') {
+      update('codebook', (cb) => ({
+        ...cb,
+        codes: cb.codes.map((c) =>
+          c.id === proposal.codeId ? { ...c, definition: appliedText } : c,
+        ),
+      }))
+    }
+    setEditing((e) => ({ ...e, [proposal.id]: undefined }))
+  }
+
+  const decisions = data.codebookDecisions ?? []
+  const decisionFor = (proposal) =>
+    decisions.find((d) => d.runId === diagnostic?.runId && d.proposalId === proposal.id)
 
   function exportDiagnostic() {
     if (!diagnostic) return
@@ -325,6 +378,161 @@ export default function Coding() {
               >
                 {diagnostic.analysis}
               </pre>
+
+
+              {diagnostic.proposals?.definitional.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <h3 style={{ marginBottom: 4 }}>
+                    Definition proposals ({diagnostic.proposals.definitional.length})
+                  </h3>
+                  <p className="small muted" style={{ marginTop: 0 }}>
+                    Each one replaces the definition text of a single existing code. Nothing is
+                    applied until you accept it, and accepting does not re-code anything.
+                  </p>
+
+                  <div className="field" style={{ maxWidth: 320 }}>
+                    <label htmlFor="cd-researcher">Record decisions as</label>
+                    <input
+                      id="cd-researcher"
+                      type="text"
+                      placeholder="your initials or researcher ID"
+                      value={ws.settings.researcherId ?? ''}
+                      onChange={(e) =>
+                        update('settings', (st) => ({ ...st, researcherId: e.target.value }))
+                      }
+                    />
+                    <p className="small muted" style={{ margin: '4px 0 0' }}>
+                      This app has no accounts, so attribution in the decision log is
+                      self-declared. Blank is recorded as “(unattributed)”.
+                    </p>
+                  </div>
+
+                  {diagnostic.proposals.definitional.map((pr) => {
+                    const live = ws.codebook.codes.find((c) => c.id === pr.codeId)
+                    const done = decisionFor(pr)
+                    const draft = editing[pr.id]
+                    return (
+                      <div
+                        key={pr.id}
+                        style={{ borderTop: '1px solid var(--line)', paddingTop: 10, marginTop: 10 }}
+                      >
+                        <p style={{ margin: '0 0 2px', fontWeight: 600 }}>
+                          <span className="swatch" style={{ background: ws.hypotheses[live?.group]?.color ?? '#7c3aed' }} aria-hidden="true" />
+                          {pr.codeLabel} — {pr.title}
+                        </p>
+                        {pr.rationale && (
+                          <p className="small muted" style={{ margin: '0 0 6px' }}>{pr.rationale}</p>
+                        )}
+
+                        <p className="small" style={{ margin: '0 0 2px' }}><strong>Current</strong></p>
+                        <p className="small muted" style={{ margin: '0 0 6px' }}>
+                          {live?.definition || '(no definition written)'}
+                        </p>
+                        <p className="small" style={{ margin: '0 0 2px' }}><strong>Proposed</strong></p>
+                        {draft === undefined ? (
+                          <p className="small" style={{ margin: '0 0 6px' }}>{pr.proposedDefinition}</p>
+                        ) : (
+                          <textarea
+                            aria-label={`Edit proposed definition for ${pr.codeLabel}`}
+                            rows={3}
+                            value={draft}
+                            onChange={(e) => setEditing((x) => ({ ...x, [pr.id]: e.target.value }))}
+                          />
+                        )}
+
+                        {done ? (
+                          <p className="small" style={{ margin: 0, color: done.decision === 'rejected' ? '#b03230' : '#2f9e44' }}>
+                            {done.decision === 'rejected'
+                              ? 'Rejected'
+                              : done.decision === 'accepted-edited'
+                                ? 'Accepted with edits'
+                                : 'Accepted'}{' '}
+                            by {done.decidedBy} · {new Date(done.when).toLocaleString()} ·{' '}
+                            <Link to="/design/codebook">see the decision log</Link>
+                          </p>
+                        ) : (
+                          <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: 0 }}>
+                            <button
+                              className="btn small"
+                              onClick={() =>
+                                decide(
+                                  pr,
+                                  draft === undefined ? 'accepted' : 'accepted-edited',
+                                  (draft === undefined ? pr.proposedDefinition : draft).trim(),
+                                )
+                              }
+                              disabled={draft !== undefined && !draft.trim()}
+                            >
+                              {draft === undefined ? 'Accept' : 'Accept edited'}
+                            </button>
+                            {draft === undefined ? (
+                              <button
+                                className="btn small secondary"
+                                onClick={() => setEditing((x) => ({ ...x, [pr.id]: pr.proposedDefinition }))}
+                              >
+                                Edit
+                              </button>
+                            ) : (
+                              <button
+                                className="btn small secondary"
+                                onClick={() => setEditing((x) => ({ ...x, [pr.id]: undefined }))}
+                              >
+                                Cancel edit
+                              </button>
+                            )}
+                            <button className="btn small danger" onClick={() => decide(pr, 'rejected')}>
+                              Reject
+                            </button>
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })}
+
+                  {diagnostic.proposals.definitional.some((pr) => decisionFor(pr)) && (
+                    <p className="small" style={{ marginTop: 10, fontWeight: 600 }}>
+                      Definitions changed here do <strong>not</strong> re-code anything — the
+                      existing {segments.length} segments still carry the codes the coders
+                      assigned under the old wording, which is what lets you compare before and
+                      after. Use <em>Re-code everything</em> above when you want the new
+                      definitions applied.
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {diagnostic.proposals?.structural.length > 0 && (
+                <div style={{ marginTop: 16 }}>
+                  <h3 style={{ marginBottom: 4 }}>
+                    Requires a design decision, not applied here (
+                    {diagnostic.proposals.structural.length})
+                  </h3>
+                  <p className="small muted" style={{ marginTop: 0 }}>
+                    These change the coding scheme rather than the wording of one definition —
+                    adding, splitting or merging codes, or allowing more than one code per
+                    segment. They are methodological choices with consequences for the kappa
+                    figure and the pattern-matching, so the app offers no button for them.
+                  </p>
+                  {diagnostic.proposals.structural.map((pr) => (
+                    <div key={pr.id} style={{ borderTop: '1px solid var(--line)', paddingTop: 8, marginTop: 8 }}>
+                      <p style={{ margin: '0 0 2px', fontWeight: 600 }}>{pr.title}</p>
+                      {pr.rationale && <p className="small" style={{ margin: '0 0 2px' }}>{pr.rationale}</p>}
+                      {pr.proposedDefinition && (
+                        <p className="small muted" style={{ margin: '0 0 2px' }}>{pr.proposedDefinition}</p>
+                      )}
+                      <p className="small muted" style={{ margin: 0 }}>Not applicable automatically: {pr.reason}.</p>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {diagnostic.proposals && !diagnostic.proposals.parsed && (
+                <p className="small muted" style={{ marginTop: 12 }}>
+                  The model returned no machine-readable proposal block, so the suggestions above
+                  are prose only — apply anything you agree with by hand on the{' '}
+                  <Link to="/design/codebook">Codebook</Link> page.
+                </p>
+              )}
 
               <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 0' }}>
                 <button className="btn secondary" onClick={exportDiagnostic}>

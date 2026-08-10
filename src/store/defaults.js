@@ -23,6 +23,9 @@ export function emptyRealDataset() {
     // participant answer text. The top-level log is synced to Supabase when
     // configured; the whole real slice is stripped before any sync.
     aiReviewLog: [],
+    // Accept/edit/reject decisions on AI-proposed definition changes. Kept with
+    // the real dataset because a proposal's rationale can quote participants.
+    codebookDecisions: [],
   }
 }
 
@@ -96,6 +99,9 @@ export function defaultWorkspace() {
     settings: {
       openai: { enabled: false, key: '', analysisModel: 'gpt-4o', utilityModel: 'gpt-4o-mini' },
       supabase: { url: '', anonKey: '' },
+      // Self-declared: the app has no accounts, so a decision log can only
+      // record who the researcher says they are.
+      researcherId: '',
       developer: false,
       guidance: true,
       // Guided-setup: the ONLY persisted field is whether the card is minimised.
