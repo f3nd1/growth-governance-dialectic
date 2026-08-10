@@ -170,12 +170,17 @@ export function reportToMarkdown(m) {
   )
   lines.push('')
   if (m.reliability) {
-    lines.push(`- N segments: ${m.reliability.n}`)
+    lines.push(`- N substantive segments: ${m.reliability.n}` +
+      (m.reliability.excluded ? ` (of ${m.reliability.total} coded)` : ''))
+    if (m.reliability.excluded) {
+      lines.push(`- Excluded as non-answers: ${m.reliability.excluded}`)
+    }
     lines.push(`- Observed agreement p₀: ${(m.reliability.po * 100).toFixed(1)}%`)
     lines.push(`- Cohen's kappa: ${m.reliability.kappa.toFixed(3)} — **${m.reliability.band}**`)
     lines.push(
       `- Band cut-points: substantial ≥ ${m.reliability.thresholds.substantial}, strong ≥ ${m.reliability.thresholds.strong}`,
     )
+    if (m.reliability.excluded) lines.push(`- ${'Non-answers (role disclaimers carrying no position) are excluded from this base: both coders return unclassified on them by construction, so counting them would inflate observed agreement without either coder having judged anything. Substantive segments that both coders left unclassified are KEPT — that is a codebook-coverage failure, and their agreement is real.'}`)
     if (m.reliability.citation) lines.push(`- ${m.reliability.citation}`)
     lines.push(`- ${m.reliability.advice}`)
   } else {
@@ -346,13 +351,15 @@ export function appendixToMarkdown(m) {
   L.push('## A2 · Inter-coder reliability')
   L.push('')
   if (m.reliability) {
-    L.push(`- Coded segments (N): ${m.reliability.n}`)
+    L.push(`- Substantive segments (N): ${m.reliability.n}` +
+      (m.reliability.excluded ? ` (of ${m.reliability.total} coded; ${m.reliability.excluded} excluded as non-answers)` : ''))
     L.push(`- Observed agreement (p₀): ${(m.reliability.po * 100).toFixed(1)}%`)
     L.push(`- Expected agreement (pₑ): ${(m.reliability.pe * 100).toFixed(1)}%`)
     L.push(`- Cohen's κ: **${m.reliability.kappa.toFixed(3)}** — **${m.reliability.band}**`)
     L.push(
       `- Band cut-points: substantial ≥ ${m.reliability.thresholds.substantial}, strong ≥ ${m.reliability.thresholds.strong}`,
     )
+    if (m.reliability.excluded) L.push(`- ${'Non-answers (role disclaimers carrying no position) are excluded from this base: both coders return unclassified on them by construction, so counting them would inflate observed agreement without either coder having judged anything. Substantive segments that both coders left unclassified are KEPT — that is a codebook-coverage failure, and their agreement is real.'}`)
     if (m.reliability.citation) L.push(`- ${m.reliability.citation}`)
   } else {
     L.push('_No coded segments in this workspace._')
@@ -425,11 +432,12 @@ export function appendixToHTML(m) {
 
   const relBlock = m.reliability
     ? `<ul>
-  <li>Coded segments (N): ${m.reliability.n}</li>
+  <li>Substantive segments (N): ${m.reliability.n}${m.reliability.excluded ? ` (of ${m.reliability.total} coded; ${m.reliability.excluded} excluded as non-answers)` : ''}</li>
   <li>Observed agreement (p₀): ${(m.reliability.po * 100).toFixed(1)}%</li>
   <li>Expected agreement (pₑ): ${(m.reliability.pe * 100).toFixed(1)}%</li>
   <li>Cohen&#39;s κ: <strong>${m.reliability.kappa.toFixed(3)}</strong> — <strong>${esc(m.reliability.band)}</strong></li>
   <li>Band cut-points: substantial ≥ ${m.reliability.thresholds.substantial}, strong ≥ ${m.reliability.thresholds.strong}</li>
+  ${m.reliability.excluded ? `<li>${esc('Non-answers (role disclaimers carrying no position) are excluded from this base: both coders return unclassified on them by construction, so counting them would inflate observed agreement without either coder having judged anything. Substantive segments that both coders left unclassified are KEPT — that is a codebook-coverage failure, and their agreement is real.')}</li>` : ''}
   ${m.reliability.citation ? `<li>${esc(m.reliability.citation)}</li>` : ''}
 </ul>`
     : '<p><em>No coded segments in this workspace.</em></p>'

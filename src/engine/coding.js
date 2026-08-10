@@ -311,10 +311,30 @@ export function codeInterview(interview, codebook, { fromTextOnly = false } = {}
 
 // -------------------------------------------------------------- statistics
 
-/** Observed agreement + Cohen's kappa over coderA vs coderB. */
+/**
+ * Observed agreement + Cohen's kappa over coderA vs coderB, computed over
+ * SUBSTANTIVE segments only.
+ *
+ * Non-answers are excluded because they are not coding decisions. Both coders
+ * return UNCLASSIFIED on them by construction, so every one is a guaranteed
+ * agreement that inflates p-observed and kappa without either coder having
+ * judged anything. On the 243-segment real corpus the 41 disclaimers were 17%
+ * of the base.
+ *
+ * SCOPE OF THE EXCLUSION, stated because it is a methodological choice: only
+ * detected non-answers are dropped. A substantive answer that both coders left
+ * unclassified STAYS in — that is a real codebook-coverage failure and their
+ * agreement on it is a real agreement, so removing it would hide the very
+ * problem the figure exists to expose.
+ *
+ * Returns `excluded` so every reader can state the base it used.
+ */
 export function agreementStats(segments) {
-  const n = segments.length
+  const substantive = segments.filter((s) => !s.nonAnswer)
+  const excluded = segments.length - substantive.length
+  const n = substantive.length
   if (!n) return null
+  segments = substantive
   let agree = 0
   const margA = {}
   const margB = {}
@@ -329,7 +349,7 @@ export function agreementStats(segments) {
     pe += ((margA[cat] ?? 0) / n) * ((margB[cat] ?? 0) / n)
   }
   const kappa = pe >= 1 ? 1 : (po - pe) / (1 - pe)
-  return { n, agreements: agree, po, pe, kappa }
+  return { n, agreements: agree, po, pe, kappa, excluded, total: n + excluded }
 }
 
 // Default band cut-points follow the Landis & Koch (1977) convention

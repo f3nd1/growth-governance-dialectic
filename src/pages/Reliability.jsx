@@ -211,7 +211,21 @@ export default function Reliability() {
               <h2>Headline figures (pilot)</h2>
               <table className="data">
                 <tbody>
-                  <tr><td>Coded segments (N)</td><td><strong>{stats.n}</strong></td></tr>
+                  <tr>
+                    <td>Substantive segments (N)</td>
+                    <td>
+                      <strong>{stats.n}</strong>
+                      {stats.excluded > 0 && (
+                        <span className="muted"> of {stats.total} coded</span>
+                      )}
+                    </td>
+                  </tr>
+                  {stats.excluded > 0 && (
+                    <tr>
+                      <td>Excluded as non-answers</td>
+                      <td>{stats.excluded}</td>
+                    </tr>
+                  )}
                   <tr><td>Observed agreement (p₀)</td><td><strong>{(stats.po * 100).toFixed(1)}%</strong></td></tr>
                   <tr><td>Expected agreement (pₑ)</td><td>{(stats.pe * 100).toFixed(1)}%</td></tr>
                   <tr><td>Cohen’s kappa (κ)</td><td><strong>{stats.kappa.toFixed(3)}</strong></td></tr>
@@ -253,6 +267,17 @@ export default function Reliability() {
                     ))}
                   </tbody>
                 </table>
+              )}
+              {stats.excluded > 0 && (
+                <p className="small muted" style={{ marginTop: 8 }}>
+                  <strong>{stats.excluded}</strong> of {stats.total} coded segments were
+                  excluded from this figure as non-answers — role disclaimers carrying no
+                  position on any proposition. Both coders return unclassified on them by
+                  construction, so counting them would inflate observed agreement and κ
+                  without either coder having judged anything. Substantive segments that both
+                  coders left unclassified are kept: that is a codebook-coverage failure, and
+                  their agreement is real.
+                </p>
               )}
               <p className="small muted" style={{ marginTop: 8 }}>
                 High rows usually mean a vague definition (see the <Link to="/design/codebook">Codebook</Link>)
