@@ -4,7 +4,7 @@ import PageHeader from '../components/PageHeader'
 import WeightBar from '../components/WeightBar'
 import { useWorkspace, update } from '../store/dataStore'
 import { HYPOTHESIS_IDS } from '../store/defaults'
-import { STAKEHOLDER_GROUPS } from '../data/seeds'
+import { STAKEHOLDER_GROUPS, heldIsValid } from '../data/seeds'
 
 function blankPersona() {
   return {
@@ -41,7 +41,8 @@ export default function PersonaBuilder() {
   const sum = HYPOTHESIS_IDS.reduce((s, id) => s + draft.weights[id], 0)
   const sumOk = Math.abs(sum - 1) < 0.005
   const paradox = draft.held.length >= 2
-  const valid = draft.name.trim() && draft.role.trim() && sumOk
+  const heldOk = heldIsValid(draft.held)
+  const valid = draft.name.trim() && draft.role.trim() && sumOk && heldOk
 
   function setWeight(id, value) {
     setDraft((d) => ({ ...d, weights: { ...d.weights, [id]: value } }))
@@ -57,14 +58,19 @@ export default function PersonaBuilder() {
     }))
   }
 
+  // WH1 and WH2 may be held together (the paradox case). WH3 asserts there is no
+  // association at all, so selecting it clears the directional pair and vice versa.
   function toggleHeld(id) {
-    setDraft((d) => ({
-      ...d,
-      held: d.held.includes(id) ? d.held.filter((h) => h !== id) : [...d.held, id],
-    }))
+    setDraft((d) => {
+      if (d.held.includes(id)) return { ...d, held: d.held.filter((h) => h !== id) }
+      const held =
+        id === 'wh3' ? ['wh3'] : [...d.held.filter((h) => h !== 'wh3'), id]
+      return { ...d, held }
+    })
   }
 
   function save() {
+    if (!heldIsValid(draft.held)) return
     const persona = { ...draft, synthetic: true }
     update('personas', (ps) => {
       const idx = ps.findIndex((p) => p.id === persona.id)
@@ -199,7 +205,17 @@ export default function PersonaBuilder() {
               — {ws.hypotheses[id].description}
             </label>
           ))}
+          <p className="small muted" style={{ margin: '6px 0 0' }}>
+            WH1 and WH2 can be held together — paradox personas hold both. WH3 means no
+            association exists, so it cannot combine with either.
+          </p>
         </fieldset>
+        {!heldOk && (
+          <p className="small" role="alert" style={{ color: '#b03230', fontWeight: 600 }}>
+            Invalid combination: WH3 asserts no association, so it cannot be held alongside
+            WH1 or WH2. Clear one before saving.
+          </p>
+        )}
         {paradox && (
           <p className="small" style={{ fontWeight: 600 }}>
             ⚡ Paradox persona: holds {draft.held.map((h) => ws.hypotheses[h].short).join(' and ')}{' '}

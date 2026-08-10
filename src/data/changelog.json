@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:05:01.424Z",
+      "action": "push",
+      "commit": "57547ea",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Personas: WH3 exclusive with WH1/WH2",
+      "summary": "Held-proposition checkboxes enforce WH3 exclusivity (WH1+WH2 paradox still allowed, blind-spot independent); save validation for programmatic/import state; normaliseHeld migration drops WH3 beside WH1/WH2 at the mergeWithDefaults choke point; seed P13 corrected to WH3 only"
+    },
+    {
       "when": "2026-08-09T23:52:24.518Z",
       "action": "push",
       "commit": "ee15e66",

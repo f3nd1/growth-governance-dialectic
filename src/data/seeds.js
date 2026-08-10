@@ -51,6 +51,24 @@ export function rqList(rq) {
   return rq ? [rq] : []
 }
 
+/**
+ * WH1 and WH2 can be held together — paradox theory predicts exactly that, and
+ * surfacing the coexistence is the study's contribution. WH3 asserts there is no
+ * association at all, so it cannot coherently sit beside either. Where a stored
+ * persona has both, WH3 is dropped: the WH1/WH2 signal is the meaningful one.
+ */
+export function normaliseHeld(held) {
+  const list = Array.isArray(held) ? held : []
+  const hasDirectional = list.includes('wh1') || list.includes('wh2')
+  return hasDirectional ? list.filter((h) => h !== 'wh3') : list
+}
+
+/** True when a held set is internally contradictory (WH3 beside WH1/WH2). */
+export function heldIsValid(held) {
+  const list = Array.isArray(held) ? held : []
+  return !(list.includes('wh3') && (list.includes('wh1') || list.includes('wh2')))
+}
+
 export function defaultProtocolQuestions() {
   return [
     {
@@ -440,7 +458,7 @@ export function defaultPersonas() {
       group: 'support',
       tenureYears: 1,
       weights: { wh1: 0.3, wh2: 0.3, wh3: 0.4 },
-      held: ['wh1', 'wh3'],
+      held: ['wh3'],
       blindSpot: true,
       voice:
         'Deliberately off-script. Answers in terms the a priori codebook does not anticipate — talks about governance as identity and staff morale rather than as cost or benefit; says it changed how people talk to each other rather than what the business achieved. Exists to test whether the emergent bucket catches what the deductive codes miss. If Robin\'s answers all get forced into existing codes, the codebook is too greedy.',

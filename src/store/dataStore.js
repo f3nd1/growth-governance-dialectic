@@ -4,7 +4,7 @@
 
 import { useSyncExternalStore } from 'react'
 import { defaultWorkspace } from './defaults'
-import { rqList } from '../data/seeds'
+import { rqList, normaliseHeld } from '../data/seeds'
 
 const STORAGE_KEY = 'ggd-workspace-v1'
 
@@ -60,6 +60,9 @@ function mergeWithDefaults(loaded) {
   }
   if (!merged.codebook?.codes?.length) merged.codebook = base.codebook
   if (!merged.personas?.length) merged.personas = base.personas
+  // WH3 cannot coherently be held alongside WH1/WH2; drop it where a stored
+  // persona has both, keeping the paradox signal.
+  merged.personas = merged.personas.map((p) => ({ ...p, held: normaliseHeld(p.held) }))
   return merged
 }
 
