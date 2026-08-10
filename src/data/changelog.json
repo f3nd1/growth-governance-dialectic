@@ -1,5 +1,55 @@
 {
+  "checkFrom": "70c421a",
+  "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
+    {
+      "when": "2026-08-10T07:39:33.000Z",
+      "action": "push",
+      "commit": "70c421a",
+      "branch": "main",
+      "message": "Real mode: accept, edit or reject AI-proposed codebook definition changes",
+      "summary": "Definition proposals from the disagreement diagnostic can be accepted, edited before accepting, or rejected, with every decision logged with before/after text; structural proposals are surfaced as design decisions with no apply action, and no coded segment is ever re-coded."
+    },
+    {
+      "when": "2026-08-10T07:22:50.000Z",
+      "action": "push",
+      "commit": "0b9bf7d",
+      "branch": "main",
+      "message": "Real mode: allow configuring the OpenAI key, and diagnose blocked requests",
+      "summary": "The OpenAI key, live-AI toggle and model pickers are available in real mode behind a warning that running the diagnostic transmits participant answer text; a blocked request now reports the three causes that produce Failed to fetch instead of the bare message."
+    },
+    {
+      "when": "2026-08-10T07:11:57.000Z",
+      "action": "push",
+      "commit": "7c29fae",
+      "branch": "main",
+      "message": "Real mode: AI diagnostic for coder disagreements (read-only)",
+      "summary": "Adds a read-only Coding-page diagnostic that asks the configured OpenAI model why the two coding passes disagree, behind a per-use confirm naming the data transmission; it writes no code, override or definition, and real-mode AI log entries now live in the local-only real slice so prompts quoting participants never sync."
+    },
+    {
+      "when": "2026-08-10T05:40:51.000Z",
+      "action": "push",
+      "commit": "8af54ad",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Real mode: bulk transcript import from CSV/TSV with a mandatory preview",
+      "summary": "Adds file-based transcript import for real mode in wide (one row per participant) and long (one row per answer) layouts, with a hand-written RFC 4180 reader, a live-protocol CSV template, a mandatory preview resolving unknown codes, duplicates and existing transcripts, and an all-or-nothing single-commit write."
+    },
+    {
+      "when": "2026-08-10T05:25:44.000Z",
+      "action": "push",
+      "commit": "b7cadb1",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Real mode: edit participant records, including the participant code",
+      "summary": "Adds a per-row Edit action for real participant records covering code, stakeholder group, role descriptor and tenure band; changing the code carries the denormalised copy on transcripts, coded segments and the override log with it, so no data is orphaned."
+    },
+    {
+      "when": "2026-08-10T05:09:03.000Z",
+      "action": "push",
+      "commit": "9d6625b",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Real data mode 4/4: confidentiality header on real exports, confirm before export",
+      "summary": "Real-mode exports carry a confidentiality header instead of the synthetic caveat, name what is being exported before writing the file, and exclude the synthetic corpus; import, live AI, calibration and demo data are unavailable in real mode."
+    },
     {
       "when": "2026-08-10T05:05:03.386Z",
       "action": "push",
@@ -19,7 +69,7 @@
     {
       "when": "2026-08-10T04:57:07.447Z",
       "action": "push",
-      "commit": "bfba65b",
+      "commit": "4661f7a",
       "branch": "claude/governance-growth-dialectic-app-4ssmnb",
       "message": "Real data mode 1/4: mode + dataset separation",
       "summary": "Workspace mode synthetic|real with a separate real slice; activeData()/updateActive() enforce separation at the data layer; real data stripped from remote sync in persist(); mode-specific banner; confirm-gated switch"
@@ -158,7 +208,7 @@
       "commit": "146bb57",
       "branch": "claude/governance-growth-dialectic-app-4ssmnb",
       "message": "Personas: investor group + persona + Q8",
-      "summary": "Seeded investor persona I01 (WH2-weighted) + investor stakeholder group; Q8 investor-confidence question with investorTrust simulator bank; counts updated to 9 personas / 72 segments / κ≈0.88"
+      "summary": "Seeded investor persona I01 (WH2-weighted) + investor stakeholder group; Q8 investor-confidence question with investorTrust simulator bank; counts updated to 9 personas / 72 segments / \u03ba\u22480.88"
     },
     {
       "when": "2026-08-08T10:29:48.672Z",
@@ -270,7 +320,7 @@
       "commit": "9b37b70",
       "branch": "claude/governance-growth-dialectic-app-4ssmnb",
       "message": "Phase 3: persona builder + library",
-      "summary": "Weight-profile builder (sum-to-1, paradox ⚡, blind-spot probe), library cards with stacked bars, 8 seeded synthetic personas"
+      "summary": "Weight-profile builder (sum-to-1, paradox \u26a1, blind-spot probe), library cards with stacked bars, 8 seeded synthetic personas"
     },
     {
       "when": "2026-07-04T15:44:27.714Z",
