@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-10T07:48:35.241Z",
+      "action": "push",
+      "commit": "4868f98",
+      "branch": "main",
+      "message": "Backfill six missing Change Log entries and make log-change commit its own work",
+      "summary": "Restores entries for the six commits whose changelog updates were written and then discarded before commit, and makes log-change commit the entry it writes; adds changelog:check and explains why a git post-commit hook is the wrong tool here."
+    },
+    {
       "when": "2026-08-10T07:39:33.000Z",
       "action": "push",
       "commit": "70c421a",
@@ -208,7 +216,7 @@
       "commit": "146bb57",
       "branch": "claude/governance-growth-dialectic-app-4ssmnb",
       "message": "Personas: investor group + persona + Q8",
-      "summary": "Seeded investor persona I01 (WH2-weighted) + investor stakeholder group; Q8 investor-confidence question with investorTrust simulator bank; counts updated to 9 personas / 72 segments / \u03ba\u22480.88"
+      "summary": "Seeded investor persona I01 (WH2-weighted) + investor stakeholder group; Q8 investor-confidence question with investorTrust simulator bank; counts updated to 9 personas / 72 segments / κ≈0.88"
     },
     {
       "when": "2026-08-08T10:29:48.672Z",
@@ -320,7 +328,7 @@
       "commit": "9b37b70",
       "branch": "claude/governance-growth-dialectic-app-4ssmnb",
       "message": "Phase 3: persona builder + library",
-      "summary": "Weight-profile builder (sum-to-1, paradox \u26a1, blind-spot probe), library cards with stacked bars, 8 seeded synthetic personas"
+      "summary": "Weight-profile builder (sum-to-1, paradox ⚡, blind-spot probe), library cards with stacked bars, 8 seeded synthetic personas"
     },
     {
       "when": "2026-07-04T15:44:27.714Z",
