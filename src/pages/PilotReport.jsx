@@ -113,7 +113,7 @@ export default function PilotReport() {
         <h2>7 · Pattern-matching</h2>
         {m.patterns.hypTotal > 0 ? (
           <>
-            <WeightBar weights={m.patterns.shares} height={20} />
+            <WeightBar weights={m.patterns.shares} height={20} kind="coded" caption />
             <table className="data" style={{ marginTop: 10 }}>
               <tbody>
                 {HYPOTHESIS_IDS.map((id) => (

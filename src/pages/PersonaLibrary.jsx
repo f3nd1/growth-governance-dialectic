@@ -56,7 +56,7 @@ export default function PersonaLibrary() {
                   </>
                 )}
               </p>
-              <WeightBar weights={p.weights} />
+              <WeightBar weights={p.weights} kind="authored" caption />
               <p className="small muted" style={{ margin: '8px 0' }}>
                 Holds: {p.held.length ? p.held.map((h) => ws.hypotheses[h].short).join(' + ') : '—'}
                 {' · '}

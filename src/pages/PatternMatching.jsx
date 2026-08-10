@@ -58,7 +58,7 @@ export default function PatternMatching() {
 
       <section className="card">
         <h2>Overall evidence distribution (synthetic)</h2>
-        <WeightBar weights={overallShares} height={22} />
+        <WeightBar weights={overallShares} height={22} kind="coded" caption />
         <table className="data" style={{ marginTop: 12 }}>
           <thead>
             <tr>
@@ -133,7 +133,7 @@ export default function PatternMatching() {
           <thead>
             <tr>
               <th>Synthetic participant</th>
-              <th style={{ minWidth: 160 }}>Distribution</th>
+              <th style={{ minWidth: 160 }}>Coded evidence</th>
               {HYPOTHESIS_IDS.map((id) => (
                 <th key={id} style={{ color: ws.hypotheses[id].color }}>{ws.hypotheses[id].short}</th>
               ))}
@@ -147,7 +147,7 @@ export default function PatternMatching() {
                 <td>
                   {p.personaName.replace(' (synthetic)', '')} <span className="stamp">syn</span>
                 </td>
-                <td><WeightBar weights={p.shares} height={12} /></td>
+                <td><WeightBar weights={p.shares} height={12} kind="coded" /></td>
                 {HYPOTHESIS_IDS.map((id) => (
                   <td key={id}>{(p.shares[id] * 100).toFixed(0)}%</td>
                 ))}

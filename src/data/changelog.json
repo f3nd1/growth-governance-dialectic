@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:46:34.014Z",
+      "action": "push",
+      "commit": "978ec01",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Label WeightBar as authored vs coded",
+      "summary": "WeightBar takes kind='authored'|'coded' driving accessible name and optional visible caption; Persona Library/Builder/Run Interviews marked authored profile, Pattern-Matching and Pilot Report marked coded evidence; per-participant column renamed to Coded evidence"
+    },
+    {
       "when": "2026-08-10T04:41:43.839Z",
       "action": "push",
       "commit": "5450d90",

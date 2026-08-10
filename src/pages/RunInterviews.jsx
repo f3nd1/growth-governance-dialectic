@@ -69,12 +69,15 @@ export default function RunInterviews() {
         </div>
         {chosen.length > 0 && (
           <div style={{ maxWidth: 380 }}>
+            <p className="small muted" style={{ margin: '0 0 4px' }}>
+              Authored profile (the input conditioning generation — not a result)
+            </p>
             {chosen.map((id) => {
               const p = ws.personas.find((x) => x.id === id)
               return p ? (
                 <div key={id} style={{ marginBottom: 6 }}>
                   <span className="small">{p.name}</span>
-                  <WeightBar weights={p.weights} height={8} />
+                  <WeightBar weights={p.weights} height={8} kind="authored" />
                 </div>
               ) : null
             })}

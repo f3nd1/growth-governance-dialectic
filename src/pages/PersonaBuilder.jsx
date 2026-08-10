@@ -183,7 +183,11 @@ export default function PersonaBuilder() {
             <button className="btn small secondary" onClick={normalise}>Normalise to 100%</button>
           )}
         </p>
-        <WeightBar weights={sumOk ? draft.weights : { wh1: sum ? draft.weights.wh1 / sum : 0.34, wh2: sum ? draft.weights.wh2 / sum : 0.33, wh3: sum ? draft.weights.wh3 / sum : 0.33 }} />
+        <WeightBar
+          kind="authored"
+          caption
+          weights={sumOk ? draft.weights : { wh1: sum ? draft.weights.wh1 / sum : 0.34, wh2: sum ? draft.weights.wh2 / sum : 0.33, wh3: sum ? draft.weights.wh3 / sum : 0.33 }}
+        />
       </section>
 
       <section className="card">
