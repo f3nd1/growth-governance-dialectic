@@ -65,7 +65,9 @@ export function buildReportModel(ws) {
       reliability: !real && relData.points.length
         ? reliabilitySVG(relData, colors, thresholds, { isReal: real })
         : null,
-      heatmap: heatmapSVG(heatData, colors, { isReal: real }),
+      // No selected evidence types means no matrix — an axis-only frame would
+      // assert a comparison the researcher deliberately switched off.
+      heatmap: heatData.rows.length ? heatmapSVG(heatData, colors, { isReal: real }) : null,
     },
     jointDisplay: heatData.rows,
     // Non-removable, and chosen by mode rather than by any setting: real
@@ -381,6 +383,10 @@ export function appendixToMarkdown(m) {
 
   L.push('## A4 · Joint-display matrix (pattern-matching)')
   L.push('')
+  if (m.jointDisplay.length === 0) {
+    L.push('_No evidence types are selected for the joint display, so no matrix is reported._')
+    L.push('')
+  } else {
   L.push(
     m.isReal
       ? 'Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from entered transcripts; documents and focus groups are not yet collected.'
@@ -401,6 +407,7 @@ export function appendixToMarkdown(m) {
     L.push(`| ${mdEsc(row.label)} | ${status} | ${mdEsc(cells[0])} | ${mdEsc(cells[1])} | ${mdEsc(cells[2])} |`)
   }
   L.push('')
+  }
   L.push('---')
   L.push('')
   L.push(`**${m.caveat}**`)
@@ -499,9 +506,11 @@ ${patternRows ? `<table><thead><tr><th>Hypothesis</th><th>Weighted segments</th>
 ${chartFig('Hypothesis distribution', m.charts.distribution, m.isReal ? 'Per-participant coded-evidence shares with the aggregate.' : 'Per-persona coded-evidence shares with the aggregate.')}
 
 <h2>A4 · Joint-display matrix (pattern-matching)</h2>
-<p>Expected evidence under each hypothesis by evidence type. Only the interview row is populated${m.isReal ? '' : ' from synthetic data'}; the remaining rows are ${m.isReal ? 'not yet collected' : 'real-data-phase placeholders'}.</p>
-<table><thead><tr><th>Evidence type</th><th>Status</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>
-${chartFig('Joint-display heatmap', m.charts.heatmap, 'Evidence strength per hypothesis; only the interview row is populated.')}
+${m.jointDisplay.length === 0
+  ? '<p><em>No evidence types are selected for the joint display, so no matrix is reported.</em></p>'
+  : `<p>Expected evidence under each hypothesis by evidence type. Only the interview row is populated${m.isReal ? '' : ' from synthetic data'}; the remaining rows are ${m.isReal ? 'not yet collected' : 'real-data-phase placeholders'}.</p>
+<table><thead><tr><th>Evidence type</th><th>Status</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>`}
+${m.jointDisplay.length ? chartFig('Joint-display heatmap', m.charts.heatmap, 'Evidence strength per hypothesis; only the interview row is populated.') : ''}
 
 <hr />
 <div class="caveat">${esc(m.caveat)}</div>

@@ -9,6 +9,30 @@
 
 export const EXTERNAL_GROUPS = ['agent', 'investor']
 
+/**
+ * Which evidence-type rows the matrix shows, per workspace mode. The two modes
+ * keep independent sets: a synthetic pilot legitimately wants all four rows to
+ * show what the instrument does and does not cover, while real fieldwork that
+ * has only collected interviews wants the uncollected rows out of the way.
+ *
+ * Stored as an id -> false map of EXCLUSIONS, so a row is enabled unless it has
+ * been explicitly turned off. That keeps existing workspaces unchanged and
+ * means a row added to JOINT_DISPLAY_ROWS later appears rather than silently
+ * hiding. Rows are never deleted — a hidden row keeps its expected-evidence
+ * text and comes back intact.
+ */
+export function jointRowsEnabled(settings, mode) {
+  return settings?.jointDisplay?.rows?.[mode === 'real' ? 'real' : 'synthetic'] ?? {}
+}
+
+export function isJointRowEnabled(settings, mode, id) {
+  return jointRowsEnabled(settings, mode)[id] !== false
+}
+
+export function visibleJointRows(settings, mode) {
+  return JOINT_DISPLAY_ROWS.filter((r) => isJointRowEnabled(settings, mode, r.id))
+}
+
 export const JOINT_DISPLAY_ROWS = [
   {
     id: 'documents',

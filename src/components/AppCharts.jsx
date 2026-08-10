@@ -131,6 +131,14 @@ export function JointHeatmapChart() {
   const isReal = activeData(ws).isReal
   const colors = hypothesisColors(ws)
   const data = heatmapData(ws)
+  if (data.rows.length === 0) {
+    return (
+      <EmptyChart>
+        Every evidence type is hidden, so there is no matrix to draw — turn at least one row
+        back on under <Link to="/analysis/joint-display">Joint Display</Link>.
+      </EmptyChart>
+    )
+  }
   const svg = heatmapSVG(data, colors, { isReal })
   const fallback = (
     <table className="data">

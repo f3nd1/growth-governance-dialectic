@@ -108,7 +108,11 @@ export function defaultWorkspace() {
       // All step progress is derived from data, never stored.
       setupGuide: { dismissed: false },
       patternMatching: {
-        // Evidence share a proposition must reach to count as supported.
+        // Which joint-display evidence-type rows are shown, per mode. Empty means
+      // every row is shown; entries are exclusions, so defaults never change for
+      // an existing workspace.
+      jointDisplay: { rows: { synthetic: {}, real: {} } },
+      // Evidence share a proposition must reach to count as supported.
         splitThreshold: 0.3,
         note:
           'The default of 0.3 is set for sensitivity. Detecting coexistence — a participant ' +

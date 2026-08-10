@@ -1,14 +1,31 @@
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
-import { useWorkspace, activeData } from '../store/dataStore'
+import { useWorkspace, activeData, update } from '../store/dataStore'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { JointHeatmapChart } from '../components/AppCharts'
 import { heatmapData } from '../engine/vizData'
+import { JOINT_DISPLAY_ROWS, isJointRowEnabled } from '../data/jointDisplayMatrix'
 
 export default function JointDisplay() {
   const ws = useWorkspace()
   const isReal = activeData(ws).isReal
   const { rows, hasData } = heatmapData(ws)
+  const modeKey = isReal ? 'real' : 'synthetic'
+
+  // Writes an EXCLUSION, and only for the active mode — the other mode's row
+  // set is untouched by anything done here.
+  function toggleRow(id, on) {
+    update('settings', (st) => ({
+      ...st,
+      jointDisplay: {
+        ...(st.jointDisplay ?? {}),
+        rows: {
+          ...(st.jointDisplay?.rows ?? {}),
+          [modeKey]: { ...(st.jointDisplay?.rows?.[modeKey] ?? {}), [id]: on },
+        },
+      },
+    }))
+  }
 
   return (
     <>
@@ -43,6 +60,48 @@ export default function JointDisplay() {
         </div>
       )}
 
+
+      <section className="card">
+        <h2>Evidence types shown</h2>
+        <p className="small muted">
+          Which rows this matrix reports, for <strong>{isReal ? 'real' : 'synthetic'} mode</strong>.
+          The two modes keep separate settings, so hiding a row here leaves the other mode as it
+          was. Nothing is deleted — a hidden row keeps its expected-evidence text and returns
+          intact when you switch it back on. Hidden rows are also left out of the heatmap on{' '}
+          <Link to="/analysis/visualisations">Visualisations</Link> and out of every export.
+        </p>
+        <div className="chip-row" role="group" aria-label="Evidence-type rows">
+          {JOINT_DISPLAY_ROWS.map((r) => {
+            const on = isJointRowEnabled(ws.settings, modeKey, r.id)
+            return (
+              <button
+                key={r.id}
+                className={'chip' + (on ? ' on' : '')}
+                aria-pressed={on}
+                onClick={() => toggleRow(r.id, !on)}
+              >
+                {on ? '✓ ' : ''}{r.label}
+                {r.populatedBy == null && <span className="muted"> · never populated</span>}
+              </button>
+            )
+          })}
+        </div>
+      </section>
+
+      {rows.length === 0 ? (
+        <div className="card muted">
+          <p style={{ marginTop: 0 }}>
+            <strong>Every evidence type is hidden</strong>, so there is no matrix to show. The
+            joint display is a comparison across evidence types — with none selected it has
+            nothing to compare.
+          </p>
+          <p style={{ marginBottom: 0 }}>
+            Turn at least one row back on above. Nothing was lost: each row kept its
+            expected-evidence text.
+          </p>
+        </div>
+      ) : (
+        <>
       <section className="card">
         <h2>Heatmap view{isReal ? '' : ' (synthetic)'}</h2>
         <JointHeatmapChart />
@@ -104,6 +163,9 @@ export default function JointDisplay() {
           </tbody>
         </table>
       </section>
+
+        </>
+      )}
 
       <section className="card">
         <h2>What this {isReal ? 'analysis' : 'pilot'} can and cannot claim</h2>

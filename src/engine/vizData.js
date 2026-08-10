@@ -7,7 +7,7 @@ import { agreementStats } from './coding'
 import { aggregateEvidence } from './patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { activeData } from '../store/dataStore'
-import { JOINT_DISPLAY_ROWS, EXTERNAL_GROUPS } from '../data/jointDisplayMatrix'
+import { visibleJointRows, EXTERNAL_GROUPS } from '../data/jointDisplayMatrix'
 
 /** Colours keyed wh1/wh2/wh3, pulled from the workspace hypotheses. */
 export function hypothesisColors(ws) {
@@ -99,7 +99,9 @@ export function heatmapData(ws) {
     internal: sharesFor(internal, ws.codebook),
     external: sharesFor(external, ws.codebook),
   }
-  const rows = JOINT_DISPLAY_ROWS.map((r) => ({
+  // Filtered here, at the single selector every consumer reads — the page, the
+  // chart and both exports — so a hidden row cannot survive in one of them.
+  const rows = visibleJointRows(ws.settings, ws.mode).map((r) => ({
     id: r.id,
     label: r.label,
     populated: r.populatedBy != null,
