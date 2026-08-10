@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
-import { useWorkspace, update } from '../store/dataStore'
+import { activeData, useWorkspace, update } from '../store/dataStore'
 import {
   agreementStats,
   kappaBand,
@@ -19,11 +19,12 @@ function codeLabel(codeId, codebook) {
 
 export default function Reliability() {
   const ws = useWorkspace()
+  const data = activeData(ws)
   const reliabilityCfg = ws.settings.reliability ?? {}
   const thresholds = reliabilityCfg.thresholds ?? DEFAULT_KAPPA_THRESHOLDS
-  const stats = agreementStats(ws.coding.segments)
+  const stats = agreementStats(data.coding.segments)
   const band = stats ? kappaBand(stats.kappa, thresholds) : null
-  const [personaId, setPersonaId] = useState(ws.personas[0]?.id ?? '')
+  const [personaId, setPersonaId] = useState(data.participants[0]?.id ?? '')
   const [running, setRunning] = useState(false)
 
   function setThreshold(key, value) {
@@ -50,7 +51,7 @@ export default function Reliability() {
 
   // Per-code disagreement breakdown — points at the definitions to tighten.
   const byCode = {}
-  for (const s of ws.coding.segments) {
+  for (const s of data.coding.segments) {
     const key = s.coderA
     byCode[key] = byCode[key] ?? { total: 0, disagree: 0 }
     byCode[key].total++
@@ -63,7 +64,7 @@ export default function Reliability() {
 
   // Stability: two most recent OFFLINE interviews of the chosen persona with
   // different seeds, re-coded on the fly (deterministic), compared per question.
-  const personaRuns = ws.interviews
+  const personaRuns = data.interviews
     .filter((iv) => iv.personaId === personaId && iv.mode === 'offline')
     .slice(-6)
   const seedsSeen = new Set()
@@ -265,7 +266,7 @@ export default function Reliability() {
         <div className="field" style={{ maxWidth: 320 }}>
           <label htmlFor="stab-persona">Persona</label>
           <select id="stab-persona" value={personaId} onChange={(e) => setPersonaId(e.target.value)}>
-            {ws.personas.map((p) => (
+            {data.participants.map((p) => (
               <option key={p.id} value={p.id}>{p.name}</option>
             ))}
           </select>

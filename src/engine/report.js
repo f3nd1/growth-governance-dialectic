@@ -12,6 +12,7 @@ import {
 } from './vizData'
 import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
 import { rqList } from '../data/seeds'
+import { activeData } from '../store/dataStore'
 
 export const SYNTHETIC_CAVEAT =
   'SYNTHETIC PILOT — INSTRUMENT VALIDATION ONLY. All participants, transcripts, codes and ' +
@@ -20,9 +21,9 @@ export const SYNTHETIC_CAVEAT =
   'Real fieldwork is pending advisor and IRB approval.'
 
 export function buildReportModel(ws) {
-  const stats = agreementStats(ws.coding.segments)
+  const stats = agreementStats(activeData(ws).coding.segments)
   const { personas, overall, topCodes } = aggregateEvidence(
-    ws.coding.segments,
+    activeData(ws).coding.segments,
     ws.codebook,
     ws.settings.patternMatching?.splitThreshold,
   )
@@ -51,10 +52,10 @@ export function buildReportModel(ws) {
     closingScript: ws.protocol.closingScript ?? '',
     codebook: ws.codebook.codes,
     counts: {
-      personas: ws.personas.length,
-      interviews: ws.interviews.length,
-      segments: ws.coding.segments.length,
-      overrides: ws.coding.segments.filter((s) => s.override).length,
+      personas: activeData(ws).participants.length,
+      interviews: activeData(ws).interviews.length,
+      segments: activeData(ws).coding.segments.length,
+      overrides: activeData(ws).coding.segments.filter((s) => s.override).length,
     },
     reliability: stats
       ? {

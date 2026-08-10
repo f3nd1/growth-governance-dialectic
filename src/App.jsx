@@ -7,7 +7,9 @@ import InterviewProtocol from './pages/InterviewProtocol'
 import Codebook from './pages/Codebook'
 import PersonaBuilder from './pages/PersonaBuilder'
 import PersonaLibrary from './pages/PersonaLibrary'
+import RealParticipants from './pages/RealParticipants'
 import RunInterviews from './pages/RunInterviews'
+import TranscriptEntry from './pages/TranscriptEntry'
 import Transcripts from './pages/Transcripts'
 import Coding from './pages/Coding'
 import Reliability from './pages/Reliability'
@@ -33,7 +35,9 @@ export default function App() {
           <Route path="/design/codebook" element={<Codebook />} />
           <Route path="/participants/builder" element={<PersonaBuilder />} />
           <Route path="/participants/library" element={<PersonaLibrary />} />
+          <Route path="/participants/records" element={<RealParticipants />} />
           <Route path="/fieldwork/run" element={<RunInterviews />} />
+          <Route path="/fieldwork/entry" element={<TranscriptEntry />} />
           <Route path="/fieldwork/transcripts" element={<Transcripts />} />
           <Route path="/analysis/coding" element={<Coding />} />
           <Route path="/analysis/reliability" element={<Reliability />} />

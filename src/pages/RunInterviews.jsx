@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
+import ModeGate from '../components/ModeGate'
 import WeightBar from '../components/WeightBar'
 import { useWorkspace } from '../store/dataStore'
 import { runInterviews } from '../engine'
@@ -14,6 +15,15 @@ export default function RunInterviews() {
   const [result, setResult] = useState(null)
 
   const live = liveModeAvailable(ws.settings)
+
+  if (ws.mode === 'real') {
+    return (
+      <>
+        <PageHeader title="Run Interviews" desc="Generates synthetic interviews from personas." />
+        <ModeGate want="synthetic" />
+      </>
+    )
+  }
 
   function toggle(id) {
     setSelected((s) => {

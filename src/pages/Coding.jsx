@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
-import { useWorkspace, update } from '../store/dataStore'
+import { activeData, updateActive, useWorkspace } from '../store/dataStore'
 import { codeInterview, UNCLASSIFIED } from '../engine/coding'
 
 function CodeName({ codeId, codebook, hypotheses }) {
@@ -16,17 +16,18 @@ function CodeName({ codeId, codebook, hypotheses }) {
 
 export default function Coding() {
   const ws = useWorkspace()
+  const data = activeData(ws)
   const [filter, setFilter] = useState('all')
 
-  const segments = ws.coding.segments
+  const segments = data.coding.segments
   const codedInterviewIds = new Set(segments.map((s) => s.interviewId))
-  const uncoded = ws.interviews.filter((iv) => !codedInterviewIds.has(iv.id))
+  const uncoded = data.interviews.filter((iv) => !codedInterviewIds.has(iv.id))
   const disagreements = segments.filter((s) => s.coderA !== s.coderB)
 
   function codeAll(recode) {
-    const targets = recode ? ws.interviews : uncoded
+    const targets = recode ? data.interviews : uncoded
     const fresh = targets.flatMap((iv) => codeInterview(iv, ws.codebook))
-    update('coding', (c) => ({
+    updateActive('coding', (c) => ({
       ...c,
       segments: recode
         ? fresh
@@ -36,7 +37,7 @@ export default function Coding() {
   }
 
   function overrideSegment(segId, codeId) {
-    update('coding', (c) => {
+    updateActive('coding', (c) => {
       const seg = c.segments.find((s) => s.id === segId)
       const value = codeId === '' ? null : codeId
       return {
@@ -78,7 +79,7 @@ export default function Coding() {
           <button className="btn" onClick={() => codeAll(false)} disabled={uncoded.length === 0}>
             Code {uncoded.length} uncoded interview{uncoded.length === 1 ? '' : 's'}
           </button>
-          <button className="btn secondary" onClick={() => codeAll(true)} disabled={ws.interviews.length === 0}>
+          <button className="btn secondary" onClick={() => codeAll(true)} disabled={data.interviews.length === 0}>
             Re-code everything
           </button>
           <span className="muted small">
@@ -86,8 +87,16 @@ export default function Coding() {
             {segments.filter((s) => s.override).length} manual overrides
           </span>
         </p>
-        {ws.interviews.length === 0 && (
-          <p className="muted">No interviews to code — <Link to="/fieldwork/run">run some</Link> first.</p>
+        {data.interviews.length === 0 && (
+          <p className="muted">
+            No interviews to code —{' '}
+            {data.isReal ? (
+              <Link to="/fieldwork/entry">enter a transcript</Link>
+            ) : (
+              <Link to="/fieldwork/run">run some</Link>
+            )}{' '}
+            first.
+          </p>
         )}
       </section>
 
@@ -150,7 +159,7 @@ export default function Coding() {
         </>
       )}
 
-      {ws.coding.overridesLog.length > 0 && (
+      {data.coding.overridesLog.length > 0 && (
         <section className="card">
           <h2>Override log</h2>
           <table className="data">
@@ -158,7 +167,7 @@ export default function Coding() {
               <tr><th>When</th><th>Persona</th><th>From</th><th>To</th></tr>
             </thead>
             <tbody>
-              {ws.coding.overridesLog.slice(0, 20).map((o, i) => (
+              {data.coding.overridesLog.slice(0, 20).map((o, i) => (
                 <tr key={i}>
                   <td>{new Date(o.when).toLocaleTimeString()}</td>
                   <td>{o.persona}</td>

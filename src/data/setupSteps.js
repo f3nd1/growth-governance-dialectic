@@ -1,4 +1,5 @@
 // Guided-setup content and derived completion checks.
+import { activeData } from '../store/dataStore'
 //
 // Progress is DERIVED from real workspace data, never stored — each step's
 // `done(ws)` reads the same state the pipeline pages read, so the checklist
@@ -32,42 +33,42 @@ export const SETUP_STEPS = [
     label: 'Build or seed synthetic personas',
     path: '/participants/library',
     hint: 'Eight are seeded by default; edit them or add your own.',
-    done: (ws) => ws.personas.length > 0,
+    done: (ws) => activeData(ws).participants.length > 0,
   },
   {
     id: 'interviews',
     label: 'Run interviews',
     path: '/fieldwork/run',
     hint: 'Run all personas through the protocol (offline simulator or live LLM).',
-    done: (ws) => ws.interviews.length > 0,
+    done: (ws) => activeData(ws).interviews.length > 0,
   },
   {
     id: 'coding',
     label: 'Dual-code the transcripts',
     path: '/analysis/coding',
     hint: 'Two independent coders classify every segment; disagreements are surfaced.',
-    done: (ws) => ws.coding.segments.length > 0,
+    done: (ws) => activeData(ws).coding.segments.length > 0,
   },
   {
     id: 'reliability',
     label: 'Check reliability (Cohen’s κ)',
     path: '/analysis/reliability',
     hint: 'Observed agreement and kappa against your chosen interpretation bands.',
-    done: (ws) => ws.coding.segments.length > 0,
+    done: (ws) => activeData(ws).coding.segments.length > 0,
   },
   {
     id: 'patterns',
     label: 'Review pattern-matching & joint display',
     path: '/analysis/patterns',
     hint: 'Evidence distributed across WH1/WH2/WH3; split (paradox) patterns surfaced.',
-    done: (ws) => ws.coding.segments.length > 0,
+    done: (ws) => activeData(ws).coding.segments.length > 0,
   },
   {
     id: 'report',
     label: 'Assemble the Pilot Report & export',
     path: '/outputs/report',
     hint: 'Review-ready summary; export JSON / Markdown / printable HTML with the caveat.',
-    done: (ws) => ws.interviews.length > 0 && ws.coding.segments.length > 0,
+    done: (ws) => activeData(ws).interviews.length > 0 && ws.coding.segments.length > 0,
   },
 ]
 

@@ -1,11 +1,10 @@
 import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
-import { useWorkspace, update } from '../store/dataStore'
+import { useWorkspace, update, setMode } from '../store/dataStore'
 import { liveModeAvailable, listChatModels } from '../engine/llm'
 import { testSupabase, supabaseConfigured } from '../store/supabase'
 import { initRemoteSync } from '../store/initSync'
 import { loadDemoData, resetToEmpty, workspaceMode, MODE_LABELS } from '../engine/demo'
-import { setMode } from '../store/dataStore'
 import { DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
 
 const MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini']

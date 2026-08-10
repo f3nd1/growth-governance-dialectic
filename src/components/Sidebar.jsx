@@ -36,7 +36,9 @@ export default function Sidebar() {
                 <span className="chev" aria-hidden="true">▼</span>
               </button>
               {open &&
-                group.items.map((item) => (
+                group.items
+                  .filter((item) => !item.mode || item.mode === ws.mode)
+                  .map((item) => (
                   <NavLink
                     key={item.path}
                     to={item.path}

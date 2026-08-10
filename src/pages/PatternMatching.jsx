@@ -1,16 +1,17 @@
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import WeightBar from '../components/WeightBar'
-import { useWorkspace } from '../store/dataStore'
+import { activeData, useWorkspace } from '../store/dataStore'
 import { aggregateEvidence, DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { HypothesisDistributionChart } from '../components/AppCharts'
 
 export default function PatternMatching() {
   const ws = useWorkspace()
+  const data = activeData(ws)
   const splitThreshold = ws.settings.patternMatching?.splitThreshold ?? DEFAULT_SPLIT_THRESHOLD
   const { personas, overall, topCodes } = aggregateEvidence(
-    ws.coding.segments,
+    data.coding.segments,
     ws.codebook,
     splitThreshold,
   )
@@ -23,7 +24,7 @@ export default function PatternMatching() {
     wh3: hypTotal ? overall.wh3 / hypTotal : 0,
   }
 
-  if (ws.coding.segments.length === 0) {
+  if (data.coding.segments.length === 0) {
     return (
       <>
         <PageHeader title="Pattern-Matching" desc="Aggregates coded evidence into the three rival propositions as distributed weight." />

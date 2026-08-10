@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
+import ModeGate from '../components/ModeGate'
 import WeightBar from '../components/WeightBar'
 import { useWorkspace, update } from '../store/dataStore'
 import { HYPOTHESIS_IDS } from '../store/defaults'
@@ -43,6 +44,15 @@ export default function PersonaBuilder() {
   const paradox = draft.held.length >= 2
   const heldOk = heldIsValid(draft.held)
   const valid = draft.name.trim() && draft.role.trim() && sumOk && heldOk
+
+  if (ws.mode === 'real') {
+    return (
+      <>
+        <PageHeader title="Persona Builder" desc="Authors synthetic participants for instrument validation." />
+        <ModeGate want="synthetic" />
+      </>
+    )
+  }
 
   function setWeight(id, value) {
     setDraft((d) => ({ ...d, weights: { ...d.weights, [id]: value } }))

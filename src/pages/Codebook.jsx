@@ -1,7 +1,7 @@
 import { Fragment, useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
-import { useWorkspace, update } from '../store/dataStore'
+import { activeData, useWorkspace, update } from '../store/dataStore'
 import { defaultCodebookCodes, CODE_GROUPS } from '../data/seeds'
 import { findEmergentCandidates, candidateToCode } from '../engine/emergent'
 
@@ -13,7 +13,7 @@ export default function Codebook() {
   const [openCandidate, setOpenCandidate] = useState(null)
 
   // Derived, never stored: recomputed from the current segments and codebook.
-  const { candidates, counts } = findEmergentCandidates(ws.coding.segments, ws.codebook)
+  const { candidates, counts } = findEmergentCandidates(activeData(ws).coding.segments, ws.codebook)
 
   function setCodes(next) {
     update('codebook', (cb) => ({ ...cb, codes: next }))
@@ -70,7 +70,7 @@ export default function Codebook() {
           candidate themes · {counts.unclassifiedSegments} genuinely unclassified
         </p>
 
-        {ws.coding.segments.length === 0 ? (
+        {activeData(ws).coding.segments.length === 0 ? (
           <p className="muted">
             Nothing coded yet — <Link to="/analysis/coding">run the coders</Link> first.
           </p>

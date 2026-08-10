@@ -1,5 +1,7 @@
 // Sidebar navigation model. Route paths are defined once here and reused by
-// the router and the sidebar.
+// the router and the sidebar. An item with `mode` is shown only in that
+// workspace mode — the synthetic generation pages and the real-data entry
+// pages are never offered at the same time.
 
 export const NAV_GROUPS = [
   {
@@ -21,15 +23,17 @@ export const NAV_GROUPS = [
     id: 'participants',
     label: '2 · Participants',
     items: [
-      { path: '/participants/builder', label: 'Persona Builder' },
-      { path: '/participants/library', label: 'Persona Library' },
+      { path: '/participants/builder', label: 'Persona Builder', mode: 'synthetic' },
+      { path: '/participants/library', label: 'Persona Library', mode: 'synthetic' },
+      { path: '/participants/records', label: 'Participant Records', mode: 'real' },
     ],
   },
   {
     id: 'fieldwork',
     label: '3 · Fieldwork',
     items: [
-      { path: '/fieldwork/run', label: 'Run Interviews' },
+      { path: '/fieldwork/run', label: 'Run Interviews', mode: 'synthetic' },
+      { path: '/fieldwork/entry', label: 'Transcript Entry', mode: 'real' },
       { path: '/fieldwork/transcripts', label: 'Transcripts' },
     ],
   },

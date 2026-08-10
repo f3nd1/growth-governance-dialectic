@@ -1,5 +1,6 @@
 import { Link, useNavigate } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
+import ModeGate from '../components/ModeGate'
 import WeightBar from '../components/WeightBar'
 import { useWorkspace, update } from '../store/dataStore'
 import { STAKEHOLDER_GROUPS, defaultPersonas } from '../data/seeds'
@@ -7,6 +8,15 @@ import { STAKEHOLDER_GROUPS, defaultPersonas } from '../data/seeds'
 export default function PersonaLibrary() {
   const ws = useWorkspace()
   const navigate = useNavigate()
+
+  if (ws.mode === 'real') {
+    return (
+      <>
+        <PageHeader title="Persona Library" desc="Synthetic participants used to validate the instrument." />
+        <ModeGate want="synthetic" />
+      </>
+    )
+  }
 
   function remove(id) {
     if (!window.confirm('Delete this synthetic persona? Its past interviews are kept.')) return

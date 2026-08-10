@@ -6,6 +6,7 @@
 import { agreementStats } from './coding'
 import { aggregateEvidence } from './patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
+import { activeData } from '../store/dataStore'
 import { JOINT_DISPLAY_ROWS, EXTERNAL_GROUPS } from '../data/jointDisplayMatrix'
 
 /** Colours keyed wh1/wh2/wh3, pulled from the workspace hypotheses. */
@@ -19,7 +20,7 @@ export function hypothesisColors(ws) {
  */
 export function hypothesisDistributionData(ws) {
   const { personas, overall } = aggregateEvidence(
-    ws.coding.segments,
+    activeData(ws).coding.segments,
     ws.codebook,
     ws.settings.patternMatching?.splitThreshold,
   )
@@ -87,10 +88,10 @@ function sharesFor(segments, codebook) {
  * Placeholder rows carry null shares (real-data phase).
  */
 export function heatmapData(ws) {
-  const groupById = new Map(ws.personas.map((p) => [p.id, p.group]))
+  const groupById = new Map(activeData(ws).participants.map((p) => [p.id, p.group]))
   const isExternal = (s) => EXTERNAL_GROUPS.includes(groupById.get(s.personaId))
-  const external = ws.coding.segments.filter(isExternal)
-  const internal = ws.coding.segments.filter((s) => !isExternal(s))
+  const external = activeData(ws).coding.segments.filter(isExternal)
+  const internal = activeData(ws).coding.segments.filter((s) => !isExternal(s))
   const bySource = {
     internal: sharesFor(internal, ws.codebook),
     external: sharesFor(external, ws.codebook),
@@ -105,5 +106,5 @@ export function heatmapData(ws) {
     shares: r.populatedBy ? bySource[r.populatedBy].shares : null,
     segmentCount: r.populatedBy ? bySource[r.populatedBy].total : 0,
   }))
-  return { rows, hasData: ws.coding.segments.length > 0 }
+  return { rows, hasData: activeData(ws).coding.segments.length > 0 }
 }
