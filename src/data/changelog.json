@@ -21,7 +21,7 @@
     {
       "when": "2026-08-10T11:18:36.454Z",
       "action": "push",
-      "commit": "f76369c",
+      "commit": "9f1cf3b",
       "branch": "main",
       "message": "Real coding: detect non-answers explicitly instead of force-coding them",
       "summary": "Role disclaimers were scoring against code definitions through shared procedural vocabulary and manufacturing guaranteed disagreements; they are now detected before scoring, marked non-answer and left unclassified, with a conservative rule that keeps any answer carrying substantive content."
