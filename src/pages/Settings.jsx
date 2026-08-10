@@ -245,10 +245,12 @@ export default function Settings() {
             Must be between 0 and 1.
           </p>
         )}
-        {splitThreshold < 1 / 3 && (
+        {splitThreshold <= 1 / 3 + 0.0005 && (
           <p className="small muted">
-            Below {(1 / 3).toFixed(2)} (an even three-way spread), so a participant with evenly
-            distributed evidence will be reported as supporting all three propositions.
+            At or below 0.333 — the even-spread point across three propositions — so a
+            participant whose evidence is evenly distributed is reported as supporting all
+            three. The test is “share at or above the cut-point”, so an exactly even
+            participant still meets 0.333; use a value strictly above it to exclude them.
           </p>
         )}
         <div className="field">

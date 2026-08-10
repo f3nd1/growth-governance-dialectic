@@ -11,11 +11,13 @@ const COLUMNS = ['wh1', 'wh2', 'wh3', 'emergent', UNCLASSIFIED]
  * Share of a participant's hypothesis-relevant evidence a proposition must reach
  * to count as supported. Two or more supported propositions = a split pattern.
  *
- * There is NO established convention for this cut-point — see the note in
- * settings.patternMatching. It is a researcher decision, configurable per
- * workspace, and must be stated in the write-up rather than cited.
+ * Default is the even-spread point across three propositions (1/3, shown as
+ * 0.333): below it, a participant whose evidence is evenly distributed would be
+ * recorded as supporting all three. There is NO established convention for this
+ * cut-point — see the note in settings.patternMatching. It is a researcher
+ * decision, configurable per workspace, and must be stated rather than cited.
  */
-export const DEFAULT_SPLIT_THRESHOLD = 0.3
+export const DEFAULT_SPLIT_THRESHOLD = 0.333
 
 function emptyTally() {
   return Object.fromEntries(COLUMNS.map((c) => [c, 0]))

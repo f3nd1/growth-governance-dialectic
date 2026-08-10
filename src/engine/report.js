@@ -74,7 +74,7 @@ export function buildReportModel(ws) {
       splits: personas.filter((p) => p.split),
       topCodes: topCodes.slice(0, 8),
       coverageGap: overall.emergent + overall.unclassified,
-      splitThreshold: ws.settings.patternMatching?.splitThreshold ?? 0.3,
+      splitThreshold: ws.settings.patternMatching?.splitThreshold ?? 0.333,
       splitNote: ws.settings.patternMatching?.note ?? '',
     },
   }

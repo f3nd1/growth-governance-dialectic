@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:18:33.769Z",
+      "action": "push",
+      "commit": "db327e9",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Pattern-matching: default cut-point 0.333",
+      "summary": "Default split threshold raised from 0.3 to the even-spread point 0.333 with that justification in the shipped note; documents that exact thirds still meet 0.333 under the at-or-above test; Settings warning widened to at-or-below"
+    },
+    {
       "when": "2026-08-10T04:13:47.346Z",
       "action": "push",
       "commit": "f98c523",
