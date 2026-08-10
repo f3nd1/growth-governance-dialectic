@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-10T08:47:50.863Z",
+      "action": "push",
+      "commit": "df8376a",
+      "branch": "main",
+      "message": "Make every synthetic label mode-aware across the analysis pages and exports",
+      "summary": "Page tags, sidebar subtitle, chart watermarks and captions, the Joint Display claims list and the seed-based reliability panels now follow the workspace mode instead of asserting synthetic provenance over real participant data; synthetic mode verified byte-identical."
+    },
+    {
       "when": "2026-08-10T07:52:21.985Z",
       "action": "push",
       "commit": "560a497",
