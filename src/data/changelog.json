@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-10T14:25:45.590Z",
+      "action": "push",
+      "commit": "d35eb64",
+      "branch": "main",
+      "message": "Joint Display: real-mode rows are stakeholder groups, not evidence types",
+      "summary": "Real mode's pattern-matching matrix now has one row per stakeholder group with membership taken from the participant record, drops the uncollected evidence-type placeholder rows, and names any participant whose group maps to no row instead of assigning one."
+    },
+    {
       "when": "2026-08-10T12:40:05.129Z",
       "action": "push",
       "commit": "faabc7e",
