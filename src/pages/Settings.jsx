@@ -5,6 +5,7 @@ import { liveModeAvailable, listChatModels } from '../engine/llm'
 import { testSupabase, supabaseConfigured } from '../store/supabase'
 import { initRemoteSync } from '../store/initSync'
 import { loadDemoData, resetToEmpty, workspaceMode, MODE_LABELS } from '../engine/demo'
+import { setMode } from '../store/dataStore'
 import { DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
 
 const MODELS = ['gpt-4o', 'gpt-4o-mini', 'gpt-4.1', 'gpt-4.1-mini']
@@ -66,6 +67,51 @@ export default function Settings() {
       />
 
       <section className="card">
+        <h2>Workspace mode</h2>
+        <p className="small">
+          Current mode:{' '}
+          <strong>{ws.mode === 'real' ? 'REAL PARTICIPANT DATA' : 'Synthetic pilot'}</strong>
+        </p>
+        <p className="small muted">
+          The two datasets are stored separately and are never combined: switching swaps
+          which one the whole analysis pipeline reads. Synthetic records and real records
+          cannot appear in the same tally, chart, kappa figure or export. Real participant
+          data is held in this browser only and is never sent to Supabase, even when
+          Supabase is configured.
+        </p>
+        <p className="small muted">
+          Synthetic: {ws.personas.length} personas · {ws.interviews.length} interviews ·{' '}
+          {ws.coding.segments.length} segments — Real: {ws.real.participants.length} participants ·{' '}
+          {ws.real.interviews.length} interviews · {ws.real.coding.segments.length} segments
+        </p>
+        <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            className="btn secondary"
+            disabled={ws.mode === 'synthetic'}
+            onClick={() => {
+              if (window.confirm('Switch to SYNTHETIC mode? The analysis pipeline will read the synthetic dataset. Real participant records are kept, untouched, and hidden until you switch back.')) {
+                setMode('synthetic')
+              }
+            }}
+          >
+            Use synthetic mode
+          </button>
+          <button
+            className="btn danger"
+            disabled={ws.mode === 'real'}
+            onClick={() => {
+              if (window.confirm('Switch to REAL PARTICIPANT DATA mode?\n\nThis is for confidential data from consented participants, entered by hand — nothing is generated. The banner and every export change to a confidentiality treatment and the synthetic caveat is removed. Real data stays in this browser and is never synced to Supabase.\n\nOnly proceed with advisor and IRB approval in place.')) {
+                setMode('real')
+              }
+            }}
+          >
+            Switch to real data mode
+          </button>
+        </p>
+      </section>
+
+      {ws.mode !== 'real' && (
+      <section className="card">
         <h2>Demo data</h2>
         <p className="small">
           Current workspace: <strong>{MODE_LABELS[workspaceMode(ws)]}</strong>
@@ -96,6 +142,7 @@ export default function Settings() {
         </p>
         {demoMsg && <p className="small" role="status" style={{ color: '#2f9e44' }}>{demoMsg}</p>}
       </section>
+      )}
 
       <section className="card">
         <h2>OpenAI (live generation)</h2>

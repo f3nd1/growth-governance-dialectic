@@ -12,8 +12,17 @@ import {
 
 export const HYPOTHESIS_IDS = ['wh1', 'wh2', 'wh3']
 
+/** Empty real-participant dataset. Never seeded — real data is only ever entered. */
+export function emptyRealDataset() {
+  return { participants: [], interviews: [], coding: { segments: [], overridesLog: [] } }
+}
+
 export function defaultWorkspace() {
   return {
+    // 'synthetic' (default) or 'real'. Governs which dataset is active; the two
+    // are stored in separate slices and never merged.
+    mode: 'synthetic',
+    real: emptyRealDataset(),
     meta: {
       version: 1,
       synthetic: true, // non-removable stamp; exports read this

@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:57:07.447Z",
+      "action": "push",
+      "commit": "bfba65b",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Real data mode 1/4: mode + dataset separation",
+      "summary": "Workspace mode synthetic|real with a separate real slice; activeData()/updateActive() enforce separation at the data layer; real data stripped from remote sync in persist(); mode-specific banner; confirm-gated switch"
+    },
+    {
       "when": "2026-08-10T04:46:34.014Z",
       "action": "push",
       "commit": "978ec01",

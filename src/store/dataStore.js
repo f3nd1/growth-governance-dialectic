@@ -3,7 +3,7 @@
 // a remote backend (Supabase, Phase 7) can be attached on top.
 
 import { useSyncExternalStore } from 'react'
-import { defaultWorkspace } from './defaults'
+import { defaultWorkspace, emptyRealDataset } from './defaults'
 import { rqList, normaliseHeld } from '../data/seeds'
 
 const STORAGE_KEY = 'ggd-workspace-v1'
@@ -60,6 +60,10 @@ function mergeWithDefaults(loaded) {
   }
   if (!merged.codebook?.codes?.length) merged.codebook = base.codebook
   if (!merged.personas?.length) merged.personas = base.personas
+  // Real mode added later: back-fill so pre-existing synthetic workspaces load
+  // unchanged and simply arrive in synthetic mode with an empty real dataset.
+  merged.mode = merged.mode === 'real' ? 'real' : 'synthetic'
+  merged.real = { ...emptyRealDataset(), ...(merged.real ?? {}) }
   // WH3 cannot coherently be held alongside WH1/WH2; drop it where a stored
   // persona has both, keeping the paradox signal.
   merged.personas = merged.personas.map((p) => ({ ...p, held: normaliseHeld(p.held) }))
@@ -98,7 +102,11 @@ function persist() {
     if (remoteBackend) {
       clearTimeout(remoteTimer)
       remoteTimer = setTimeout(() => {
-        remoteBackend.save(state).catch(() => {
+        // Real participant data is LOCAL ONLY. It is stripped here, at the single
+        // point where anything leaves the browser, so no remote backend can ever
+        // receive it regardless of how it was configured.
+        const { real, ...syncable } = state
+        remoteBackend.save({ ...syncable, real: emptyRealDataset() }).catch(() => {
           // remote failure is non-fatal — localStorage remains authoritative
         })
       }, 1200)
@@ -136,6 +144,34 @@ export function setState(updater) {
 /** Convenience: update one top-level slice. update('personas', (p) => [...]) */
 export function update(key, fn) {
   setState((prev) => ({ ...prev, [key]: fn(prev[key]) }))
+}
+
+/**
+ * The active dataset for the current mode. EVERY analysis path reads records
+ * through this — it returns one dataset or the other, never a union, so no view
+ * can combine real and synthetic records.
+ */
+export function activeData(ws) {
+  const real = ws.mode === 'real'
+  return {
+    isReal: real,
+    participants: real ? ws.real.participants : ws.personas,
+    interviews: real ? ws.real.interviews : ws.interviews,
+    coding: real ? ws.real.coding : ws.coding,
+  }
+}
+
+/** Write into whichever dataset is active, leaving the other untouched. */
+export function updateActive(key, fn) {
+  setState((prev) =>
+    prev.mode === 'real'
+      ? { ...prev, real: { ...prev.real, [key]: fn(prev.real[key]) } }
+      : { ...prev, [key]: fn(prev[key]) },
+  )
+}
+
+export function setMode(mode) {
+  setState((prev) => ({ ...prev, mode: mode === 'real' ? 'real' : 'synthetic' }))
 }
 
 export function subscribe(fn) {

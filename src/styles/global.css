@@ -88,6 +88,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
   letter-spacing: 0.02em;
 }
 
+/* Real mode: deliberately unlike the synthetic banner — solid, dark, no stripes,
+   so the two modes can never be mistaken for one another at a glance. */
+.real-banner {
+  background: #6d1f1d;
+  border-bottom: 1px solid #4a1513;
+  color: #ffffff;
+  font-weight: 700;
+  font-size: 0.83rem;
+  text-align: center;
+  padding: 6px 12px;
+  letter-spacing: 0.04em;
+}
+
 .app-body { display: flex; flex: 1; min-height: 0; }
 
 /* ---------- sidebar ---------- */

@@ -22,9 +22,15 @@ export default function Layout() {
 
   return (
     <div className="app-frame">
-      <div className="synthetic-banner">
-        PILOT · INSTRUMENT VALIDATION — synthetic data, not real findings
-      </div>
+      {ws.mode === 'real' ? (
+        <div className="real-banner">
+          REAL PARTICIPANT DATA — confidential · stored locally, never synced
+        </div>
+      ) : (
+        <div className="synthetic-banner">
+          PILOT · INSTRUMENT VALIDATION — synthetic data, not real findings
+        </div>
+      )}
       <div className="app-body">
         <Sidebar />
         <div className="main-col">
