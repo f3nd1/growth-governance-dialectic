@@ -85,18 +85,19 @@ export function defaultWorkspace() {
       setupGuide: { dismissed: false },
       patternMatching: {
         // Evidence share a proposition must reach to count as supported.
-        splitThreshold: 0.333,
+        splitThreshold: 0.34,
         note:
-          'The default of 0.333 is the even-spread point across three propositions (1/3): ' +
-          'below it, a participant whose coded evidence is evenly distributed would be ' +
-          'recorded as supporting all three. Because the test is "share is at or above the ' +
-          'cut-point", a perfectly even participant still meets 0.333 exactly — use a value ' +
-          'strictly above 0.333 to exclude them. No established convention exists for ' +
-          'evidence-share cut-points in qualitative pattern matching: Yin (2018) treats ' +
-          'pattern matching as a qualitative judgement of predicted against observed ' +
-          'patterns rather than a numeric test, and neither Miles, Huberman & Saldaña (2020) ' +
-          'nor Smith & Lewis (2011) specify a share threshold. This cut-point is therefore a ' +
-          'researcher decision to state and justify in the write-up, not a standard to cite.',
+          'The default of 0.34 sits just above the even-spread point across three ' +
+          'propositions (1/3 = 0.3333...). A participant whose coded evidence is evenly ' +
+          'distributed is therefore not recorded as supporting all three, which would say ' +
+          'nothing. The test is "share at or above the cut-point", so a cut-point at or below ' +
+          '0.333 would count an exactly even participant for every proposition — 0.34 excludes ' +
+          'them. No established convention exists for evidence-share cut-points in qualitative ' +
+          'pattern matching: Yin (2018) treats pattern matching as a qualitative judgement of ' +
+          'predicted against observed patterns rather than a numeric test, and neither Miles, ' +
+          'Huberman & Saldaña (2020) nor Smith & Lewis (2011) specify a share threshold. This ' +
+          'cut-point is therefore a researcher decision to state and justify in the write-up, ' +
+          'not a standard to cite.',
       },
       reliability: {
         // Cohen's kappa band cut-points; editable on the Reliability page.

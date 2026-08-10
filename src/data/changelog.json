@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T04:35:02.257Z",
+      "action": "push",
+      "commit": "b1f09b9",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Pattern-matching: default cut-point 0.34",
+      "summary": "Default raised from 0.333 to 0.34 so exact-thirds shares are genuinely excluded under the at-or-above test; note states the just-above-even-spread justification; demo splits fall 7 to 2, including paradox persona P12"
+    },
+    {
       "when": "2026-08-10T04:20:26.219Z",
       "action": "push",
       "commit": "64bf4cd",
