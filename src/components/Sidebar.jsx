@@ -20,7 +20,9 @@ export default function Sidebar() {
     <aside className="sidebar">
       <div className="sidebar-title">
         governance-growth-dialectic
-        <small>synthetic-participant pilot pipeline</small>
+        <small>
+          {ws.mode === 'real' ? 'real participant data · confidential' : 'synthetic-participant pilot pipeline'}
+        </small>
       </div>
       <nav aria-label="Primary">
         {NAV_GROUPS.map((group) => {

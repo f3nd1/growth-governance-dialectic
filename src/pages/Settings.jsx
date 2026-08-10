@@ -182,7 +182,9 @@ export default function Settings() {
             checked={ws.settings.openai.enabled}
             onChange={(e) => setOpenAI({ enabled: e.target.checked })}
           />{' '}
-          Enable live AI (uses one LLM call per persona interview)
+          {ws.mode === 'real'
+            ? 'Enable live AI (required for the coder-disagreement diagnostic)'
+            : 'Enable live AI (uses one LLM call per persona interview)'}
         </label>
         <div className="field">
           <label htmlFor="set-openai-key">

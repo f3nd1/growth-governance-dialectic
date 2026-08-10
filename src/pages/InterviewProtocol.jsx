@@ -1,11 +1,12 @@
 import PageHeader from '../components/PageHeader'
-import { useWorkspace, update } from '../store/dataStore'
+import { useWorkspace, update, activeData } from '../store/dataStore'
 import { defaultProtocolQuestions, RESEARCH_QUESTIONS, rqList } from '../data/seeds'
 
 let nextId = 100
 
 export default function InterviewProtocol() {
   const ws = useWorkspace()
+  const isReal = activeData(ws).isReal
   const questions = [...ws.protocol.questions].sort((a, b) => a.order - b.order)
 
   function setQuestions(next) {
@@ -52,7 +53,9 @@ export default function InterviewProtocol() {
 
       {ws.settings.guidance && (
         <div className="notice">
-          The pilot runs synthetic personas through exactly these questions. If a question
+          {isReal
+            ? 'Entered transcripts are keyed to exactly these questions. If a question'
+            : 'The pilot runs synthetic personas through exactly these questions. If a question'}{' '}
           keeps producing answers the codebook cannot classify, that is a protocol or
           codebook problem — precisely what a pilot is meant to catch before real fieldwork.
         </div>

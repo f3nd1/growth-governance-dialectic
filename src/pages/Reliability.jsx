@@ -141,10 +141,9 @@ export default function Reliability() {
 
       {ws.settings.guidance && (
         <div className="notice">
-          Catching a weak kappa <em>here</em>, on synthetic data, is exactly why you pilot
-          before real fieldwork: a vague codebook found now costs an afternoon of definition
-          tightening; found after 20 real interviews it costs the dataset. Re-running with a
-          new seed moves these numbers — that sensitivity is informative, not a bug.
+          {data.isReal
+            ? 'A weak figure here points at the codebook, not at the participants: the two passes read the same text against the same definitions, so they diverge where the definitions do. Tightening definitions is the lever — and re-coding afterwards is what applies it.'
+            : 'Catching a weak kappa here, on synthetic data, is exactly why you pilot before real fieldwork: a vague codebook found now costs an afternoon of definition tightening; found after 20 real interviews it costs the dataset. Re-running with a new seed moves these numbers — that sensitivity is informative, not a bug.'}
         </div>
       )}
 
@@ -229,7 +228,9 @@ export default function Reliability() {
                 <p className="small muted" style={{ fontStyle: 'italic' }}>{reliabilityCfg.citation}</p>
               )}
               <p className="small muted">
-                Illustrative of the method on synthetic data — not a validated coefficient.
+                {data.isReal
+                  ? 'Agreement between two automated passes — not inter-rater reliability.'
+                  : 'Illustrative of the method on synthetic data — not a validated coefficient.'}
               </p>
             </section>
 
@@ -255,15 +256,21 @@ export default function Reliability() {
               )}
               <p className="small muted" style={{ marginTop: 8 }}>
                 High rows usually mean a vague definition (see the <Link to="/design/codebook">Codebook</Link>)
-                or genuinely ambiguous content — paradox answers ⚡ and off-script probes land here by design.
+                or genuinely ambiguous content —{' '}
+                {data.isReal
+                  ? 'answers that carry both a cost and a benefit concentrate here.'
+                  : 'paradox answers ⚡ and off-script probes land here by design.'}
               </p>
             </section>
           </div>
 
-          <section className="card">
-            <h2>κ across seeds (synthetic)</h2>
-            <ReliabilityChart />
-          </section>
+          {/* Seeds belong to generated interviews only. */}
+          {!data.isReal && (
+            <section className="card">
+              <h2>κ across seeds (synthetic)</h2>
+              <ReliabilityChart />
+            </section>
+          )}
         </>
       )}
 

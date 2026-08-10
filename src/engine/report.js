@@ -37,6 +37,7 @@ function figureNote(m) {
 }
 
 export function buildReportModel(ws) {
+  const real = activeData(ws).isReal
   const stats = agreementStats(activeData(ws).coding.segments)
   const { personas, overall, topCodes } = aggregateEvidence(
     activeData(ws).coding.segments,
@@ -54,16 +55,24 @@ export function buildReportModel(ws) {
     // Charts are built from the same selectors as the on-screen charts, so
     // the exported report matches the app exactly. Null when there is no data.
     charts: {
-      distribution: distData.hasData ? hypothesisDistributionSVG(distData, colors) : null,
-      reliability: relData.points.length ? reliabilitySVG(relData, colors, thresholds) : null,
-      heatmap: heatmapSVG(heatData, colors),
+      // The watermark on every exported chart follows the dataset, so a chart
+      // pasted into a document cannot misdeclare its own provenance. Chart B
+      // plots kappa per generation seed and is omitted entirely for real data,
+      // which has no seeds.
+      distribution: distData.hasData
+        ? hypothesisDistributionSVG(distData, colors, { isReal: real })
+        : null,
+      reliability: !real && relData.points.length
+        ? reliabilitySVG(relData, colors, thresholds, { isReal: real })
+        : null,
+      heatmap: heatmapSVG(heatData, colors, { isReal: real }),
     },
     jointDisplay: heatData.rows,
     // Non-removable, and chosen by mode rather than by any setting: real
     // exports must never carry the synthetic caveat, which would misdescribe
     // confidential human data as generated.
-    isReal: activeData(ws).isReal,
-    caveat: activeData(ws).isReal ? REAL_CONFIDENTIALITY_HEADER : SYNTHETIC_CAVEAT,
+    isReal: real,
+    caveat: real ? REAL_CONFIDENTIALITY_HEADER : SYNTHETIC_CAVEAT,
     generatedAt: new Date().toISOString(),
     studyDesign: ws.studyDesign,
     hypotheses: HYPOTHESIS_IDS.map((id) => ws.hypotheses[id]),
@@ -246,7 +255,9 @@ export function reportToHTML(m) {
 
   const chartsBlock = `
 <h2>8 · Visualisations</h2>
-${figure('A · Hypothesis distribution', m.charts.distribution, 'Per-persona coded-evidence shares across WH1/WH2/WH3 with the aggregate; ⚡ paradox personas span two hypotheses.')}
+${figure('A · Hypothesis distribution', m.charts.distribution, m.isReal
+  ? 'Per-participant coded-evidence shares across WH1/WH2/WH3 with the aggregate; ⚡ marks participants whose evidence spans two propositions.'
+  : 'Per-persona coded-evidence shares across WH1/WH2/WH3 with the aggregate; ⚡ paradox personas span two hypotheses.')}
 ${figure('B · Reliability over seeds', m.charts.reliability, 'Cohen’s κ per seed against the moderate / substantial / strong bands.')}
 ${figure('C · Joint-display heatmap', m.charts.heatmap, `Evidence strength per hypothesis; only the interview row is populated from ${m.isReal ? 'entered transcripts' : 'synthetic data'}.`)}
 `
@@ -313,9 +324,10 @@ export function appendixToMarkdown(m) {
   L.push(`**${appendixNote(m)}**`)
   L.push('')
   L.push(
-    `_Generated ${new Date(m.generatedAt).toLocaleString()} · ${m.counts.personas} ${m.isReal ? 'participants' : 'synthetic '}` +
-      `personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ` +
-      `${m.counts.overrides} logged overrides._`,
+    `_Generated ${new Date(m.generatedAt).toLocaleString()} · ${m.counts.personas} ` +
+      `${m.isReal ? 'participants' : 'synthetic personas'} · ${m.counts.interviews} ` +
+      `${m.isReal ? 'entered transcripts' : 'interviews'} · ${m.counts.segments} dual-coded ` +
+      `segments · ${m.counts.overrides} logged overrides._`,
   )
   L.push('')
 
@@ -484,7 +496,7 @@ ${chartFig('Reliability over seeds', m.charts.reliability, 'Cohen’s κ per see
 
 <h2>A3 · Pattern-matching (distributed evidence)</h2>
 ${patternRows ? `<table><thead><tr><th>Hypothesis</th><th>Weighted segments</th><th>Share</th></tr></thead><tbody>${patternRows}</tbody></table><p>Codebook coverage gap (emergent/unclassified): ${m.patterns.coverageGap.toFixed(1)} weighted segments.</p>${splitsBlock}` : '<p><em>No aggregated evidence yet.</em></p>'}
-${chartFig('Hypothesis distribution', m.charts.distribution, 'Per-persona coded-evidence shares with the aggregate.')}
+${chartFig('Hypothesis distribution', m.charts.distribution, m.isReal ? 'Per-participant coded-evidence shares with the aggregate.' : 'Per-persona coded-evidence shares with the aggregate.')}
 
 <h2>A4 · Joint-display matrix (pattern-matching)</h2>
 <p>Expected evidence under each hypothesis by evidence type. Only the interview row is populated${m.isReal ? '' : ' from synthetic data'}; the remaining rows are ${m.isReal ? 'not yet collected' : 'real-data-phase placeholders'}.</p>

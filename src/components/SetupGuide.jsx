@@ -58,7 +58,9 @@ export default function SetupGuide() {
           Minimise
         </button>
       </div>
-      <p className="small muted" style={{ marginTop: 8 }}>{SETUP_WELCOME.body}</p>
+      <p className="small muted" style={{ marginTop: 8 }}>
+        {ws.mode === 'real' ? SETUP_WELCOME.realBody : SETUP_WELCOME.body}
+      </p>
 
       {notStarted && ws.mode !== 'real' && (
         <div className="notice" style={{ margin: '10px 0' }}>

@@ -1,6 +1,6 @@
 import PageHeader from '../components/PageHeader'
 import SetupGuide from '../components/SetupGuide'
-import { useWorkspace } from '../store/dataStore'
+import { useWorkspace, activeData } from '../store/dataStore'
 
 export default function Home() {
   const ws = useWorkspace()
@@ -9,16 +9,32 @@ export default function Home() {
     <>
       <PageHeader
         title="Pilot pipeline overview"
-        desc="A doctoral research instrument: validates the data-collection and analysis method for the growth-vs-governance dialectic study on clearly-labelled synthetic participants — before any real fieldwork."
+        desc={
+          activeData(ws).isReal
+            ? 'A doctoral research instrument, currently holding CONFIDENTIAL data from real consented participants. Records, transcripts and coded segments stay in this browser and are never synced.'
+            : 'A doctoral research instrument: validates the data-collection and analysis method for the growth-vs-governance dialectic study on clearly-labelled synthetic participants — before any real fieldwork.'
+        }
       />
 
       <SetupGuide />
 
       <div className="notice">
-        <strong>What this is:</strong> a dry run of the full qualitative pipeline
-        (protocol → personas → interviews → dual coding → reliability → pattern-matching)
-        on synthetic participants. <strong>What it is not:</strong> a source of findings.
-        Nothing here says anything about the real institution.
+        {activeData(ws).isReal ? (
+          <>
+            <strong>What this is:</strong> the full qualitative pipeline (protocol →
+            participants → transcripts → dual coding → reliability → pattern-matching) running
+            on real, consented interview material. <strong>What it is not:</strong> a source of
+            inter-rater reliability — both coding passes are automated, and a reportable κ
+            still needs a second human coder.
+          </>
+        ) : (
+          <>
+            <strong>What this is:</strong> a dry run of the full qualitative pipeline
+            (protocol → personas → interviews → dual coding → reliability → pattern-matching)
+            on synthetic participants. <strong>What it is not:</strong> a source of findings.
+            Nothing here says anything about the real institution.
+          </>
+        )}
       </div>
 
       <section className="card">

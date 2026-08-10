@@ -242,9 +242,10 @@ export default function Coding() {
 
       {ws.settings.guidance && (
         <div className="notice">
-          Disagreements are the signal, not the noise: they cluster on vague definitions,
-          contradictory (paradox) answers and off-script content. Overrides are allowed but
-          logged — in real fieldwork that log is your audit trail.
+          Disagreements are the signal, not the noise: they cluster on vague definitions,{' '}
+          {data.isReal
+            ? 'answers carrying both a cost and a benefit, and content the codebook did not anticipate. Overrides are allowed but logged — that log is your audit trail.'
+            : 'contradictory (paradox) answers and off-script content. Overrides are allowed but logged — in real fieldwork that log is your audit trail.'}
         </div>
       )}
 

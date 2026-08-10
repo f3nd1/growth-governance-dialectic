@@ -15,6 +15,7 @@ export default function Codebook() {
   // Derived, never stored: recomputed from the current segments and codebook.
   const { candidates, counts } = findEmergentCandidates(activeData(ws).coding.segments, ws.codebook)
   const decisions = activeData(ws).codebookDecisions
+  const isReal = activeData(ws).isReal
 
   function setCodes(next) {
     update('codebook', (cb) => ({ ...cb, codes: next }))
@@ -50,8 +51,10 @@ export default function Codebook() {
         <div className="notice">
           <strong>Definitions matter here.</strong> Both coders classify segments against
           these definitions. Vague or overlapping definitions produce coder disagreement and
-          a lower Cohen’s kappa on the Reliability page — catching that on synthetic data,
-          and tightening the codebook in response, is a primary goal of this pilot.
+          a lower Cohen’s kappa on the Reliability page —{' '}
+          {isReal
+            ? 'tightening the definitions in response is the main lever you have over that figure.'
+            : 'catching that on synthetic data, and tightening the codebook in response, is a primary goal of this pilot.'}
         </div>
       )}
 
@@ -59,7 +62,7 @@ export default function Codebook() {
         <h2>Candidate emergent codes ({candidates.length})</h2>
         <p className="small muted">
           Segments no a priori code matched, grouped by shared language. A group spanning two
-          or more personas is a <strong>candidate</strong> — a recurring theme nobody has named
+          or more {isReal ? 'participants' : 'personas'} is a <strong>candidate</strong> — a recurring theme nobody has named
           yet. A segment with no thematic sibling stays <strong>unclassified</strong>, which is a
           legitimate result, not a failure. Candidates are proposals only: nothing enters the
           codebook until you approve it, and approving does not retroactively change how the two
@@ -82,7 +85,7 @@ export default function Codebook() {
         ) : (
           <table className="data">
             <thead>
-              <tr><th>Proposed label</th><th>Segments</th><th>Personas</th><th /></tr>
+              <tr><th>Proposed label</th><th>Segments</th><th>{isReal ? 'Participants' : 'Personas'}</th><th /></tr>
             </thead>
             <tbody>
               {candidates.map((c) => (

@@ -17,8 +17,13 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
-function syntheticMark(x, y) {
-  return `<text x="${x}" y="${y}" text-anchor="end" font-size="9" fill="#9a9a94" letter-spacing="0.08em">SYNTHETIC</text>`
+// Corner watermark. Every chart carries one, and which one it carries follows
+// the dataset it was drawn from — a chart of real participant evidence stamped
+// SYNTHETIC would be a false provenance claim wherever it is pasted.
+function modeMark(x, y, isReal) {
+  const text = isReal ? 'CONFIDENTIAL' : 'SYNTHETIC'
+  const fill = isReal ? '#8c5250' : '#9a9a94'
+  return `<text x="${x}" y="${y}" text-anchor="end" font-size="9" fill="${fill}" letter-spacing="0.08em">${text}</text>`
 }
 
 function legend(x, y, colors) {
@@ -34,7 +39,7 @@ function legend(x, y, colors) {
 // ---------------------------------------------------------------- Chart A
 
 /** Per-persona + aggregate stacked horizontal bars. */
-export function hypothesisDistributionSVG(data, colors) {
+export function hypothesisDistributionSVG(data, colors, { isReal = false } = {}) {
   const rows = [...data.rows, data.aggregate]
   const W = 560
   const labelW = 156
@@ -80,11 +85,11 @@ export function hypothesisDistributionSVG(data, colors) {
   })
 
   body += legend(barX, H - 16, colors)
-  body += syntheticMark(W - 6, H - 16)
+  body += modeMark(W - 6, H - 16, isReal)
 
   return (
     `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" ` +
-    `aria-label="Stacked hypothesis distribution per synthetic persona with an aggregate bar" ` +
+    `aria-label="Stacked hypothesis distribution per ${isReal ? 'participant' : 'synthetic persona'} with an aggregate bar" ` +
     `font-family="Segoe UI, system-ui, sans-serif">${body}</svg>`
   )
 }
@@ -96,7 +101,7 @@ export function hypothesisDistributionSVG(data, colors) {
  * The band cut-points come from the configured thresholds so the chart's
  * shaded zones always match the table's band labels.
  */
-export function reliabilitySVG(data, colors, thresholds = { strong: 0.8, substantial: 0.6 }) {
+export function reliabilitySVG(data, colors, thresholds = { strong: 0.8, substantial: 0.6 }, { isReal = false } = {}) {
   const W = 560
   const H = 260
   const mL = 46
@@ -148,7 +153,7 @@ export function reliabilitySVG(data, colors, thresholds = { strong: 0.8, substan
     body += `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="5" fill="${colors.wh2}" stroke="#fff" stroke-width="2" />`
     body += `<text x="${x.toFixed(1)}" y="${(y - 10).toFixed(1)}" text-anchor="middle" font-size="10" fill="#1f2328" font-weight="600">${p.kappa.toFixed(2)}</text>`
   })
-  body += syntheticMark(W - 6, H - 6)
+  body += modeMark(W - 6, H - 6, isReal)
 
   return (
     `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" ` +
@@ -160,7 +165,7 @@ export function reliabilitySVG(data, colors, thresholds = { strong: 0.8, substan
 // ---------------------------------------------------------------- Chart C
 
 /** Joint-display heatmap: evidence types x hypotheses; only interviews populated. */
-export function heatmapSVG(data, colors) {
+export function heatmapSVG(data, colors, { isReal = false } = {}) {
   const W = 520
   const labelW = 150
   const headerH = 26
@@ -198,11 +203,13 @@ export function heatmapSVG(data, colors) {
     })
   })
 
-  body += syntheticMark(W - 6, H - 8)
+  body += modeMark(W - 6, H - 8, isReal)
 
   return (
     `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" ` +
-    `aria-label="Joint-display heatmap of evidence types by hypothesis; only the interview row is populated from synthetic data, other rows are real-data-phase placeholders" ` +
+    `aria-label="${isReal
+      ? 'Joint-display heatmap of evidence types by hypothesis; only the interview rows are populated, other rows are not yet collected'
+      : 'Joint-display heatmap of evidence types by hypothesis; only the interview row is populated from synthetic data, other rows are real-data-phase placeholders'}" ` +
     `font-family="Segoe UI, system-ui, sans-serif">${body}</svg>`
   )
 }

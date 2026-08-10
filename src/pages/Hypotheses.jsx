@@ -1,9 +1,10 @@
 import PageHeader from '../components/PageHeader'
-import { useWorkspace, update } from '../store/dataStore'
+import { useWorkspace, update, activeData } from '../store/dataStore'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 
 export default function Hypotheses() {
   const ws = useWorkspace()
+  const isReal = activeData(ws).isReal
 
   function setHyp(id, patch) {
     update('hypotheses', (h) => ({ ...h, [id]: { ...h[id], ...patch } }))
@@ -13,7 +14,11 @@ export default function Hypotheses() {
     <>
       <PageHeader
         title="Hypotheses"
-        desc="Three rival propositions — not statistical H0/H1. Persona weights, answer tagging, coding and pattern-matching all key off these, using each proposition’s colour consistently app-wide."
+        desc={
+          isReal
+            ? 'Three rival propositions — not statistical H0/H1. Coding and pattern-matching key off these, using each proposition’s colour consistently app-wide.'
+            : 'Three rival propositions — not statistical H0/H1. Persona weights, answer tagging, coding and pattern-matching all key off these, using each proposition’s colour consistently app-wide.'
+        }
       />
 
       {ws.settings.guidance && (

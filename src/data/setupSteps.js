@@ -12,6 +12,10 @@ export const SETUP_WELCOME = {
     'This is a doctoral research INSTRUMENT — a synthetic-participant pilot that validates ' +
     'the data-collection and analysis method before real fieldwork. Nothing it produces is a ' +
     'real finding. Work through the pipeline below; the whole thing runs offline at zero cost.',
+  realBody:
+    'This workspace is holding CONFIDENTIAL data from real, consented participants. Records, ' +
+    'transcripts and coded segments stay in this browser and are never synced. Work through ' +
+    'the pipeline below; only the disagreement diagnostic makes any network request.',
 }
 
 // Pages worth reading first. These are a REFERENCE list, deliberately NOT
