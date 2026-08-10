@@ -164,6 +164,7 @@ export function activeData(ws) {
     participants: real ? ws.real.participants : ws.personas,
     interviews: real ? ws.real.interviews : ws.interviews,
     coding: real ? ws.real.coding : ws.coding,
+    aiReviewLog: (real ? ws.real.aiReviewLog : ws.aiReviewLog) ?? [],
   }
 }
 

@@ -86,7 +86,8 @@ function confirmRealExport(ws, what) {
     `Export ${what} containing REAL PARTICIPANT DATA?\n\n` +
       `· ${ws.real.participants.length} participant records (codes, groups, role descriptors)\n` +
       `· ${ws.real.interviews.length} transcripts — ${answers} verbatim answers\n` +
-      `· ${ws.real.coding.segments.length} coded segments (each carries its verbatim text)\n\n` +
+      `· ${ws.real.coding.segments.length} coded segments (each carries its verbatim text)\n` +
+      `· ${(ws.real.aiReviewLog ?? []).length} AI review log entries (each stores the full prompt sent)\n\n` +
       'The file is written unencrypted to this device\'s downloads folder. Store and share it ' +
       'only as your approved data-management plan allows.',
   )
@@ -125,6 +126,7 @@ export default function ExportCentre() {
         participants: ws.real.participants,
         interviews: ws.real.interviews,
         coding: ws.real.coding,
+        aiReviewLog: ws.real.aiReviewLog,
       }
       download(`ggd-data-${tag}-${stamp}.json`, JSON.stringify(payload, null, 2), 'application/json')
       setDone('Real participant data exported (confidentiality header embedded; synthetic corpus excluded).')

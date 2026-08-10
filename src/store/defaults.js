@@ -14,7 +14,16 @@ export const HYPOTHESIS_IDS = ['wh1', 'wh2', 'wh3']
 
 /** Empty real-participant dataset. Never seeded — real data is only ever entered. */
 export function emptyRealDataset() {
-  return { participants: [], interviews: [], coding: { segments: [], overridesLog: [] } }
+  return {
+    participants: [],
+    interviews: [],
+    coding: { segments: [], overridesLog: [] },
+    // Real-mode AI calls are logged HERE, not in the top-level aiReviewLog: an
+    // entry stores the prompt verbatim, and a real-mode prompt contains
+    // participant answer text. The top-level log is synced to Supabase when
+    // configured; the whole real slice is stripped before any sync.
+    aiReviewLog: [],
+  }
 }
 
 export function defaultWorkspace() {

@@ -1,6 +1,6 @@
 import { Fragment, useState } from 'react'
 import PageHeader from '../components/PageHeader'
-import { useWorkspace } from '../store/dataStore'
+import { useWorkspace, activeData } from '../store/dataStore'
 import { clearAILog } from '../store/aiLog'
 
 const MODE_LABEL = {
@@ -29,7 +29,7 @@ function cutoffFor(preset) {
 
 export default function AIReviewLog() {
   const ws = useWorkspace()
-  const log = ws.aiReviewLog ?? []
+  const log = activeData(ws).aiReviewLog
   const [moduleFilter, setModuleFilter] = useState('all')
   const [query, setQuery] = useState('')
   const [preset, setPreset] = useState('all')
@@ -55,7 +55,11 @@ export default function AIReviewLog() {
     <>
       <PageHeader
         title="AI Review Log"
-        desc="Every AI call the app has made, live or simulated, newest first. The API key is never stored here."
+        desc={
+          ws.mode === 'real'
+            ? 'AI calls made against the REAL dataset, newest first. These entries quote participant answer text, so they are stored locally only and are never synced. The API key is never stored here.'
+            : 'Every AI call the app has made, live or simulated, newest first. The API key is never stored here.'
+        }
       />
 
       <section className="card">

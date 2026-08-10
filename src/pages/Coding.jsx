@@ -3,6 +3,23 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { activeData, updateActive, useWorkspace } from '../store/dataStore'
 import { codeInterview, UNCLASSIFIED } from '../engine/coding'
+import { chatComplete, liveModeAvailable } from '../engine/llm'
+import { logAICall } from '../store/aiLog'
+import {
+  buildDiagnosticPrompt,
+  diagnosticToMarkdown,
+  MAX_INPUT_TOKENS,
+} from '../engine/codingDiagnostic'
+
+function download(filename, content, type) {
+  const blob = new Blob([content], { type })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  a.click()
+  URL.revokeObjectURL(url)
+}
 
 function CodeName({ codeId, codebook, hypotheses }) {
   if (codeId === UNCLASSIFIED) {
@@ -18,6 +35,10 @@ export default function Coding() {
   const ws = useWorkspace()
   const data = activeData(ws)
   const [filter, setFilter] = useState('all')
+  // Diagnostic state is display-only. It never feeds back into a segment.
+  const [diagnosing, setDiagnosing] = useState(false)
+  const [diagnostic, setDiagnostic] = useState(null)
+  const [diagnosticError, setDiagnosticError] = useState('')
 
   const segments = data.coding.segments
   const codedInterviewIds = new Set(segments.map((s) => s.interviewId))
@@ -58,6 +79,90 @@ export default function Coding() {
       }
     })
   }
+
+  // ------------------------------------------------- disagreement diagnostic
+  // READ-ONLY. This function reads segments and sets React state. It calls no
+  // store writer except logAICall, which appends to the audit log — no segment
+  // field is touched anywhere in this path.
+  const aiAvailable = liveModeAvailable(ws.settings)
+  const built = data.isReal && disagreements.length > 0
+    ? buildDiagnosticPrompt(segments, ws.codebook)
+    : null
+  const overBudget = Boolean(built && built.tokens > MAX_INPUT_TOKENS)
+
+  async function runDiagnostic() {
+    if (!built || !aiAvailable || overBudget) return
+    const ok = window.confirm(
+      'Send REAL PARTICIPANT DATA to OpenAI?\n\n' +
+        `The verbatim answer text of ${disagreements.length} disagreeing segments, plus your ` +
+        'codebook definitions, will be transmitted over the internet to the OpenAI API and ' +
+        'processed on their servers under their terms and retention policy.\n\n' +
+        `Estimated size: ~${built.tokens.toLocaleString()} tokens.\n\n` +
+        'Real mode otherwise makes no network requests at all. This is the one exception, and ' +
+        'it is asked every time — there is no "remember this choice".\n\n' +
+        'Only proceed if sending this material to a third party is permitted by your ethics ' +
+        'approval and participant consent.',
+    )
+    if (!ok) return
+    setDiagnosing(true)
+    setDiagnosticError('')
+    setDiagnostic(null)
+    try {
+      const res = await chatComplete({
+        settings: ws.settings,
+        system: built.system,
+        user: built.user,
+      })
+      const record = {
+        analysis: res.content,
+        stats: built.stats,
+        model: res.model,
+        tokens: res.tokens,
+        when: new Date().toISOString(),
+      }
+      setDiagnostic(record)
+      logAICall({
+        purpose: 'Coder disagreement diagnostic (read-only)',
+        module: 'coding-diagnostic',
+        model: res.model,
+        mode: 'live',
+        tokens: res.tokens,
+        prompt: res.prompt,
+        output: res.content,
+      })
+    } catch (err) {
+      const message = String(err.message ?? err)
+      setDiagnosticError(message)
+      logAICall({
+        purpose: 'Coder disagreement diagnostic (read-only)',
+        module: 'coding-diagnostic',
+        model: ws.settings.openai.analysisModel || 'gpt-4o',
+        mode: 'live',
+        tokens: null,
+        prompt: `SYSTEM:\n${built.system}\n\nUSER:\n${built.user}`,
+        output: '',
+        error: message,
+      })
+    } finally {
+      setDiagnosing(false)
+    }
+  }
+
+  function exportDiagnostic() {
+    if (!diagnostic) return
+    const ok = window.confirm(
+      'Export the diagnostic?\n\n' +
+        'The file quotes REAL PARTICIPANT answer text in its examples and carries the ' +
+        'confidentiality header. It is written unencrypted to this device.',
+    )
+    if (!ok) return
+    download(
+      `ggd-coding-diagnostic-REAL-CONFIDENTIAL-${new Date().toISOString().slice(0, 10)}.md`,
+      diagnosticToMarkdown(diagnostic),
+      'text/markdown',
+    )
+  }
+
 
   const shown = filter === 'disagreements' ? disagreements : segments
 
@@ -115,6 +220,118 @@ export default function Coding() {
           </p>
         )}
       </section>
+
+
+      {data.isReal && (
+        <section className="card">
+          <h2>Diagnose disagreements (AI, read-only)</h2>
+          <p className="small muted">
+            Sends the {disagreements.length} disagreeing segment{disagreements.length === 1 ? '' : 's'} and
+            your codebook definitions to the configured OpenAI model and asks{' '}
+            <strong>why</strong> the two passes disagree — which definitions collide, how many
+            disagreements are non-answers being force-coded, and how many describe a cost and a
+            benefit at once.
+          </p>
+          <p className="small" style={{ fontWeight: 700 }}>
+            This changes nothing. It cannot set a code, an override or a definition — it returns
+            prose for you to read. Every suggestion it makes is yours to apply by hand or ignore.
+          </p>
+
+          {disagreements.length === 0 ? (
+            <p className="muted">
+              No disagreements to diagnose{segments.length === 0 ? ' — nothing is coded yet' : ''}.
+            </p>
+          ) : (
+            <>
+              <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                <button
+                  className="btn"
+                  onClick={runDiagnostic}
+                  disabled={!aiAvailable || diagnosing || overBudget}
+                >
+                  {diagnosing ? 'Analysing…' : 'Diagnose disagreements…'}
+                </button>
+                {built && (
+                  <span className="muted small">
+                    ~{built.tokens.toLocaleString()} tokens ·{' '}
+                    {ws.settings.openai.analysisModel || 'gpt-4o'}
+                  </span>
+                )}
+              </p>
+
+              {!aiAvailable && (
+                <p className="small" style={{ color: '#b03230' }}>
+                  <strong>No OpenAI key configured, so this is disabled.</strong> There is no
+                  offline version of this diagnostic: the simulator cannot judge your definitions,
+                  and a fabricated analysis would be worse than none. Add a key to{' '}
+                  <code>.env.local</code> as <code>VITE_OPENAI_KEY</code>, or enable live AI in{' '}
+                  <Link to="/settings">Settings</Link> — the OpenAI settings are editable in
+                  synthetic mode only, deliberately, so a key cannot be pasted in while real
+                  participant data is on screen.
+                </p>
+              )}
+
+              {overBudget && (
+                <p className="small" style={{ color: '#b03230' }}>
+                  This set is about {built.tokens.toLocaleString()} tokens, over the{' '}
+                  {MAX_INPUT_TOKENS.toLocaleString()} limit for one call. Nothing is truncated
+                  automatically — a diagnostic computed over a hidden subset would misreport its
+                  own counts. Narrow the set first (code fewer transcripts, or split the corpus
+                  and run it twice), then re-run.
+                </p>
+              )}
+
+              {diagnosticError && (
+                <p className="small" role="alert" style={{ color: '#b03230' }}>
+                  The call failed: {diagnosticError} — nothing was changed, and the attempt is in
+                  the <Link to="/settings/ai-review-log">AI Review Log</Link>.
+                </p>
+              )}
+            </>
+          )}
+
+          {diagnostic && (
+            <div className="notice" style={{ marginTop: 12 }}>
+              <p className="small muted" style={{ margin: '0 0 8px' }}>
+                {new Date(diagnostic.when).toLocaleString()} · {diagnostic.model}
+                {diagnostic.tokens ? ` · ${diagnostic.tokens.toLocaleString()} tokens` : ''} ·{' '}
+                <Link to="/settings/ai-review-log">logged</Link>
+              </p>
+
+              <table className="data" style={{ marginBottom: 12 }}>
+                <thead>
+                  <tr><th>Confusion pair (counted in the app)</th><th>Segments</th></tr>
+                </thead>
+                <tbody>
+                  {diagnostic.stats.pairs.map((p) => (
+                    <tr key={p.pair}><td>{p.pair}</td><td>{p.count}</td></tr>
+                  ))}
+                </tbody>
+              </table>
+
+              <pre
+                style={{
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word',
+                  font: 'inherit',
+                  margin: 0,
+                }}
+              >
+                {diagnostic.analysis}
+              </pre>
+
+              <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '10px 0 0' }}>
+                <button className="btn secondary" onClick={exportDiagnostic}>
+                  Export as Markdown…
+                </button>
+                <button className="btn secondary" onClick={() => setDiagnostic(null)}>
+                  Dismiss
+                </button>
+              </p>
+            </div>
+          )}
+        </section>
+      )}
 
       {segments.length > 0 && (
         <>

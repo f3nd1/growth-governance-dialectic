@@ -2,7 +2,7 @@
 // workspace dataStore (localStorage + whatever sync workspace_state already
 // uses). Never stores the API key; model name and token counts are fine.
 
-import { update } from './dataStore'
+import { update, updateActive } from './dataStore'
 
 const MAX = 500 // ponytail: cap the log; raise if a longer audit trail is needed
 
@@ -19,9 +19,11 @@ export function logAICall(entry) {
     tokens: null,
     ...entry,
   }
-  update('aiReviewLog', (log) => [record, ...(log ?? [])].slice(0, MAX))
+  // Follows the workspace mode: a real-mode prompt quotes participant answers,
+  // so its entry belongs in the real slice, which never leaves the browser.
+  updateActive('aiReviewLog', (log) => [record, ...(log ?? [])].slice(0, MAX))
 }
 
 export function clearAILog() {
-  update('aiReviewLog', () => [])
+  updateActive('aiReviewLog', () => [])
 }

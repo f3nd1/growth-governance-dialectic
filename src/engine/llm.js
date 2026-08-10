@@ -29,6 +29,43 @@ export async function listChatModels(settings) {
   return models
 }
 
+/**
+ * One chat completion, returning { content, tokens, prompt }. `prompt` is the
+ * exact key-free text sent, so a caller can log it verbatim.
+ *
+ * Deliberately separate from generateLiveInterview below rather than factored
+ * out of it: that path is the synthetic pipeline and is not exercised by any
+ * offline test, so it is left byte-identical.
+ */
+export async function chatComplete({ settings, system, user, temperature = 0.2 }) {
+  const key = getOpenAIKey(settings)
+  if (!key) throw new Error('No OpenAI key set (add one to .env.local or Settings).')
+  const model = settings.openai.analysisModel || 'gpt-4o'
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${key}` },
+    body: JSON.stringify({
+      model,
+      temperature,
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: user },
+      ],
+    }),
+  })
+  if (!res.ok) {
+    const body = await res.text().catch(() => '')
+    throw new Error(`OpenAI ${res.status}: ${body.slice(0, 200)}`)
+  }
+  const data = await res.json()
+  return {
+    content: data.choices?.[0]?.message?.content ?? '',
+    tokens: data.usage?.total_tokens ?? null,
+    model,
+    prompt: `SYSTEM:\n${system}\n\nUSER:\n${user}`,
+  }
+}
+
 function buildSystemPrompt(persona, hypotheses) {
   const held = persona.held.map((h) => hypotheses[h]?.short).join(' and ')
   return [
