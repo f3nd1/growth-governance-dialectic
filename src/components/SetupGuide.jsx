@@ -5,7 +5,7 @@
 // settings.setupGuide.dismissed (minimise vs expand).
 
 import { Link } from 'react-router-dom'
-import { useWorkspace, update } from '../store/dataStore'
+import { useWorkspace, update, activeData } from '../store/dataStore'
 import { loadDemoData } from '../engine/demo'
 import {
   SETUP_WELCOME,
@@ -13,6 +13,7 @@ import {
   SETUP_STEPS,
   SETUP_OPTIONAL,
   completedCount,
+  stepFor,
 } from '../data/setupSteps'
 
 function setDismissed(value) {
@@ -28,7 +29,7 @@ export default function SetupGuide() {
   const done = completedCount(ws)
   const total = SETUP_STEPS.length
   const allDone = done === total
-  const notStarted = ws.interviews.length === 0
+  const notStarted = activeData(ws).interviews.length === 0
   const optionalDone = SETUP_OPTIONAL.isDone(ws)
 
   if (dismissed) {
@@ -59,7 +60,7 @@ export default function SetupGuide() {
       </div>
       <p className="small muted" style={{ marginTop: 8 }}>{SETUP_WELCOME.body}</p>
 
-      {notStarted && (
+      {notStarted && ws.mode !== 'real' && (
         <div className="notice" style={{ margin: '10px 0' }}>
           <strong>Choose a path.</strong>
           <p className="small" style={{ margin: '6px 0 8px' }}>
@@ -87,7 +88,8 @@ export default function SetupGuide() {
       </div>
 
       <ol style={{ margin: '10px 0', paddingLeft: 0, listStyle: 'none' }}>
-        {SETUP_STEPS.map((s) => {
+        {SETUP_STEPS.map((raw) => {
+          const s = stepFor(raw, ws)
           const isDone = s.done(ws)
           return (
             <li key={s.id} style={{ display: 'flex', gap: 10, alignItems: 'baseline', padding: '6px 0', borderTop: '1px solid var(--line)' }}>

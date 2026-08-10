@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
+import ModeGate from '../components/ModeGate'
 import { useWorkspace, update } from '../store/dataStore'
 import { simulateInterview } from '../engine/simulator'
 import { generateLiveInterview, liveModeAvailable } from '../engine/llm'
@@ -13,6 +14,15 @@ export default function AICalibration() {
   const [running, setRunning] = useState(false)
   const [comparison, setComparison] = useState(null)
   const [error, setError] = useState(null)
+
+  if (ws.mode === 'real') {
+    return (
+      <>
+        <PageHeader title="AI Calibration" desc="Compares simulator output against live model output on synthetic personas." />
+        <ModeGate want="synthetic" />
+      </>
+    )
+  }
 
   const live = liveModeAvailable(ws.settings)
   const persona = ws.personas.find((p) => p.id === personaId)

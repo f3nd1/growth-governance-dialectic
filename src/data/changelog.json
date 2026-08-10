@@ -1,6 +1,14 @@
 {
   "entries": [
     {
+      "when": "2026-08-10T05:05:03.386Z",
+      "action": "push",
+      "commit": "5745f0b",
+      "branch": "claude/governance-growth-dialectic-app-4ssmnb",
+      "message": "Real data mode 3/4: code real transcripts from the text alone",
+      "summary": "Real-mode coding never consults a pre-assigned hypothesis: both passes classify from the answer text against the whole codebook, unmatched text stays unclassified, and the pages state that two machine passes are not inter-rater reliability."
+    },
+    {
       "when": "2026-08-10T05:03:20.577Z",
       "action": "push",
       "commit": "aa8ce1d",

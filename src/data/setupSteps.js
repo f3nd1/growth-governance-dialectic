@@ -27,12 +27,19 @@ export const SETUP_REFERENCES = [
 // The six checkable milestones. `done` is a pure derived predicate. Redundant
 // signals (coding ⇒ reliability/patterns available) are intentional and
 // honest: a ticked step means "the data this page needs now exists".
+// Two milestones differ by mode: the synthetic corpus is generated, the real
+// one is entered by hand. Everything downstream of the transcripts is identical.
 export const SETUP_STEPS = [
   {
     id: 'personas',
     label: 'Build or seed synthetic personas',
     path: '/participants/library',
     hint: 'Eight are seeded by default; edit them or add your own.',
+    real: {
+      label: 'Add participant records',
+      path: '/participants/records',
+      hint: 'Pseudonymous code, stakeholder group and optional non-identifying descriptors.',
+    },
     done: (ws) => activeData(ws).participants.length > 0,
   },
   {
@@ -40,6 +47,11 @@ export const SETUP_STEPS = [
     label: 'Run interviews',
     path: '/fieldwork/run',
     hint: 'Run all personas through the protocol (offline simulator or live LLM).',
+    real: {
+      label: 'Enter transcripts',
+      path: '/fieldwork/entry',
+      hint: 'Type or paste each answer verbatim — nothing here is generated.',
+    },
     done: (ws) => activeData(ws).interviews.length > 0,
   },
   {
@@ -68,7 +80,7 @@ export const SETUP_STEPS = [
     label: 'Assemble the Pilot Report & export',
     path: '/outputs/report',
     hint: 'Review-ready summary; export JSON / Markdown / printable HTML with the caveat.',
-    done: (ws) => activeData(ws).interviews.length > 0 && ws.coding.segments.length > 0,
+    done: (ws) => activeData(ws).interviews.length > 0 && activeData(ws).coding.segments.length > 0,
   },
 ]
 
@@ -87,9 +99,15 @@ export const SETUP_OPTIONAL = {
     ),
 }
 
+/** A step resolved for the active mode — real overrides applied where present. */
+export function stepFor(step, ws) {
+  return ws.mode === 'real' && step.real ? { ...step, ...step.real } : step
+}
+
 /** The first milestone not yet complete — drives the sidebar nudge dot. */
 export function nextIncompleteStep(ws) {
-  return SETUP_STEPS.find((s) => !s.done(ws)) ?? null
+  const next = SETUP_STEPS.find((s) => !s.done(ws))
+  return next ? stepFor(next, ws) : null
 }
 
 export function completedCount(ws) {

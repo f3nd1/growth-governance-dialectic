@@ -85,9 +85,10 @@ export default function PilotReport() {
       </section>
 
       <section className="card">
-        <h2>5 · Pilot corpus (synthetic)</h2>
+        <h2>5 · {m.isReal ? 'Corpus (real participants)' : 'Pilot corpus (synthetic)'}</h2>
         <p>
-          {m.counts.personas} synthetic personas · {m.counts.interviews} interviews ·{' '}
+          {m.counts.personas} {m.isReal ? 'participants' : 'synthetic personas'} ·{' '}
+          {m.counts.interviews} {m.isReal ? 'entered transcripts' : 'interviews'} ·{' '}
           {m.counts.segments} dual-coded segments · {m.counts.overrides} logged overrides.
         </p>
       </section>
@@ -106,7 +107,11 @@ export default function PilotReport() {
         ) : (
           <p className="muted">No coded segments yet — <Link to="/analysis/coding">run the coders</Link>.</p>
         )}
-        <p className="small muted">Figures illustrate the method on synthetic data; they are not validated coefficients.</p>
+        <p className="small muted">
+          {m.isReal
+            ? 'Agreement here is between two automated passes — it describes codebook discrimination, not inter-rater reliability.'
+            : 'Figures illustrate the method on synthetic data; they are not validated coefficients.'}
+        </p>
       </section>
 
       <section className="card">

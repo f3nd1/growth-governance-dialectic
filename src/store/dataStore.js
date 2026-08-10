@@ -43,7 +43,10 @@ function mergeWithDefaults(loaded) {
   const base = defaultWorkspace()
   if (!loaded || typeof loaded !== 'object') return base
   const merged = { ...base, ...loaded }
-  merged.meta = { ...base.meta, ...loaded.meta, synthetic: true }
+  merged.mode = merged.mode === 'real' ? 'real' : 'synthetic'
+  // The stamp is derived from the mode, never set by hand: synthetic while the
+  // synthetic corpus is active, false once real participant data is.
+  merged.meta = { ...base.meta, ...loaded.meta, synthetic: merged.mode !== 'real' }
   merged.settings = { ...base.settings, ...loaded.settings }
   // Instrument content saved by an earlier app version may predate seeding —
   // fall back to seeds when a section is empty (pages offer explicit
@@ -62,7 +65,6 @@ function mergeWithDefaults(loaded) {
   if (!merged.personas?.length) merged.personas = base.personas
   // Real mode added later: back-fill so pre-existing synthetic workspaces load
   // unchanged and simply arrive in synthetic mode with an empty real dataset.
-  merged.mode = merged.mode === 'real' ? 'real' : 'synthetic'
   merged.real = { ...emptyRealDataset(), ...(merged.real ?? {}) }
   // WH3 cannot coherently be held alongside WH1/WH2; drop it where a stored
   // persona has both, keeping the paradox signal.
@@ -135,7 +137,11 @@ export function setState(updater) {
     typeof updater === 'function' ? updater(state) : { ...state, ...updater }
   state = {
     ...next,
-    meta: { ...next.meta, synthetic: true, updatedAt: new Date().toISOString() },
+    meta: {
+      ...next.meta,
+      synthetic: next.mode !== 'real',
+      updatedAt: new Date().toISOString(),
+    },
   }
   notify()
   persist()

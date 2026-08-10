@@ -8,6 +8,7 @@ import {
   appendixToMarkdown,
   appendixToHTML,
   SYNTHETIC_CAVEAT,
+  REAL_CONFIDENTIALITY_HEADER,
 } from '../engine/report'
 
 function download(filename, content, type) {
@@ -74,6 +75,23 @@ function parseImport(text) {
   }
 }
 
+/**
+ * The confirmation shown before any real-data export names exactly what leaves
+ * the app. An export of confidential material should never be a single
+ * unlabelled click, and "are you sure?" without the contents is not consent.
+ */
+function confirmRealExport(ws, what) {
+  const answers = ws.real.interviews.reduce((n, iv) => n + iv.answers.length, 0)
+  return window.confirm(
+    `Export ${what} containing REAL PARTICIPANT DATA?\n\n` +
+      `· ${ws.real.participants.length} participant records (codes, groups, role descriptors)\n` +
+      `· ${ws.real.interviews.length} transcripts — ${answers} verbatim answers\n` +
+      `· ${ws.real.coding.segments.length} coded segments (each carries its verbatim text)\n\n` +
+      'The file is written unencrypted to this device\'s downloads folder. Store and share it ' +
+      'only as your approved data-management plan allows.',
+  )
+}
+
 export default function ExportCentre() {
   const ws = useWorkspace()
   const [done, setDone] = useState('')
@@ -82,8 +100,36 @@ export default function ExportCentre() {
   const fileRef = useRef(null)
 
   const stamp = new Date().toISOString().slice(0, 10)
+  const isReal = ws.mode === 'real'
+  // Real exports are named for what they are, and carry the confidentiality
+  // header INSTEAD of the synthetic caveat — never both, and never neither.
+  const tag = isReal ? 'REAL-CONFIDENTIAL' : 'SYNTHETIC'
+  const guard = (what) => !isReal || confirmRealExport(ws, what)
 
   function exportJSON() {
+    if (!guard('the full workspace JSON')) return
+    if (isReal) {
+      // Only the real dataset plus the shared instrument: the synthetic corpus
+      // is deliberately left out so the file matches what the confirm named.
+      const payload = {
+        CONFIDENTIAL: REAL_CONFIDENTIALITY_HEADER, // header field, first key in the file
+        exportedAt: new Date().toISOString(),
+        mode: 'real',
+        instrument: {
+          studyDesign: ws.studyDesign,
+          hypotheses: ws.hypotheses,
+          protocol: ws.protocol,
+          codebook: ws.codebook,
+          settings: { patternMatching: ws.settings.patternMatching, reliability: ws.settings.reliability },
+        },
+        participants: ws.real.participants,
+        interviews: ws.real.interviews,
+        coding: ws.real.coding,
+      }
+      download(`ggd-data-${tag}-${stamp}.json`, JSON.stringify(payload, null, 2), 'application/json')
+      setDone('Real participant data exported (confidentiality header embedded; synthetic corpus excluded).')
+      return
+    }
     // The caveat is written into a header field that no toggle can remove;
     // it is re-imposed here regardless of what the workspace contains.
     const payload = {
@@ -96,18 +142,21 @@ export default function ExportCentre() {
   }
 
   function exportMarkdown() {
+    if (!guard('the report as Markdown')) return
     const md = reportToMarkdown(buildReportModel(ws))
-    download(`ggd-pilot-report-SYNTHETIC-${stamp}.md`, md, 'text/markdown')
-    setDone('Pilot Report exported as Markdown (caveat at top and bottom).')
+    download(`ggd-pilot-report-${tag}-${stamp}.md`, md, 'text/markdown')
+    setDone(`Pilot Report exported as Markdown (${isReal ? 'confidentiality header' : 'caveat'} at top and bottom).`)
   }
 
   function exportHTML() {
+    if (!guard('the report as printable HTML')) return
     const html = reportToHTML(buildReportModel(ws))
-    download(`ggd-pilot-report-SYNTHETIC-${stamp}.html`, html, 'text/html')
+    download(`ggd-pilot-report-${tag}-${stamp}.html`, html, 'text/html')
     setDone('Printable HTML exported — open it and print to PDF if needed.')
   }
 
   function openPrintable() {
+    if (!guard('the report in a printable window')) return
     const html = reportToHTML(buildReportModel(ws))
     const win = window.open('', '_blank')
     if (win) {
@@ -118,18 +167,21 @@ export default function ExportCentre() {
   }
 
   function exportAppendixMarkdown() {
+    if (!guard('the Chapter-3 appendix as Markdown')) return
     const md = appendixToMarkdown(buildReportModel(ws))
-    download(`ggd-chapter3-appendix-SYNTHETIC-${stamp}.md`, md, 'text/markdown')
-    setDone('Chapter-3 appendix exported as Markdown (caveat at head and foot).')
+    download(`ggd-chapter3-appendix-${tag}-${stamp}.md`, md, 'text/markdown')
+    setDone(`Chapter-3 appendix exported as Markdown (${isReal ? 'confidentiality header' : 'caveat'} at head and foot).`)
   }
 
   function exportAppendixHTML() {
+    if (!guard('the Chapter-3 appendix as printable HTML')) return
     const html = appendixToHTML(buildReportModel(ws))
-    download(`ggd-chapter3-appendix-SYNTHETIC-${stamp}.html`, html, 'text/html')
+    download(`ggd-chapter3-appendix-${tag}-${stamp}.html`, html, 'text/html')
     setDone('Chapter-3 appendix exported as printable HTML.')
   }
 
   function openAppendixPrintable() {
+    if (!guard('the Chapter-3 appendix in a printable window')) return
     const html = appendixToHTML(buildReportModel(ws))
     const win = window.open('', '_blank')
     if (win) {
@@ -170,22 +222,32 @@ export default function ExportCentre() {
     <>
       <PageHeader
         title="Export Centre"
-        desc="Export and import are symmetric. Every export carries the SYNTHETIC caveat in a header field that cannot be toggled off, and every import is re-stamped SYNTHETIC on the way in — the caveat is re-imposed regardless of file contents."
+        desc={
+          isReal
+            ? 'Every export carries the confidentiality header in a field that cannot be toggled off, and never the synthetic caveat. Each one asks you to confirm exactly what is leaving the app first.'
+            : 'Export and import are symmetric. Every export carries the SYNTHETIC caveat in a header field that cannot be toggled off, and every import is re-stamped SYNTHETIC on the way in — the caveat is re-imposed regardless of file contents.'
+        }
       />
 
-      <div className="notice" role="note">
-        {SYNTHETIC_CAVEAT}
+      <div
+        className="notice"
+        role="note"
+        style={isReal ? { borderLeftColor: '#6d1f1d', fontWeight: 700 } : undefined}
+      >
+        {isReal ? REAL_CONFIDENTIALITY_HEADER : SYNTHETIC_CAVEAT}
       </div>
 
       <div className="grid-2">
         <section className="card">
-          <h2>Workspace (JSON)</h2>
+          <h2>{isReal ? 'Participant data (JSON)' : 'Workspace (JSON)'}</h2>
           <p className="small muted">
-            Full workspace state — design, protocol, codebook, personas, interviews, coded
-            segments, settings (keys included only if you typed them into Settings; env keys
-            never leave .env.local).
+            {isReal
+              ? 'Participant records, entered transcripts and coded segments, plus the instrument they were coded against. The synthetic corpus is not included.'
+              : 'Full workspace state — design, protocol, codebook, personas, interviews, coded segments, settings (keys included only if you typed them into Settings; env keys never leave .env.local).'}
           </p>
-          <button className="btn" onClick={exportJSON}>Download workspace JSON</button>
+          <button className="btn" onClick={exportJSON}>
+            {isReal ? 'Download participant data JSON…' : 'Download workspace JSON'}
+          </button>
         </section>
 
         <section className="card">
@@ -218,6 +280,16 @@ export default function ExportCentre() {
         </p>
       </section>
 
+      {isReal ? (
+        <section className="card">
+          <h2>Import workspace (JSON)</h2>
+          <p className="small muted" style={{ marginBottom: 0 }}>
+            Import is disabled in real mode. It replaces the entire workspace and re-stamps
+            everything SYNTHETIC, which would both destroy your participant records and
+            mislabel confidential material as generated. Switch to synthetic mode to import.
+          </p>
+        </section>
+      ) : (
       <section className="card">
         <h2>Import workspace (JSON)</h2>
         <p className="small muted">
@@ -273,6 +345,7 @@ export default function ExportCentre() {
           </div>
         )}
       </section>
+      )}
 
       {done && <p role="status" className="small" style={{ color: '#2f9e44' }}>{done}</p>}
     </>

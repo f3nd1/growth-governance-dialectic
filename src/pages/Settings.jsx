@@ -143,6 +143,16 @@ export default function Settings() {
       </section>
       )}
 
+      {ws.mode === 'real' ? (
+        <section className="card">
+          <h2>OpenAI (live generation)</h2>
+          <p className="small muted" style={{ marginBottom: 0 }}>
+            Unavailable in real mode. Real transcripts are typed in and coded locally, so
+            nothing on the real-data path calls a model, fetches a model list, or makes any
+            network request at all. Switch to synthetic mode to configure live generation.
+          </p>
+        </section>
+      ) : (
       <section className="card">
         <h2>OpenAI (live generation)</h2>
         <p className="small">
@@ -214,6 +224,7 @@ export default function Settings() {
           </div>
         </div>
       </section>
+      )}
 
       <section className="card">
         <h2>Supabase (workspace sync)</h2>

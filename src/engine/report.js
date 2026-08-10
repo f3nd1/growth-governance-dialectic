@@ -1,5 +1,7 @@
-// Pilot Report assembly + exporters. The SYNTHETIC caveat is hard-coded into
-// every output path and is not togglable anywhere in the app.
+// Pilot Report assembly + exporters. Every output path carries a header the
+// app cannot toggle off: the SYNTHETIC caveat for the synthetic pilot corpus,
+// or the confidentiality header for real participant data. Which one is used
+// follows the workspace mode, never a user setting.
 
 import { agreementStats, kappaBand } from './coding'
 import { aggregateEvidence } from './patterns'
@@ -14,11 +16,25 @@ import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
 import { rqList } from '../data/seeds'
 import { activeData } from '../store/dataStore'
 
+export const REAL_CONFIDENTIALITY_HEADER =
+  'CONFIDENTIAL — REAL PARTICIPANT DATA. This document contains pseudonymised material from ' +
+  'consented human participants. Handle under the approved ethics protocol: do not circulate ' +
+  'beyond the approved supervisory team, do not re-identify participants, and store it only ' +
+  'where your data-management plan permits. The code-to-identity key is held separately and ' +
+  'is not part of this document.'
+
 export const SYNTHETIC_CAVEAT =
   'SYNTHETIC PILOT — INSTRUMENT VALIDATION ONLY. All participants, transcripts, codes and ' +
   'figures in this document are generated from synthetic personas. Figures illustrate the ' +
   'METHOD, not validated coefficients. Nothing here is a real finding about the institution. ' +
   'Real fieldwork is pending advisor and IRB approval.'
+
+/** Inline note stamped under every exported chart. Mode-driven, not settable. */
+function figureNote(m) {
+  return m.isReal
+    ? 'CONFIDENTIAL real participant data — pseudonymised.'
+    : 'SYNTHETIC pilot data — illustrates the method, not a real finding.'
+}
 
 export function buildReportModel(ws) {
   const stats = agreementStats(activeData(ws).coding.segments)
@@ -43,7 +59,11 @@ export function buildReportModel(ws) {
       heatmap: heatmapSVG(heatData, colors),
     },
     jointDisplay: heatData.rows,
-    caveat: SYNTHETIC_CAVEAT, // non-removable
+    // Non-removable, and chosen by mode rather than by any setting: real
+    // exports must never carry the synthetic caveat, which would misdescribe
+    // confidential human data as generated.
+    isReal: activeData(ws).isReal,
+    caveat: activeData(ws).isReal ? REAL_CONFIDENTIALITY_HEADER : SYNTHETIC_CAVEAT,
     generatedAt: new Date().toISOString(),
     studyDesign: ws.studyDesign,
     hypotheses: HYPOTHESIS_IDS.map((id) => ws.hypotheses[id]),
@@ -124,11 +144,19 @@ export function reportToMarkdown(m) {
   lines.push('')
   for (const c of m.codebook) lines.push(`- **${c.label}** (${c.group}): ${c.definition || '_no definition_'}`)
   lines.push('')
-  lines.push('## 5 · Pilot corpus (synthetic)')
+  lines.push(m.isReal ? '## 5 · Corpus (real participants)' : '## 5 · Pilot corpus (synthetic)')
   lines.push('')
-  lines.push(`${m.counts.personas} synthetic personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.`)
+  lines.push(
+    m.isReal
+      ? `${m.counts.personas} participants · ${m.counts.interviews} entered transcripts · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.`
+      : `${m.counts.personas} synthetic personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.`,
+  )
   lines.push('')
-  lines.push('## 6 · Reliability (illustrative of method)')
+  lines.push(
+    m.isReal
+      ? '## 6 · Coding agreement (two automated passes — NOT inter-rater reliability)'
+      : '## 6 · Reliability (illustrative of method)',
+  )
   lines.push('')
   if (m.reliability) {
     lines.push(`- N segments: ${m.reliability.n}`)
@@ -143,7 +171,11 @@ export function reportToMarkdown(m) {
     lines.push('_No coded segments in this workspace yet._')
   }
   lines.push('')
-  lines.push('## 7 · Pattern-matching (distributed evidence, synthetic)')
+  lines.push(
+    m.isReal
+      ? '## 7 · Pattern-matching (distributed evidence)'
+      : '## 7 · Pattern-matching (distributed evidence, synthetic)',
+  )
   lines.push('')
   if (m.patterns.hypTotal > 0) {
     for (const h of m.hypotheses) {
@@ -208,7 +240,7 @@ export function reportToHTML(m) {
       ? `<figure class="chart">
   <h3>${esc(title)}</h3>
   ${svg}
-  <figcaption>${esc(caption)} <span class="cav-inline">SYNTHETIC pilot data — illustrates the method, not a real finding.</span></figcaption>
+  <figcaption>${esc(caption)} <span class="cav-inline">${esc(figureNote(m))}</span></figcaption>
 </figure>`
       : ''
 
@@ -216,7 +248,7 @@ export function reportToHTML(m) {
 <h2>8 · Visualisations</h2>
 ${figure('A · Hypothesis distribution', m.charts.distribution, 'Per-persona coded-evidence shares across WH1/WH2/WH3 with the aggregate; ⚡ paradox personas span two hypotheses.')}
 ${figure('B · Reliability over seeds', m.charts.reliability, 'Cohen’s κ per seed against the moderate / substantial / strong bands.')}
-${figure('C · Joint-display heatmap', m.charts.heatmap, 'Evidence strength per hypothesis; only the interview row is populated from synthetic data.')}
+${figure('C · Joint-display heatmap', m.charts.heatmap, `Evidence strength per hypothesis; only the interview row is populated from ${m.isReal ? 'entered transcripts' : 'synthetic data'}.`)}
 `
 
   // Insert the visualisations section just before the closing separator/caveat.
@@ -228,7 +260,7 @@ ${figure('C · Joint-display heatmap', m.charts.heatmap, 'Evidence strength per 
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Pilot Report — SYNTHETIC instrument validation</title>
+<title>${m.isReal ? 'Pilot Report — CONFIDENTIAL real participant data' : 'Pilot Report — SYNTHETIC instrument validation'}</title>
 <style>
   body { font-family: Georgia, serif; max-width: 820px; margin: 2rem auto; padding: 0 1rem; line-height: 1.55; color: #1f2328; }
   h1, h2, h3 { font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -250,7 +282,7 @@ ${bodyWithCharts}
 
 // ---------------------------------------------------------------------------
 // Chapter-3 appendix — a denser, canonical, citation-ready bundle distinct
-// from the advisor-summary Pilot Report. Same non-removable SYNTHETIC caveat.
+// from the advisor-summary Pilot Report. Same non-removable mode-driven header.
 // ---------------------------------------------------------------------------
 
 const APPENDIX_METHOD_NOTE =
@@ -258,20 +290,30 @@ const APPENDIX_METHOD_NOTE =
   'findings about the institution. All data is generated from synthetic personas for ' +
   'instrument validation ahead of advisor- and IRB-approved fieldwork.'
 
+const APPENDIX_REAL_NOTE =
+  'These figures come from real, consented participants and are reported under the approved ' +
+  'ethics protocol. The two coding passes are automated: their agreement describes how sharply ' +
+  'the codebook discriminates on this material and must NOT be reported as inter-rater ' +
+  'reliability, which requires a second human coder.'
+
+function appendixNote(m) {
+  return m.isReal ? APPENDIX_REAL_NOTE : APPENDIX_METHOD_NOTE
+}
+
 function mdEsc(s) {
   return String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
 }
 
 export function appendixToMarkdown(m) {
   const L = []
-  L.push('# Appendix — Pilot Instrument Validation (SYNTHETIC)')
+  L.push(m.isReal ? '# Appendix — Analysis (CONFIDENTIAL real participant data)' : '# Appendix — Pilot Instrument Validation (SYNTHETIC)')
   L.push('')
   L.push(`> **${m.caveat}**`)
   L.push('')
-  L.push(`**${APPENDIX_METHOD_NOTE}**`)
+  L.push(`**${appendixNote(m)}**`)
   L.push('')
   L.push(
-    `_Generated ${new Date(m.generatedAt).toLocaleString()} · ${m.counts.personas} synthetic ` +
+    `_Generated ${new Date(m.generatedAt).toLocaleString()} · ${m.counts.personas} ${m.isReal ? 'participants' : 'synthetic '}` +
       `personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ` +
       `${m.counts.overrides} logged overrides._`,
   )
@@ -327,13 +369,19 @@ export function appendixToMarkdown(m) {
 
   L.push('## A4 · Joint-display matrix (pattern-matching)')
   L.push('')
-  L.push('Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from synthetic data; documents and focus groups are real-data-phase placeholders, making explicit what synthetic data can and cannot validate.')
+  L.push(
+    m.isReal
+      ? 'Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from entered transcripts; documents and focus groups are not yet collected.'
+      : 'Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from synthetic data; documents and focus groups are real-data-phase placeholders, making explicit what synthetic data can and cannot validate.',
+  )
   L.push('')
   const [ha, hb, hc] = m.hypotheses
   L.push(`| Evidence type | Status | ${ha.short} | ${hb.short} | ${hc.short} |`)
   L.push('| --- | --- | --- | --- | --- |')
   for (const row of m.jointDisplay) {
-    const status = row.populated ? 'populated · synthetic' : row.placeholderLabel ?? 'real-data phase'
+    const status = row.populated
+      ? (m.isReal ? 'populated · interviews' : 'populated · synthetic')
+      : row.placeholderLabel ?? 'not yet collected'
     const cells = HYPOTHESIS_IDS.map((id) => {
       const base = row.expected[id]
       return row.populated ? `${base} (${(row.shares[id] * 100).toFixed(0)}%)` : base
@@ -384,7 +432,9 @@ export function appendixToHTML(m) {
       : ''
 
   const jointRows = m.jointDisplay.map((row) => {
-    const status = row.populated ? 'populated · synthetic' : row.placeholderLabel ?? 'real-data phase'
+    const status = row.populated
+      ? (m.isReal ? 'populated · interviews' : 'populated · synthetic')
+      : row.placeholderLabel ?? 'not yet collected'
     const cells = HYPOTHESIS_IDS.map((id) => {
       const base = row.expected[id]
       return row.populated
@@ -396,14 +446,14 @@ export function appendixToHTML(m) {
 
   const chartFig = (title, svg, cap) =>
     svg
-      ? `<figure class="chart"><h3>${esc(title)}</h3>${svg}<figcaption>${esc(cap)} <span class="cav-inline">SYNTHETIC pilot data — illustrates the method.</span></figcaption></figure>`
+      ? `<figure class="chart"><h3>${esc(title)}</h3>${svg}<figcaption>${esc(cap)} <span class="cav-inline">${esc(figureNote(m))}</span></figcaption></figure>`
       : ''
 
   return `<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Chapter-3 Appendix — SYNTHETIC instrument validation</title>
+<title>${m.isReal ? 'Chapter-3 Appendix — CONFIDENTIAL real participant data' : 'Chapter-3 Appendix — SYNTHETIC instrument validation'}</title>
 <style>
   body { font-family: Georgia, serif; max-width: 900px; margin: 2rem auto; padding: 0 1rem; line-height: 1.5; color: #1f2328; }
   h1, h2, h3 { font-family: 'Segoe UI', system-ui, sans-serif; }
@@ -420,10 +470,10 @@ export function appendixToHTML(m) {
 </style>
 </head>
 <body>
-<h1>Appendix — Pilot Instrument Validation (SYNTHETIC)</h1>
+<h1>${m.isReal ? 'Appendix — Analysis (CONFIDENTIAL real participant data)' : 'Appendix — Pilot Instrument Validation (SYNTHETIC)'}</h1>
 <div class="caveat">${esc(m.caveat)}</div>
-<div class="method">${esc(APPENDIX_METHOD_NOTE)}</div>
-<p><em>Generated ${esc(new Date(m.generatedAt).toLocaleString())} · ${m.counts.personas} synthetic personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.</em></p>
+<div class="method">${esc(appendixNote(m))}</div>
+<p><em>Generated ${esc(new Date(m.generatedAt).toLocaleString())} · ${m.counts.personas} ${m.isReal ? 'participants' : 'synthetic personas'} · ${m.counts.interviews} ${m.isReal ? 'entered transcripts' : 'interviews'} · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.</em></p>
 
 <h2>A1 · Codebook (a priori + emergent)</h2>
 <table><thead><tr><th>Code</th><th>Hypothesis</th><th>Definition</th></tr></thead><tbody>${codebookRows}</tbody></table>
@@ -437,7 +487,7 @@ ${patternRows ? `<table><thead><tr><th>Hypothesis</th><th>Weighted segments</th>
 ${chartFig('Hypothesis distribution', m.charts.distribution, 'Per-persona coded-evidence shares with the aggregate.')}
 
 <h2>A4 · Joint-display matrix (pattern-matching)</h2>
-<p>Expected evidence under each hypothesis by evidence type. Only the interview row is populated from synthetic data; the remaining rows are real-data-phase placeholders.</p>
+<p>Expected evidence under each hypothesis by evidence type. Only the interview row is populated${m.isReal ? '' : ' from synthetic data'}; the remaining rows are ${m.isReal ? 'not yet collected' : 'real-data-phase placeholders'}.</p>
 <table><thead><tr><th>Evidence type</th><th>Status</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>
 ${chartFig('Joint-display heatmap', m.charts.heatmap, 'Evidence strength per hypothesis; only the interview row is populated.')}
 

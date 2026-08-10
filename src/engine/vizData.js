@@ -48,9 +48,12 @@ export function hypothesisDistributionData(ws) {
  * selector) on each seed's segment subset, plus the pooled κ over all.
  */
 export function reliabilitySeriesData(ws) {
-  const seedOf = new Map(ws.interviews.map((iv) => [iv.id, iv.seed]))
+  const data = activeData(ws)
+  // Real transcripts carry no seed (nothing is generated), so the per-seed
+  // series is empty in real mode and only the pooled figure is reported.
+  const seedOf = new Map(data.interviews.map((iv) => [iv.id, iv.seed]))
   const bySeed = new Map()
-  for (const s of ws.coding.segments) {
+  for (const s of data.coding.segments) {
     const seed = seedOf.get(s.interviewId)
     if (seed == null) continue
     if (!bySeed.has(seed)) bySeed.set(seed, [])
@@ -64,7 +67,7 @@ export function reliabilitySeriesData(ws) {
     .filter(Boolean)
     .sort((a, b) => a.seed - b.seed)
 
-  const pooledStats = agreementStats(ws.coding.segments)
+  const pooledStats = agreementStats(data.coding.segments)
   return { points, pooled: pooledStats ? pooledStats.kappa : null }
 }
 

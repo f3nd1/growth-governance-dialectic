@@ -61,7 +61,7 @@ export const NAV_GROUPS = [
     label: 'Settings',
     items: [
       { path: '/settings', label: 'Settings' },
-      { path: '/settings/calibration', label: 'AI Calibration' },
+      { path: '/settings/calibration', label: 'AI Calibration', mode: 'synthetic' },
       { path: '/settings/ai-review-log', label: 'AI Review Log' },
       { path: '/settings/changelog', label: 'Change Log' },
     ],
