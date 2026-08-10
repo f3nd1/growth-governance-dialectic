@@ -176,6 +176,17 @@ export function updateActive(key, fn) {
   )
 }
 
+/**
+ * Replace the whole real dataset in ONE state transition. Bulk import needs
+ * participants, interviews and coded segments to land together or not at all;
+ * three sequential updateActive calls would leave the workspace half-written if
+ * the second threw. The batch is computed first and applied as a single commit,
+ * so there is nothing to roll back. No-op outside real mode.
+ */
+export function updateRealBatch(fn) {
+  setState((prev) => (prev.mode === 'real' ? { ...prev, real: fn(prev.real) } : prev))
+}
+
 export function setMode(mode) {
   setState((prev) => ({ ...prev, mode: mode === 'real' ? 'real' : 'synthetic' }))
 }

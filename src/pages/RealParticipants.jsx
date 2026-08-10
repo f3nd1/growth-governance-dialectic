@@ -2,7 +2,7 @@ import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
 import ModeGate from '../components/ModeGate'
 import { useWorkspace, updateActive } from '../store/dataStore'
-import { STAKEHOLDER_GROUPS } from '../data/seeds'
+import { STAKEHOLDER_GROUPS, looksLikeName } from '../data/seeds'
 
 // Bands, not dates — a precise start date is re-identifying in a single small
 // institution where most roles are held by one person.
@@ -13,21 +13,6 @@ export const TENURE_BANDS = [
   '5–10 years',
   'over 10 years',
 ]
-
-/**
- * A participant code is a pseudonym: short, no spaces, no natural-language
- * name. Anything that reads like a person's name is flagged — a warning, never
- * a block, because the researcher may have a coding scheme we cannot predict
- * and refusing to save would just push the note somewhere unlogged.
- */
-export function looksLikeName(code) {
-  const v = (code ?? '').trim()
-  if (!v) return false
-  if (/\s/.test(v)) return true // "Jane Tan"
-  if (v.length > 12) return true
-  // A run of 4+ letters with no digit is prose, not a code: P01, INT-04, SL2 pass.
-  return /^[A-Za-z]{4,}$/.test(v)
-}
 
 const blank = { participantCode: '', group: 'senior-leader', roleDescriptor: '', tenureBand: '' }
 
