@@ -143,7 +143,10 @@ export function JointHeatmapChart() {
   const fallback = (
     <table className="data">
       <thead>
-        <tr><th>Evidence type</th>{WH.map((k) => <th key={k}>{ws.hypotheses[k].short}</th>)}</tr>
+        <tr>
+          <th>{isReal ? 'Stakeholder group' : 'Evidence type'}</th>
+          {WH.map((k) => <th key={k}>{ws.hypotheses[k].short}</th>)}
+        </tr>
       </thead>
       <tbody>
         {data.rows.map((r) => (
@@ -166,7 +169,7 @@ export function JointHeatmapChart() {
       svg={svg}
       caption={
         isReal
-          ? 'Reads real participant data — evidence strength per proposition. Only the interview rows are populated; financial, audit and report rows are hatched and not yet collected.'
+          ? 'Reads real participant data — evidence strength per proposition, by stakeholder group. The design is interviews-only, so rows are the five groups interviewed rather than evidence types.'
           : 'Reads synthetic pilot data — evidence strength per hypothesis. Only the interview row is populated (synthetic); financial, audit and report rows are hatched real-data-phase placeholders.'
       }
       tableFallback={fallback}

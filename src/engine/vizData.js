@@ -7,7 +7,7 @@ import { agreementStats } from './coding'
 import { aggregateEvidence } from './patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { activeData } from '../store/dataStore'
-import { visibleJointRows, EXTERNAL_GROUPS } from '../data/jointDisplayMatrix'
+import { visibleJointRows, unmappedParticipants, EXTERNAL_GROUPS } from '../data/jointDisplayMatrix'
 
 /** Colours keyed wh1/wh2/wh3, pulled from the workspace hypotheses. */
 export function hypothesisColors(ws) {
@@ -91,17 +91,48 @@ function sharesFor(segments, codebook) {
  * Placeholder rows carry null shares (real-data phase).
  */
 export function heatmapData(ws) {
-  const groupById = new Map(activeData(ws).participants.map((p) => [p.id, p.group]))
+  const data = activeData(ws)
+  const groupById = new Map(data.participants.map((p) => [p.id, p.group]))
+  // Filtered here, at the single selector every consumer reads — the page, the
+  // chart and both exports — so a hidden row cannot survive in one of them.
+  const visible = visibleJointRows(ws.settings, ws.mode)
+
+  if (data.isReal) {
+    // Real rows are stakeholder groups. Membership comes from the participant
+    // record's group field, so a segment lands in a row because of who said it.
+    const rows = visible.map((r) => {
+      const groups = new Set(r.groups)
+      const segs = data.coding.segments.filter((s) => groups.has(groupById.get(s.personaId)))
+      const { shares, total } = sharesFor(segs, ws.codebook)
+      return {
+        id: r.id,
+        label: r.label,
+        populated: true, // no placeholder rows: the design collects interviews only
+        populatedBy: r.id,
+        placeholderLabel: null,
+        expected: r.expected,
+        shares,
+        segmentCount: total,
+        participantCount: data.participants.filter((p) => groups.has(p.group)).length,
+      }
+    })
+    return {
+      rows,
+      hasData: data.coding.segments.length > 0,
+      // Reported, never guessed at: a participant whose group the five chapter
+      // rows do not cover is excluded from every row and named instead.
+      unmapped: unmappedParticipants(data.participants),
+    }
+  }
+
   const isExternal = (s) => EXTERNAL_GROUPS.includes(groupById.get(s.personaId))
-  const external = activeData(ws).coding.segments.filter(isExternal)
-  const internal = activeData(ws).coding.segments.filter((s) => !isExternal(s))
+  const external = data.coding.segments.filter(isExternal)
+  const internal = data.coding.segments.filter((s) => !isExternal(s))
   const bySource = {
     internal: sharesFor(internal, ws.codebook),
     external: sharesFor(external, ws.codebook),
   }
-  // Filtered here, at the single selector every consumer reads — the page, the
-  // chart and both exports — so a hidden row cannot survive in one of them.
-  const rows = visibleJointRows(ws.settings, ws.mode).map((r) => ({
+  const rows = visible.map((r) => ({
     id: r.id,
     label: r.label,
     populated: r.populatedBy != null,
@@ -111,5 +142,5 @@ export function heatmapData(ws) {
     shares: r.populatedBy ? bySource[r.populatedBy].shares : null,
     segmentCount: r.populatedBy ? bySource[r.populatedBy].total : 0,
   }))
-  return { rows, hasData: activeData(ws).coding.segments.length > 0 }
+  return { rows, hasData: data.coding.segments.length > 0, unmapped: [] }
 }

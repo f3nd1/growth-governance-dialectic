@@ -9,8 +9,105 @@
 
 export const EXTERNAL_GROUPS = ['agent', 'investor']
 
+
+// ---------------------------------------------------------------- real mode
+//
+// Chapter 3 moved to interviews-only, and its Table 2 is organised by
+// STAKEHOLDER GROUP rather than by evidence type. Real mode therefore uses a
+// different row set entirely: five groups, no "not yet collected" placeholders,
+// because the design no longer collects documents or focus groups.
+//
+// Synthetic mode keeps JOINT_DISPLAY_ROWS above unchanged — it is validating a
+// different, earlier version of the instrument and its exports are frozen.
+//
+// EXPECTED-EVIDENCE WORDING IS A DERIVED DRAFT. It specialises the old internal
+// and external interview rows to each group; it is NOT transcribed from the
+// chapter's Table 2, which the app has never held. Replace it with the
+// chapter's own wording. It is not editable in-app — see the note on the Joint
+// Display page.
+export const REAL_JOINT_DISPLAY_ROWS = [
+  {
+    id: 'board-shareholders',
+    label: 'Board and shareholders',
+    groups: ['shareholder'],
+    expected: {
+      wh1: 'Governance obligations are described as a cost against capital: compliance spend, approval cycles or audit readiness delaying commercial moves the board wanted.',
+      wh2: 'Governance standing is described as what made the institution fundable and defensible — certification and controls as the basis of confidence and continued backing.',
+      wh3: 'Returns and growth are attributed to market conditions, price or management execution, with governance treated as a licence-to-operate cost unrelated to performance.',
+    },
+  },
+  {
+    id: 'leadership',
+    label: 'Senior and academic leadership',
+    groups: ['senior-leader', 'academic'],
+    expected: {
+      wh1: 'Leaders recount approvals, evidence requirements and board or regulator cycles deferring launches, intakes or programme decisions.',
+      wh2: 'Leaders credit documented process, academic controls and accreditation with better-evidenced decisions and with growth the institution could sustain.',
+      wh3: 'Leaders frame governance as a compliance track running parallel to commercial strategy, with outcomes driven by demand and competition.',
+    },
+  },
+  {
+    id: 'teaching-support',
+    label: 'Teaching and support staff',
+    groups: ['teacher', 'support'],
+    expected: {
+      wh1: 'Staff describe documentation, moderation and approval steps consuming time that would otherwise go to teaching, students or recruitment.',
+      wh2: 'Staff describe consistent procedure and records as what keeps quality and student handling stable as volume grows.',
+      wh3: 'Staff report governance as something handled elsewhere, visible only as paperwork, with no perceived bearing on business results.',
+    },
+  },
+  {
+    id: 'ph-operations',
+    label: 'Philippines operations team',
+    groups: ['ph-ops'],
+    expected: {
+      wh1: 'The offshore team describes controls arriving as requirements to implement — manual approvals, access rules and evidence — slowing delivery.',
+      wh2: 'The offshore team describes standardised workflow and clear requirements as what let operations absorb higher volume without loss of control.',
+      wh3: 'The offshore team sees governance as an instruction from the Singapore entity, disconnected from the commercial outcome it supports.',
+    },
+  },
+  {
+    id: 'external-agents',
+    label: 'External recruitment agents',
+    groups: ['agent'],
+    expected: {
+      wh1: 'Agents cite document checks and internal approvals slowing applications, costing enrolments to faster competitors.',
+      wh2: 'Agents cite registration and accreditation as what they rely on to place students and as the basis of a durable relationship.',
+      wh3: 'Agents treat governance as the institution\'s internal affair, with enrolment driven by fees, programme fit and responsiveness.',
+    },
+  },
+]
+
+/** group id -> real row id. The single place membership is decided. */
+const GROUP_TO_REAL_ROW = new Map(
+  REAL_JOINT_DISPLAY_ROWS.flatMap((r) => r.groups.map((g) => [g, r.id])),
+)
+
 /**
- * Which evidence-type rows the matrix shows, per workspace mode. The two modes
+ * Participant groups the five chapter rows do not cover.
+ *
+ * JUDGEMENT CALL, deliberately not resolved here: "multi-role" is a real option
+ * in the participant dropdown and belongs to no single row — a participant who
+ * is both a shareholder and a recruiting principal genuinely sits in two. The
+ * app reports them rather than assigning them, because assigning them would be
+ * inventing a membership the researcher never stated.
+ */
+export function unmappedParticipants(participants) {
+  return (participants ?? []).filter((p) => !GROUP_TO_REAL_ROW.has(p.group))
+}
+
+export function realRowForGroup(group) {
+  return GROUP_TO_REAL_ROW.get(group) ?? null
+}
+
+/** The row set for a mode. Real mode is stakeholder groups; synthetic is
+ *  evidence types, unchanged. */
+export function rowsForMode(mode) {
+  return mode === 'real' ? REAL_JOINT_DISPLAY_ROWS : JOINT_DISPLAY_ROWS
+}
+
+/**
+ * Which matrix rows are shown, per workspace mode. The two modes
  * keep independent sets: a synthetic pilot legitimately wants all four rows to
  * show what the instrument does and does not cover, while real fieldwork that
  * has only collected interviews wants the uncollected rows out of the way.
@@ -30,7 +127,7 @@ export function isJointRowEnabled(settings, mode, id) {
 }
 
 export function visibleJointRows(settings, mode) {
-  return JOINT_DISPLAY_ROWS.filter((r) => isJointRowEnabled(settings, mode, r.id))
+  return rowsForMode(mode).filter((r) => isJointRowEnabled(settings, mode, r.id))
 }
 
 export const JOINT_DISPLAY_ROWS = [

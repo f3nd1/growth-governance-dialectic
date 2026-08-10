@@ -208,7 +208,7 @@ export function heatmapSVG(data, colors, { isReal = false } = {}) {
   return (
     `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" ` +
     `aria-label="${isReal
-      ? 'Joint-display heatmap of evidence types by hypothesis; only the interview rows are populated, other rows are not yet collected'
+      ? 'Joint-display heatmap of stakeholder groups by proposition'
       : 'Joint-display heatmap of evidence types by hypothesis; only the interview row is populated from synthetic data, other rows are real-data-phase placeholders'}" ` +
     `font-family="Segoe UI, system-ui, sans-serif">${body}</svg>`
   )

@@ -266,7 +266,9 @@ ${figure('A · Hypothesis distribution', m.charts.distribution, m.isReal
   ? 'Per-participant coded-evidence shares across WH1/WH2/WH3 with the aggregate; ⚡ marks participants whose evidence spans two propositions.'
   : 'Per-persona coded-evidence shares across WH1/WH2/WH3 with the aggregate; ⚡ paradox personas span two hypotheses.')}
 ${figure('B · Reliability over seeds', m.charts.reliability, 'Cohen’s κ per seed against the moderate / substantial / strong bands.')}
-${figure('C · Joint-display heatmap', m.charts.heatmap, `Evidence strength per hypothesis; only the interview row is populated from ${m.isReal ? 'entered transcripts' : 'synthetic data'}.`)}
+${figure('C · Joint-display heatmap', m.charts.heatmap, m.isReal
+  ? 'Evidence strength per proposition, by stakeholder group.'
+  : 'Evidence strength per hypothesis; only the interview row is populated from synthetic data.')}
 `
 
   // Insert the visualisations section just before the closing separator/caveat.
@@ -396,17 +398,19 @@ export function appendixToMarkdown(m) {
   } else {
   L.push(
     m.isReal
-      ? 'Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from entered transcripts; documents and focus groups are not yet collected.'
+      ? 'Expected evidence under each rival proposition BY STAKEHOLDER GROUP. The design is interviews-only, so rows are the five groups interviewed; a segment lands in a row because of who said it. Convergence is read across groups. The expected-evidence wording is a derived draft, not transcribed from Chapter 3 Table 2.'
       : 'Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from synthetic data; documents and focus groups are real-data-phase placeholders, making explicit what synthetic data can and cannot validate.',
   )
   L.push('')
   const [ha, hb, hc] = m.hypotheses
-  L.push(`| Evidence type | Status | ${ha.short} | ${hb.short} | ${hc.short} |`)
+  L.push(`| ${m.isReal ? 'Stakeholder group' : 'Evidence type'} | ${m.isReal ? 'Participants' : 'Status'} | ${ha.short} | ${hb.short} | ${hc.short} |`)
   L.push('| --- | --- | --- | --- | --- |')
   for (const row of m.jointDisplay) {
-    const status = row.populated
-      ? (m.isReal ? 'populated · interviews' : 'populated · synthetic')
-      : row.placeholderLabel ?? 'not yet collected'
+    const status = m.isReal
+      ? `${row.participantCount} participant${row.participantCount === 1 ? '' : 's'}`
+      : row.populated
+        ? 'populated · synthetic'
+        : row.placeholderLabel ?? 'not yet collected'
     const cells = HYPOTHESIS_IDS.map((id) => {
       const base = row.expected[id]
       return row.populated ? `${base} (${(row.shares[id] * 100).toFixed(0)}%)` : base
@@ -459,9 +463,11 @@ export function appendixToHTML(m) {
       : ''
 
   const jointRows = m.jointDisplay.map((row) => {
-    const status = row.populated
-      ? (m.isReal ? 'populated · interviews' : 'populated · synthetic')
-      : row.placeholderLabel ?? 'not yet collected'
+    const status = m.isReal
+      ? `${row.participantCount} participant${row.participantCount === 1 ? '' : 's'}`
+      : row.populated
+        ? 'populated · synthetic'
+        : row.placeholderLabel ?? 'not yet collected'
     const cells = HYPOTHESIS_IDS.map((id) => {
       const base = row.expected[id]
       return row.populated
@@ -516,9 +522,11 @@ ${chartFig('Hypothesis distribution', m.charts.distribution, m.isReal ? 'Per-par
 <h2>A4 · Joint-display matrix (pattern-matching)</h2>
 ${m.jointDisplay.length === 0
   ? '<p><em>No evidence types are selected for the joint display, so no matrix is reported.</em></p>'
-  : `<p>Expected evidence under each hypothesis by evidence type. Only the interview row is populated${m.isReal ? '' : ' from synthetic data'}; the remaining rows are ${m.isReal ? 'not yet collected' : 'real-data-phase placeholders'}.</p>
-<table><thead><tr><th>Evidence type</th><th>Status</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>`}
-${m.jointDisplay.length ? chartFig('Joint-display heatmap', m.charts.heatmap, 'Evidence strength per hypothesis; only the interview row is populated.') : ''}
+  : `<p>${m.isReal
+      ? 'Expected evidence under each proposition BY STAKEHOLDER GROUP. The design is interviews-only, so rows are the five groups interviewed. The expected-evidence wording is a derived draft, not transcribed from Chapter 3 Table 2.'
+      : 'Expected evidence under each hypothesis by evidence type. Only the interview row is populated from synthetic data; the remaining rows are real-data-phase placeholders.'}</p>
+<table><thead><tr><th>${m.isReal ? 'Stakeholder group' : 'Evidence type'}</th><th>${m.isReal ? 'Participants' : 'Status'}</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>`}
+${m.jointDisplay.length ? chartFig('Joint-display heatmap', m.charts.heatmap, m.isReal ? 'Evidence strength per proposition, by stakeholder group.' : 'Evidence strength per hypothesis; only the interview row is populated.') : ''}
 
 <hr />
 <div class="caveat">${esc(m.caveat)}</div>

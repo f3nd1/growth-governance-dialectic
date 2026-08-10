@@ -4,12 +4,12 @@ import { useWorkspace, activeData, update } from '../store/dataStore'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { JointHeatmapChart } from '../components/AppCharts'
 import { heatmapData } from '../engine/vizData'
-import { JOINT_DISPLAY_ROWS, isJointRowEnabled } from '../data/jointDisplayMatrix'
+import { rowsForMode, isJointRowEnabled } from '../data/jointDisplayMatrix'
 
 export default function JointDisplay() {
   const ws = useWorkspace()
   const isReal = activeData(ws).isReal
-  const { rows, hasData } = heatmapData(ws)
+  const { rows, hasData, unmapped } = heatmapData(ws)
   const modeKey = isReal ? 'real' : 'synthetic'
 
   // Writes an EXCLUSION, and only for the active mode — the other mode's row
@@ -33,7 +33,7 @@ export default function JointDisplay() {
         title="Joint Display"
         desc={
           isReal
-            ? 'The Chapter 3 pattern-matching matrix (Table 2): evidence types × rival propositions. It makes explicit which evidence types the analysis currently rests on (interviews) and which have not been collected (documents and focus groups).'
+            ? 'The Chapter 3 pattern-matching matrix (Table 2): stakeholder groups × rival propositions. The design is interviews-only, so rows are the five groups interviewed rather than evidence types.'
             : 'The Chapter 3 pattern-matching matrix (Table 2): evidence types × rival propositions. It makes explicit what synthetic data CAN validate (the interview instrument) and what it CANNOT (documents and focus groups, which await the real-data phase).'
         }
       />
@@ -42,10 +42,11 @@ export default function JointDisplay() {
         <div className="notice">
           {isReal ? (
             <>
-              The two <strong>interview rows</strong> — internal staff, and external investors
-              and agents — are populated from entered transcripts.{' '}
-              <strong>Documents</strong> and <strong>focus group discussions</strong> have not
-              been collected, so any convergence across evidence types remains untested.
+              Each row is a <strong>stakeholder group</strong>, and a segment lands in a row
+              because of who said it — membership comes from the participant record's group
+              field. Convergence is read <em>across groups</em>: a proposition supported by
+              the board, by staff and by agents alike is stronger evidence than one that
+              appears in a single group.
             </>
           ) : (
             <>
@@ -61,17 +62,53 @@ export default function JointDisplay() {
       )}
 
 
+      {isReal && (
+        <div className="notice" role="note">
+          <strong>The expected-evidence wording below is a derived draft.</strong> It
+          specialises the previous internal/external interview rows to each group; it is not
+          transcribed from your Chapter 3 Table 2, which this app has never held. Treat it as a
+          starting point and replace it with the chapter's own wording. It is not editable
+          in-app — the row definitions live in <code>src/data/jointDisplayMatrix.js</code>.
+        </div>
+      )}
+
+      {isReal && unmapped.length > 0 && (
+        <div className="notice" role="alert" style={{ borderLeftColor: '#b03230' }}>
+          <p style={{ margin: '0 0 6px', fontWeight: 700 }}>
+            {unmapped.length} participant{unmapped.length === 1 ? '' : 's'} do
+            {unmapped.length === 1 ? 'es' : ''} not map to any of the five groups, and
+            {unmapped.length === 1 ? ' is' : ' are'} excluded from every row.
+          </p>
+          <p className="small" style={{ margin: '0 0 6px' }}>
+            Their coded segments appear in the analysis elsewhere but not in this matrix. The
+            app names them rather than assigning them: a participant recorded as
+            “multi-role” genuinely belongs to more than one row, and picking one would invent a
+            membership you never stated.
+          </p>
+          <ul className="small" style={{ margin: 0 }}>
+            {unmapped.map((p) => (
+              <li key={p.id}>
+                <strong>{p.participantCode}</strong> — group “{p.group || '(not set)'}”. Change
+                it on <Link to="/participants/records">Participant Records</Link> if one row
+                fits.
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <section className="card">
-        <h2>Evidence types shown</h2>
+        <h2>{isReal ? 'Stakeholder groups shown' : 'Evidence types shown'}</h2>
         <p className="small muted">
-          Which rows this matrix reports, for <strong>{isReal ? 'real' : 'synthetic'} mode</strong>.
+          Which {isReal ? 'stakeholder groups' : 'rows'} this matrix reports, for{' '}
+          <strong>{isReal ? 'real' : 'synthetic'} mode</strong>.
           The two modes keep separate settings, so hiding a row here leaves the other mode as it
           was. Nothing is deleted — a hidden row keeps its expected-evidence text and returns
           intact when you switch it back on. Hidden rows are also left out of the heatmap on{' '}
           <Link to="/analysis/visualisations">Visualisations</Link> and out of every export.
         </p>
         <div className="chip-row" role="group" aria-label="Evidence-type rows">
-          {JOINT_DISPLAY_ROWS.map((r) => {
+          {rowsForMode(modeKey).map((r) => {
             const on = isJointRowEnabled(ws.settings, modeKey, r.id)
             return (
               <button
@@ -81,7 +118,7 @@ export default function JointDisplay() {
                 onClick={() => toggleRow(r.id, !on)}
               >
                 {on ? '✓ ' : ''}{r.label}
-                {r.populatedBy == null && <span className="muted"> · never populated</span>}
+                {r.populatedBy === null && <span className="muted"> · never populated</span>}
               </button>
             )
           })}
@@ -111,7 +148,7 @@ export default function JointDisplay() {
         <table className="data">
           <thead>
             <tr>
-              <th style={{ minWidth: 130 }}>Evidence type</th>
+              <th style={{ minWidth: 130 }}>{isReal ? 'Stakeholder group' : 'Evidence type'}</th>
               {HYPOTHESIS_IDS.map((id) => (
                 <th key={id} style={{ color: ws.hypotheses[id].color, minWidth: 200 }}>
                   {ws.hypotheses[id].label}
@@ -126,7 +163,11 @@ export default function JointDisplay() {
                   <strong>{row.label}</strong>
                   <div className="small" style={{ marginTop: 4 }}>
                     {row.populated ? (
-                      <span className="stamp">{isReal ? 'populated · interviews' : 'populated · synthetic'}</span>
+                      <span className="stamp">
+                        {isReal
+                          ? `${row.participantCount} participant${row.participantCount === 1 ? '' : 's'}`
+                          : 'populated · synthetic'}
+                      </span>
                     ) : (
                       <span className="tag muted">
                         {isReal ? 'not yet collected' : row.placeholderLabel ?? 'real-data phase'}
