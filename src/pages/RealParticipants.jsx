@@ -34,6 +34,7 @@ const blank = { participantCode: '', group: 'senior-leader', roleDescriptor: '',
 export default function RealParticipants() {
   const ws = useWorkspace()
   const [draft, setDraft] = useState(blank)
+  const [editingId, setEditingId] = useState(null)
   const participants = ws.real.participants
 
   if (ws.mode !== 'real') {
@@ -45,26 +46,67 @@ export default function RealParticipants() {
     )
   }
 
+  const editing = participants.find((p) => p.id === editingId) ?? null
+  const code = draft.participantCode.trim()
   const codeTaken = participants.some(
-    (p) => p.participantCode.toLowerCase() === draft.participantCode.trim().toLowerCase(),
+    (p) => p.id !== editingId && p.participantCode.toLowerCase() === code.toLowerCase(),
   )
-  const canAdd = draft.participantCode.trim().length > 0 && !codeTaken
+  const canSave = code.length > 0 && !codeTaken
 
-  function add() {
-    if (!canAdd) return
-    updateActive('participants', (list) => [
-      ...list,
-      {
-        id: `real-${draft.participantCode.trim().toLowerCase()}-${list.length}`,
-        participantCode: draft.participantCode.trim(),
-        group: draft.group,
-        roleDescriptor: draft.roleDescriptor.trim(),
-        tenureBand: draft.tenureBand,
-        real: true,
-        createdAt: new Date().toISOString(),
-      },
-    ])
+  function edit(p) {
+    setEditingId(p.id)
+    setDraft({
+      participantCode: p.participantCode,
+      group: p.group,
+      roleDescriptor: p.roleDescriptor ?? '',
+      tenureBand: p.tenureBand ?? '',
+    })
+  }
+
+  function cancel() {
+    setEditingId(null)
     setDraft(blank)
+  }
+
+  function save() {
+    if (!canSave) return
+    const patch = {
+      participantCode: code,
+      group: draft.group,
+      roleDescriptor: draft.roleDescriptor.trim(),
+      tenureBand: draft.tenureBand,
+    }
+    if (!editing) {
+      // The record id is generated once and never derived from the code again:
+      // transcripts and segments join on it, so it must survive a re-code.
+      updateActive('participants', (list) => [
+        ...list,
+        { id: `real-${Date.now().toString(36)}-${list.length}`, ...patch, real: true, createdAt: new Date().toISOString() },
+      ])
+      cancel()
+      return
+    }
+    updateActive('participants', (list) =>
+      list.map((p) => (p.id === editing.id ? { ...p, ...patch, updatedAt: new Date().toISOString() } : p)),
+    )
+    if (patch.participantCode !== editing.participantCode) {
+      // personaName is a denormalised copy of the code carried on transcripts
+      // and coded segments for display and export. The join is by personaId, so
+      // nothing is orphaned — but the copies go stale unless they follow.
+      updateActive('interviews', (list) =>
+        list.map((iv) => (iv.personaId === editing.id ? { ...iv, personaName: patch.participantCode } : iv)),
+      )
+      updateActive('coding', (c) => ({
+        ...c,
+        segments: c.segments.map((s) =>
+          s.personaId === editing.id ? { ...s, personaName: patch.participantCode } : s,
+        ),
+        overridesLog: c.overridesLog.map((o) =>
+          o.persona === editing.participantCode ? { ...o, persona: patch.participantCode } : o,
+        ),
+      }))
+    }
+    cancel()
   }
 
   function remove(p) {
@@ -101,7 +143,16 @@ export default function RealParticipants() {
       </div>
 
       <section className="card">
-        <h2>Add participant</h2>
+        <h2>{editing ? `Edit ${editing.participantCode}` : 'Add participant'}</h2>
+        {editing && (
+          <p className="small muted" style={{ marginTop: 0 }}>
+            Editing an existing record. Changing the code updates the{' '}
+            {ws.real.interviews.filter((iv) => iv.personaId === editing.id).length} transcript(s)
+            and {ws.real.coding.segments.filter((sg) => sg.personaId === editing.id).length} coded
+            segment(s) already attached to it — they are linked to the record itself, not to the
+            code, so nothing is detached by a re-code.
+          </p>
+        )}
         <div className="grid-2">
           <div className="field">
             <label htmlFor="rp-code">Participant code (required)</label>
@@ -165,9 +216,14 @@ export default function RealParticipants() {
             </select>
           </div>
         </div>
-        <button className="btn" onClick={add} disabled={!canAdd}>
-          Add participant record
-        </button>
+        <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: 0 }}>
+          <button className="btn" onClick={save} disabled={!canSave}>
+            {editing ? 'Save changes' : 'Add participant record'}
+          </button>
+          {editing && (
+            <button className="btn secondary" onClick={cancel}>Cancel</button>
+          )}
+        </p>
       </section>
 
       <section className="card" style={{ overflowX: 'auto' }}>
@@ -188,13 +244,20 @@ export default function RealParticipants() {
             </thead>
             <tbody>
               {participants.map((p) => (
-                <tr key={p.id}>
+                <tr key={p.id} style={p.id === editingId ? { background: '#fff9e6' } : {}}>
                   <td><strong>{p.participantCode}</strong></td>
                   <td>{STAKEHOLDER_GROUPS.find((g) => g.id === p.group)?.label ?? p.group}</td>
                   <td className="small">{p.roleDescriptor || '—'}</td>
                   <td className="small">{p.tenureBand || '—'}</td>
                   <td>{ws.real.interviews.filter((iv) => iv.personaId === p.id).length}</td>
-                  <td>
+                  <td style={{ whiteSpace: 'nowrap' }}>
+                    <button
+                      className="btn small secondary"
+                      aria-label={`Edit ${p.participantCode}`}
+                      onClick={() => edit(p)}
+                    >
+                      Edit
+                    </button>{' '}
                     <button className="btn small danger" onClick={() => remove(p)}>Delete</button>
                   </td>
                 </tr>
