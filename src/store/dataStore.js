@@ -4,7 +4,13 @@
 
 import { useSyncExternalStore } from 'react'
 import { defaultWorkspace, emptyRealDataset } from './defaults'
-import { rqList, normaliseHeld, RENAMED_FOCUS_GROUPS, FOCUS_GROUPS } from '../data/seeds'
+import {
+  rqList,
+  normaliseHeld,
+  RENAMED_FOCUS_GROUPS,
+  FOCUS_GROUPS,
+  defaultFocusGroupProtocol,
+} from '../data/seeds'
 
 const STORAGE_KEY = 'ggd-workspace-v1'
 
@@ -60,6 +66,16 @@ function mergeWithDefaults(loaded) {
   merged.protocol = {
     ...merged.protocol,
     questions: merged.protocol.questions.map((q) => ({ ...q, rq: rqList(q.rq) })),
+  }
+  // Added after workspaces were already being saved: fill it in rather than
+  // leaving a page reading an undefined instrument.
+  merged.focusGroupProtocol = { ...base.focusGroupProtocol, ...(merged.focusGroupProtocol ?? {}) }
+  if (!merged.focusGroupProtocol.questions?.length) {
+    merged.focusGroupProtocol = defaultFocusGroupProtocol()
+  }
+  merged.focusGroupProtocol = {
+    ...merged.focusGroupProtocol,
+    questions: merged.focusGroupProtocol.questions.map((q) => ({ ...q, rq: rqList(q.rq) })),
   }
   if (!merged.codebook?.codes?.length) merged.codebook = base.codebook
   if (!merged.personas?.length) merged.personas = base.personas

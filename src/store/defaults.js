@@ -8,6 +8,7 @@ import {
   assertPersonaWeights,
   DEFAULT_OPENING_SCRIPT,
   DEFAULT_CLOSING_SCRIPT,
+  defaultFocusGroupProtocol,
 } from '../data/seeds'
 
 export const HYPOTHESIS_IDS = ['wh1', 'wh2', 'wh3']
@@ -92,6 +93,10 @@ export function defaultWorkspace() {
       openingScript: DEFAULT_OPENING_SCRIPT,
       closingScript: DEFAULT_CLOSING_SCRIPT,
     },
+    // A separate instrument, not a variant of the one above: focus-group
+    // questions are built to make participants talk to each other. Real
+    // fieldwork only — synthetic mode runs no focus groups.
+    focusGroupProtocol: defaultFocusGroupProtocol(),
     codebook: { codes: defaultCodebookCodes() },
     personas: assertPersonaWeights(defaultPersonas()),
     interviews: [], // Phase 4

@@ -108,7 +108,7 @@ export function templateCSV(questions) {
  * Template for the extended long layout. Interviews, focus groups and documents
  * in one file; the example rows show what each type puts in which column.
  */
-export function sourcesTemplateCSV(questions, focusGroups = FOCUS_GROUPS) {
+export function sourcesTemplateCSV(questions, fgQuestions = [], focusGroups = FOCUS_GROUPS) {
   // Every row here starts with # and is dropped on import. The interview
   // template uses a live P00 example row, but that trick does not carry: a
   // document must leave column 1 EMPTY, so an example document row would have
@@ -118,7 +118,7 @@ export function sourcesTemplateCSV(questions, focusGroups = FOCUS_GROUPS) {
     ['participantCode', 'questionNumber', 'answer', 'sourceType', 'source'],
     [
       '# REFERENCE — column 1 is WHO SAID IT. Delete these # rows and add your own. ' +
-        `Protocol has ${questions.length} question${questions.length === 1 ? '' : 's'}: ` +
+        `Interview protocol has ${questions.length} question${questions.length === 1 ? '' : 's'}: ` +
         `q1 = ${questions[0]?.text ?? ''}`,
       '',
       '',
@@ -128,11 +128,14 @@ export function sourcesTemplateCSV(questions, focusGroups = FOCUS_GROUPS) {
     ['# P01', '1', 'Interview: the interviewee in column 1, questionNumber 1-' + questions.length + ', source left empty.', 'interview', ''],
     [
       '# P01',
-      '',
-      'Focus group: the SPEAKER of this turn in column 1 — required, a turn without one is rejected. No questionNumber.',
+      '1',
+      `Focus group: the SPEAKER of this turn in column 1 — required, a turn without one is rejected. questionNumber is the FOCUS GROUP question 1-${fgQuestions.length} and may be left blank for a turn that answers none of them.`,
       'focus-group',
       focusGroups[0]?.id ?? '',
     ],
+    // Pulled from the live focus group protocol, like the interview reference
+    // row above it, so neither can go stale when a question is edited.
+    ...fgQuestions.map((q, i) => [`# FG${i + 1}`, '', q.text, '', '']),
     [
       '#',
       '',
@@ -192,7 +195,7 @@ const isComment = (code) => code.trim().startsWith('#')
  *
  * Nothing here writes: every row carries a proposed `action` the UI can change.
  */
-export function buildImportPlan({ text, questions, participants, interviews }) {
+export function buildImportPlan({ text, questions, fgQuestions = [], participants, interviews }) {
   const delimiter = detectDelimiter(text)
   const records = parseDelimited(text, delimiter)
   if (records.length === 0) return { ok: false, error: 'The file is empty.' }
@@ -292,7 +295,28 @@ export function buildImportPlan({ text, questions, participants, interviews }) {
           )
           continue
         }
-        if (text) push('focus-group', group.id, group.label, rowNumber, [{ text, speakerCode: code }])
+        // questionNumber on a focus-group row indexes the FOCUS GROUP
+        // protocol, not the interview one, and may be blank: a group
+        // discussion produces turns that answer nothing on the schedule.
+        const qn = (rec[1] ?? '').trim()
+        let q = null
+        if (qn) {
+          const n = Number.parseInt(qn, 10)
+          if (!Number.isInteger(n) || n < 1 || n > fgQuestions.length) {
+            blocking.push(
+              `Row ${rowNumber}: focus-group question number "${qn}" is not between 1 and ` +
+                `${fgQuestions.length}, the focus group protocol's questions. Leave it blank ` +
+                'for a turn that answers none of them.',
+            )
+            continue
+          }
+          q = fgQuestions[n - 1]
+        }
+        if (text) {
+          push('focus-group', group.id, group.label, rowNumber, [
+            { text, speakerCode: code, questionId: q?.id ?? null, questionText: q?.text ?? '' },
+          ])
+        }
         continue
       }
 
@@ -446,8 +470,8 @@ export function applyImportPlan(real, rows) {
           personaId: null,
           personaName: row.code,
           answers: row.answers.map((a) => ({
-            questionId: null,
-            questionText: '',
+            questionId: a.questionId ?? null,
+            questionText: a.questionText ?? '',
             text: a.text,
             speakerCode: a.speakerCode,
             speakerParticipantId: a.speakerParticipantId ?? null,

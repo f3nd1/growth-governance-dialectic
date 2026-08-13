@@ -1,16 +1,54 @@
+import { useState } from 'react'
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, update, activeData } from '../store/dataStore'
-import { defaultProtocolQuestions, RESEARCH_QUESTIONS, rqList } from '../data/seeds'
+import {
+  defaultProtocolQuestions,
+  defaultFocusGroupQuestions,
+  RESEARCH_QUESTIONS,
+  rqList,
+} from '../data/seeds'
 
 let nextId = 100
+
+// The two instruments are edited identically — same fields, same ordering, same
+// RQ mapping — so the editor below is shared and only the slice it writes to
+// changes. The focus-group tab is REAL MODE ONLY: synthetic mode runs no focus
+// groups, and its page is left exactly as it was.
+const INSTRUMENTS = {
+  protocol: {
+    key: 'protocol',
+    tab: 'Interview protocol',
+    title: 'Interview Protocol',
+    desc: 'The instrument under validation: 9 semi-structured questions — six on the internal experience of governance, one phase-reflection question, one on agent trust, one on investor confidence — each mapped to a research question and its literature source.',
+    restoreLabel: 'Restore default 9',
+    restoreConfirm:
+      'Restore the default 9 protocol questions? This replaces the current protocol and discards any edits you have made. This cannot be undone.',
+    defaults: defaultProtocolQuestions,
+    prefix: 'Q',
+  },
+  focusGroupProtocol: {
+    key: 'focusGroupProtocol',
+    tab: 'Focus group protocol',
+    title: 'Focus Group Protocol',
+    desc: 'The group instrument: 5 semi-structured questions designed to elicit interaction between participants, distinct from the interview protocol. Every focus group participant has already completed an individual interview.',
+    restoreLabel: 'Restore default 5',
+    restoreConfirm:
+      'Restore the default 5 focus group questions? This replaces the current focus group protocol and discards any edits you have made. This cannot be undone.',
+    defaults: defaultFocusGroupQuestions,
+    prefix: 'FG',
+  },
+}
 
 export default function InterviewProtocol() {
   const ws = useWorkspace()
   const isReal = activeData(ws).isReal
-  const questions = [...ws.protocol.questions].sort((a, b) => a.order - b.order)
+  const [tab, setTab] = useState('protocol')
+  const which = INSTRUMENTS[isReal ? tab : 'protocol']
+  const slice = ws[which.key]
+  const questions = [...slice.questions].sort((a, b) => a.order - b.order)
 
   function setQuestions(next) {
-    update('protocol', (p) => ({ ...p, questions: next }))
+    update(which.key, (p) => ({ ...p, questions: next }))
   }
 
   function patchQ(id, patch) {
@@ -46,16 +84,30 @@ export default function InterviewProtocol() {
 
   return (
     <>
-      <PageHeader
-        title="Interview Protocol"
-        desc="The instrument under validation: 9 semi-structured questions — six on the internal experience of governance, one phase-reflection question, one on agent trust, one on investor confidence — each mapped to a research question and its literature source."
-      />
+      <PageHeader title={which.title} desc={which.desc} />
+
+      {isReal && (
+        <div className="chip-row" role="group" aria-label="Which instrument">
+          {Object.values(INSTRUMENTS).map((ins) => (
+            <button
+              key={ins.key}
+              className={'chip' + (tab === ins.key ? ' on' : '')}
+              aria-pressed={tab === ins.key}
+              onClick={() => setTab(ins.key)}
+            >
+              {ins.tab}
+            </button>
+          ))}
+        </div>
+      )}
 
       {ws.settings.guidance && (
         <div className="notice">
-          {isReal
-            ? 'Entered transcripts are keyed to exactly these questions. If a question'
-            : 'The pilot runs synthetic personas through exactly these questions. If a question'}{' '}
+          {which.key === 'focusGroupProtocol'
+            ? 'Focus group turns are entered against these questions, and a turn may also sit outside them — a group discussion moves. If a question'
+            : isReal
+              ? 'Entered transcripts are keyed to exactly these questions. If a question'
+              : 'The pilot runs synthetic personas through exactly these questions. If a question'}{' '}
           keeps producing answers the codebook cannot classify, that is a protocol or
           codebook problem — precisely what a pilot is meant to catch before real fieldwork.
         </div>
@@ -71,8 +123,8 @@ export default function InterviewProtocol() {
           <textarea
             id="pq-opening"
             rows={7}
-            value={ws.protocol.openingScript ?? ''}
-            onChange={(e) => update('protocol', (p) => ({ ...p, openingScript: e.target.value }))}
+            value={slice.openingScript ?? ''}
+            onChange={(e) => update(which.key, (p) => ({ ...p, openingScript: e.target.value }))}
           />
         </div>
       </section>
@@ -82,19 +134,19 @@ export default function InterviewProtocol() {
         <button
           className="btn secondary"
           onClick={() => {
-            if (window.confirm('Restore the default 9 protocol questions? This replaces the current protocol and discards any edits you have made. This cannot be undone.')) {
-              setQuestions(defaultProtocolQuestions())
+            if (window.confirm(which.restoreConfirm)) {
+              setQuestions(which.defaults())
             }
           }}
         >
-          Restore default 9
+          {which.restoreLabel}
         </button>
       </p>
 
       {questions.map((q, i) => (
         <section className="card" key={q.id}>
           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline' }}>
-            <h2 style={{ whiteSpace: 'nowrap' }}>Q{i + 1}</h2>
+            <h2 style={{ whiteSpace: 'nowrap' }}>{which.prefix}{i + 1}</h2>
             {rqList(q.rq).map((r) => (
               <span key={r} className="tag" style={{ color: 'var(--accent)' }}>{r}</span>
             ))}
@@ -102,9 +154,9 @@ export default function InterviewProtocol() {
             {q.id === 'q7' && <span className="tag" style={{ color: 'var(--wh2)' }}>agent trust</span>}
             {q.id === 'q8' && <span className="tag" style={{ color: 'var(--wh2)' }}>investor confidence</span>}
             <span style={{ flex: 1 }} />
-            <button className="btn small secondary" onClick={() => move(q.id, -1)} disabled={i === 0} aria-label={`Move Q${i + 1} up`}>↑</button>
-            <button className="btn small secondary" onClick={() => move(q.id, 1)} disabled={i === questions.length - 1} aria-label={`Move Q${i + 1} down`}>↓</button>
-            <button className="btn small danger" onClick={() => remove(q.id)} aria-label={`Delete Q${i + 1}`}>Delete</button>
+            <button className="btn small secondary" onClick={() => move(q.id, -1)} disabled={i === 0} aria-label={`Move ${which.prefix}${i + 1} up`}>↑</button>
+            <button className="btn small secondary" onClick={() => move(q.id, 1)} disabled={i === questions.length - 1} aria-label={`Move ${which.prefix}${i + 1} down`}>↓</button>
+            <button className="btn small danger" onClick={() => remove(q.id)} aria-label={`Delete ${which.prefix}${i + 1}`}>Delete</button>
           </div>
           <div className="field">
             <label htmlFor={`pq-text-${q.id}`}>Question text</label>
@@ -192,8 +244,8 @@ export default function InterviewProtocol() {
           <textarea
             id="pq-closing"
             rows={5}
-            value={ws.protocol.closingScript ?? ''}
-            onChange={(e) => update('protocol', (p) => ({ ...p, closingScript: e.target.value }))}
+            value={slice.closingScript ?? ''}
+            onChange={(e) => update(which.key, (p) => ({ ...p, closingScript: e.target.value }))}
           />
         </div>
       </section>

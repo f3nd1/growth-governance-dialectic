@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import ModeGate from '../components/ModeGate'
 import { useWorkspace, updateActive, updateRealBatch } from '../store/dataStore'
-import { STAKEHOLDER_GROUPS, SOURCE_TYPES, FOCUS_GROUPS, DOCUMENT_TYPES } from '../data/seeds'
+import { STAKEHOLDER_GROUPS, SOURCE_TYPES, FOCUS_GROUPS, DOCUMENT_TYPES, rqList } from '../data/seeds'
 import {
   sourceTypeOf,
   sessionLabel,
@@ -78,6 +78,9 @@ export default function TranscriptEntry() {
   }
 
   const questions = [...ws.protocol.questions].sort((a, b) => a.order - b.order)
+  // The focus group runs its OWN approved instrument. Turn entry references
+  // these, never the nine interview questions.
+  const fgQuestions = [...ws.focusGroupProtocol.questions].sort((a, b) => a.order - b.order)
   const participants = ws.real.participants
   const participant = participants.find((p) => p.id === participantId)
   const existing = ws.real.interviews.find((iv) => iv.personaId === participantId)
@@ -178,8 +181,10 @@ export default function TranscriptEntry() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       answers: fgTurns.map((t) => ({
-        questionId: null,
-        questionText: '',
+        // Optional: a group discussion moves, and a turn that answers nothing
+        // on the schedule is still data. Blank rather than forced.
+        questionId: t.questionId || null,
+        questionText: fgQuestions.find((q) => q.id === t.questionId)?.text ?? '',
         text: t.text.trim(),
         speakerCode: t.speakerCode,
         speakerParticipantId: byCode.get(t.speakerCode)?.id ?? null,
@@ -234,6 +239,7 @@ export default function TranscriptEntry() {
       const result = buildImportPlan({
         text: String(reader.result),
         questions,
+        fgQuestions,
         participants,
         interviews: ws.real.interviews,
       })
@@ -332,7 +338,7 @@ export default function TranscriptEntry() {
           <button
             className="btn secondary"
             onClick={() =>
-              download('evidence_import_template.csv', sourcesTemplateCSV(questions), 'text/csv')
+              download('evidence_import_template.csv', sourcesTemplateCSV(questions, fgQuestions), 'text/csv')
             }
           >
             Download template (all evidence types)
@@ -644,6 +650,38 @@ export default function TranscriptEntry() {
               </section>
 
               <section className="card">
+                <h2>Focus group protocol</h2>
+                <p className="small muted">
+                  The approved group instrument, edited on{' '}
+                  <Link to="/design/protocol">Interview Protocol → Focus group protocol</Link>.
+                  Read the opening script verbatim before recording.
+                </p>
+                <details>
+                  <summary className="small">Opening script (read verbatim)</summary>
+                  <p className="small" style={{ whiteSpace: 'pre-wrap' }}>
+                    {ws.focusGroupProtocol.openingScript}
+                  </p>
+                </details>
+                <ol className="small">
+                  {fgQuestions.map((q) => (
+                    <li key={q.id} style={{ marginBottom: 4 }}>
+                      {q.text}
+                      <div className="muted">
+                        {rqList(q.rq).join(', ')}
+                        {q.source ? ` · ${q.source}` : ' · no source recorded'}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
+                <details>
+                  <summary className="small">Closing script (read verbatim)</summary>
+                  <p className="small" style={{ whiteSpace: 'pre-wrap' }}>
+                    {ws.focusGroupProtocol.closingScript}
+                  </p>
+                </details>
+              </section>
+
+              <section className="card">
                 <h2>3 · Turns</h2>
                 <p className="small muted">
                   Each turn belongs to <strong>one</strong> speaker. A turn with text but no
@@ -666,6 +704,21 @@ export default function TranscriptEntry() {
                         {fg.participantCodes.map((c) => <option key={c} value={c}>{c}</option>)}
                       </select>
                     </div>
+                    <div className="field" style={{ maxWidth: 260 }}>
+                      <label htmlFor={`fg-q-${i}`}>Prompted by (optional)</label>
+                      <select
+                        id={`fg-q-${i}`}
+                        value={t.questionId ?? ''}
+                        onChange={(e) =>
+                          setFg({ ...fg, turns: fg.turns.map((x, j) => (j === i ? { ...x, questionId: e.target.value } : x)) })
+                        }
+                      >
+                        <option value="">— not on the schedule —</option>
+                        {fgQuestions.map((q, qi) => (
+                          <option key={q.id} value={q.id}>FG{qi + 1}. {q.text.slice(0, 60)}…</option>
+                        ))}
+                      </select>
+                    </div>
                     <div className="field">
                       <label htmlFor={`fg-tx-${i}`}>What they said</label>
                       <textarea
@@ -682,7 +735,9 @@ export default function TranscriptEntry() {
                 <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
                   <button
                     className="btn secondary"
-                    onClick={() => setFg({ ...fg, turns: [...fg.turns, { speakerCode: '', text: '' }] })}
+                    onClick={() =>
+                      setFg({ ...fg, turns: [...fg.turns, { speakerCode: '', text: '', questionId: '' }] })
+                    }
                     disabled={fg.participantCodes.length === 0}
                   >
                     + Add turn

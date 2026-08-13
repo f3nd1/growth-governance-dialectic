@@ -69,6 +69,111 @@ export function heldIsValid(held) {
   return !(list.includes('wh3') && (list.includes('wh1') || list.includes('wh2')))
 }
 
+// ---------------------------------------------------------------------------
+// Focus group protocol — a SEPARATE instrument from the interview protocol,
+// supervisor-approved and used only in real fieldwork. Its questions are built
+// to make participants talk to each other, so they are not a subset of the nine
+// interview questions and must never be substituted for them.
+// ---------------------------------------------------------------------------
+
+export const FOCUS_GROUP_OPENING_SCRIPT = [
+  'Thank you all for making time.',
+  'This discussion is part of a doctoral study about how this college balanced growing as a business against meeting its regulatory and quality requirements, between 2023 and 2026. You have each already given me an individual interview. Today is different: I am interested in what happens when you talk about this together, including where you disagree.',
+  'Three things before we start.',
+  'First, my role. I am here as a researcher, not as Principal. I will not give my own opinions, and I will not ask anyone to comment on any individual person, including me. There is no right answer I am hoping for.',
+  'Second, this is voluntary and separate from work. This is not training and it is not part of any appraisal or performance process. Nothing said here goes into anyone\u2019s employment file. You can stay quiet on any topic, and you can leave at any point without giving a reason.',
+  'Third, confidentiality works differently in a group. Everything I write up uses codes instead of names, and nothing will be attributed to anyone by name or identifiable role. But the people in this room will hear what you say. I am asking everyone to keep this discussion confidential, and I cannot guarantee that everyone will. Please take that into account in what you choose to share.',
+  'Ground rules: one person at a time so the recording is usable; disagreement is welcome and useful; no comments about named individuals.',
+  'I would like to audio-record so I can transcribe accurately. The recording is deleted once the transcript is checked. Is everyone content for me to record?',
+  '[WAIT FOR EXPLICIT AGREEMENT FROM EVERY PARTICIPANT \u2014 then begin recording]',
+  'Now that we are recording, can each of you confirm you consent to take part and to being recorded?',
+  '[FOR THE EXTERNAL PARTIES SESSION ONLY, ADD] One more thing specific to this group. You work with institutions that compete with each other, and some of you may compete with each other. This discussion is about this college\u2019s governance and certification standing only. Please do not disclose your own commercial arrangements, or those of any other agency, and please do not ask each other to.',
+].join('\n\n')
+
+export const FOCUS_GROUP_CLOSING_SCRIPT = [
+  'That is everything I planned to ask. Two last things.',
+  'Is there anything none of us said in this room that someone outside it would say?',
+  'And if I want to use a direct quote from today, I will check with you first that you are comfortable it cannot be traced back to you. Is that alright with everyone?',
+  'Thank you. This was genuinely useful.',
+].join('\n\n')
+
+export function defaultFocusGroupQuestions() {
+  return [
+    {
+      id: 'fgq1',
+      order: 1,
+      text: 'Thinking about the last two years here, what stands out most to each of you as a change in how this college actually works day to day?',
+      rq: ['RQ3'],
+      // Left empty deliberately: the approved protocol records no source for
+      // this question, and inventing a citation would misrepresent it.
+      source: '',
+      probes: [
+        'Does everyone see the same change, or does it look different from where you each sit?',
+        'Has anyone here experienced that differently?',
+      ],
+    },
+    {
+      id: 'fgq2',
+      order: 2,
+      text: 'Here are four areas of the college. Working together, I would like you to place where governance work has helped this college most, and where it has cost most. Talk it through as a group; you do not need to agree.',
+      rq: ['RQ1', 'RQ3'],
+      source:
+        'Smith & Lewis (2011) dynamic equilibrium; Sundaramurthy & Lewis (2003) control-collaboration paradox',
+      probes: [
+        'Where do you disagree with each other on that placement?',
+        'Is there an area where it is both a help and a cost at once?',
+        'Would your answer be different for two years ago?',
+      ],
+    },
+    {
+      id: 'fgq3',
+      order: 3,
+      text: 'Some people in this study have said the compliance work slowed us down at exactly the moment we needed to move fast. Others have said it is the only reason we got certified and could recruit at all. Both of those have been said. Which rings truer for your part of the college, and why?',
+      rq: ['RQ1', 'RQ2', 'RQ3'],
+      source:
+        'Smith & Lewis (2011); Miron-Spektor et al. (2018) paradox mindset; Putnam et al. (2016) contradictions and dialectics',
+      probes: [
+        'Has anyone changed their mind on that while working here?',
+        'Does anyone want to argue the other side of that?',
+        'Can both be true at the same time? Where?',
+      ],
+    },
+    {
+      id: 'fgq4',
+      order: 4,
+      text: 'Walk me through the move from building systems to students actually arriving. What did that shift look like from where each of you sat?',
+      rq: ['RQ3'],
+      source: 'Smith (2014) dynamic decision making across time; Yin (2018) temporal pattern matching',
+      probes: [
+        'When did it feel heaviest, and was that the same moment for everyone?',
+        'For anyone who joined later: what did you walk into, and what surprised you?',
+        'Did anything change between you as a result?',
+      ],
+    },
+    {
+      id: 'fgq5',
+      order: 5,
+      text: 'If you had to slow down one area of governance in order to move faster commercially, what would this group choose, and what would you refuse to touch?',
+      rq: ['RQ2'],
+      source:
+        'Wenke et al. (2021) and Hu et al. (2023) SME resource constraint under ambidexterity; Lubatkin et al. (2006) top management team behavioural integration',
+      probes: [
+        'What would go wrong first if you did that?',
+        'Is there anything here nobody would give up?',
+        'Who would feel it most?',
+      ],
+    },
+  ]
+}
+
+export function defaultFocusGroupProtocol() {
+  return {
+    questions: defaultFocusGroupQuestions(),
+    openingScript: FOCUS_GROUP_OPENING_SCRIPT,
+    closingScript: FOCUS_GROUP_CLOSING_SCRIPT,
+  }
+}
+
 export function defaultProtocolQuestions() {
   return [
     {
