@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T10:14:04.582Z",
+      "action": "push",
+      "commit": "17ebca2",
+      "branch": "main",
+      "message": "Focus groups run their own protocol, not the interview schedule",
+      "summary": "Focus groups no longer borrow the nine interview questions. A second instrument lives in the workspace as focusGroupProtocol and is edited on Interview Protocol → Focus group protocol, a tab that appears in real mode only — synthetic mode runs no focus groups and its protocol page is unchanged. Five RQ-mapped questions written to make participants talk to each other, with their own opening and closing scripts and their own Restore default 5, edited independently of the interview protocol and persisted. Turn entry gains an optional 'Prompted by' selector over those five, so a turn that answers nothing on the schedule stays blank rather than being forced onto a question; the focus-group entry page now shows the protocol itself. Extended-long CSV import reads questionNumber on focus-group rows against the focus group protocol (1-5, blank allowed, out-of-range blocks the row) and the downloaded template carries the live FG question text. Saved workspaces are back-filled in mergeWithDefaults."
+    },
+    {
       "when": "2026-08-13T07:16:02.917Z",
       "action": "push",
       "commit": "a775299",
