@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T03:32:37.865Z",
+      "action": "push",
+      "commit": "d8d5376",
+      "branch": "main",
+      "message": "Real mode 1/5: source types for focus groups and documentary evidence",
+      "summary": "Adds the interview/focus-group/document source-type vocabulary, the four fixed focus groups and the six document types, and migrates existing real records to the interview type."
+    },
+    {
       "when": "2026-08-10T14:25:45.590Z",
       "action": "push",
       "commit": "d35eb64",
