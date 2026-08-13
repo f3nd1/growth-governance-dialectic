@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T06:39:02.560Z",
+      "action": "push",
+      "commit": "1ab26dd",
+      "branch": "main",
+      "message": "Focus groups: the attendee picker reflects each participant's group",
+      "summary": "Step 2 of focus-group entry now reads the participant record's stakeholder group. FOCUS_GROUP_ELIGIBILITY in src/data/seeds.js holds the roster rules; four of five are null pending the researcher, and only the given rule is encoded (agent belongs to the external group and no internal one). Ineligible participants are greyed with their group as the reason, never hidden, and remain selectable behind a confirm. Multi-role participants are marked undetermined rather than greyed."
+    },
+    {
       "when": "2026-08-13T06:37:20.959Z",
       "action": "push",
       "commit": "0ab0da3",
