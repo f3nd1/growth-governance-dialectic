@@ -20,7 +20,6 @@ import {
   DOCUMENT_TYPES,
   SOURCE_TYPES,
   FOCUS_GROUP_ELIGIBILITY,
-  UNDETERMINED_GROUP,
   STAKEHOLDER_GROUPS,
 } from '../data/seeds'
 
@@ -30,31 +29,29 @@ export function stakeholderGroupLabel(id) {
 
 /**
  * Whether a participant's stakeholder group may attend a focus group.
- * Returns 'eligible' | 'ineligible' | 'undetermined' with the reason to show.
+ * Returns 'eligible' | 'ineligible' | 'unspecified' with the reason to show.
  * Never hides anyone: the picker greys, and an explicit override stays possible.
  */
 export function attendeeEligibility(focusGroupId, group) {
   const label = stakeholderGroupLabel(group)
-  if (group === UNDETERMINED_GROUP) {
-    return { state: 'undetermined', reason: `${label} — spans groups, eligibility not determined` }
-  }
   const allowed = FOCUS_GROUP_ELIGIBILITY[focusGroupId]
   if (allowed) {
     return allowed.includes(group)
       ? { state: 'eligible', reason: label }
       : { state: 'ineligible', reason: `${label} — not a member of this group` }
   }
-  // No roster supplied for this group. The one fixed rule still applies.
-  if (group === 'agent') {
-    return { state: 'ineligible', reason: `${label} — external, not a member of an internal group` }
-  }
+  // Defensive only: every focus group in FOCUS_GROUPS has a roster. An id with
+  // none is a typo, and greying everyone off the back of it would be worse than
+  // saying nothing.
   return { state: 'unspecified', reason: label }
 }
 
 /**
- * participantCode -> labels of the focus groups they are already saved into.
- * Read from the saved rosters so double-allocation is visible in the picker,
- * before a second session is entered rather than after.
+ * participantCode -> the focus-group ids they are already saved into, so
+ * double-allocation is visible in the picker before a second session is entered
+ * rather than after. Ids, not labels: the caller re-checks eligibility against
+ * them, because attending two groups is expected for a participant eligible for
+ * both and only a problem when they are not.
  */
 export function focusGroupAllocations(sessions) {
   const out = new Map()
@@ -62,16 +59,24 @@ export function focusGroupAllocations(sessions) {
     if (sourceTypeOf(s) !== 'focus-group') continue
     for (const c of s.participantCodes ?? []) {
       if (!out.has(c)) out.set(c, [])
-      const label = focusGroupLabel(s.focusGroupId)
-      if (!out.get(c).includes(label)) out.get(c).push(label)
+      if (!out.get(c).includes(s.focusGroupId)) out.get(c).push(s.focusGroupId)
     }
   }
   return out
 }
 
-/** True while a focus group's roster rule has not been supplied. */
-export function rosterUnspecified(focusGroupId) {
-  return !FOCUS_GROUP_ELIGIBILITY[focusGroupId]
+/**
+ * How to report a participant's other focus-group memberships in the picker:
+ * expected when the mapping makes them eligible for both, unexpected otherwise.
+ */
+export function otherAllocations(allocations, code, currentId, group) {
+  const others = (allocations.get(code) ?? []).filter((id) => id !== currentId)
+  const eligibleHere = attendeeEligibility(currentId, group).state === 'eligible'
+  return others.map((id) => ({
+    id,
+    label: focusGroupLabel(id),
+    expected: eligibleHere && attendeeEligibility(id, group).state === 'eligible',
+  }))
 }
 
 export const SOURCE_TYPE_IDS = SOURCE_TYPES.map((t) => t.id)

@@ -10,8 +10,8 @@ import {
   focusGroupLabel,
   sourceTypeLabel,
   attendeeEligibility,
-  rosterUnspecified,
   focusGroupAllocations,
+  otherAllocations,
 } from '../engine/sources'
 import {
   buildImportPlan,
@@ -577,14 +577,6 @@ export default function TranscriptEntry() {
                   </p>
                 ) : (
                   <>
-                    {rosterUnspecified(fg.focusGroupId) && (
-                      <p className="small" role="note" style={{ marginTop: 0 }}>
-                        <strong>No roster rule has been supplied for this group.</strong> Only
-                        the fixed rule applies — an agent is external and belongs to no internal
-                        group. Everyone else is shown as selectable. The rule lives in{' '}
-                        <code>FOCUS_GROUP_ELIGIBILITY</code> in <code>src/data/seeds.js</code>.
-                      </p>
-                    )}
                     <div className="chip-row" role="group" aria-label="Attendees">
                       {participants.map((p) => {
                         const on = fg.participantCodes.includes(p.participantCode)
@@ -624,17 +616,25 @@ export default function TranscriptEntry() {
                               {' · '}{reason}
                               {p.roleDescriptor ? ` · ${p.roleDescriptor}` : ''}
                             </span>
-                            {(allocated.get(p.participantCode) ?? []).filter(
-                              (l) => l !== focusGroupLabel(fg.focusGroupId),
-                            ).length > 0 && (
-                              <span style={{ color: '#b03230' }}>
-                                {' · already in '}
-                                {allocated
-                                  .get(p.participantCode)
-                                  .filter((l) => l !== focusGroupLabel(fg.focusGroupId))
-                                  .join(', ')}
+                            {otherAllocations(
+                              allocated,
+                              p.participantCode,
+                              fg.focusGroupId,
+                              p.group,
+                            ).map((o) => (
+                              // Attending two groups is by design where the
+                              // mapping makes them eligible for both, so it is
+                              // reported neutrally. Red is reserved for the case
+                              // the mapping does not account for.
+                              <span
+                                key={o.id}
+                                className={o.expected ? 'muted' : undefined}
+                                style={o.expected ? undefined : { color: '#b03230' }}
+                              >
+                                {o.expected ? ' · also in ' : ' · already in '}
+                                {o.label}
                               </span>
-                            )}
+                            ))}
                           </button>
                         )
                       })}
