@@ -130,6 +130,26 @@ export default function TranscriptEntry() {
   const fgOrphanTurns = fg.turns.filter((t) => t.text.trim() && !t.speakerCode).length
   const canSaveFg = Boolean(fg.focusGroupId) && fgTurns.length > 0 && fgOrphanTurns === 0
 
+  // Steps 2 and 3 belong to the group chosen in step 1: an attendee list and a
+  // set of turns are only meaningful for one session. Carrying them across a
+  // switch silently reattributed one group's roster to another, so the switch
+  // clears them — and asks first when there is typed text to lose.
+  function chooseFocusGroup(id) {
+    if (id === fg.focusGroupId) return
+    const typed = fg.turns.filter((t) => t.text.trim()).length
+    if (
+      typed > 0 &&
+      !window.confirm(
+        `Switch to ${focusGroupLabel(id)}?\n\n` +
+          `${typed} turn${typed === 1 ? '' : 's'} and the attendee list belong to ` +
+          `${focusGroupLabel(fg.focusGroupId)} and will be discarded. Nothing has been saved yet.`,
+      )
+    ) {
+      return
+    }
+    setFg({ focusGroupId: id, participantCodes: [], turns: [] })
+  }
+
   function saveFocusGroup() {
     if (!canSaveFg) return
     const id = `real-fg-${fg.focusGroupId}-${ws.real.interviews.length}`
@@ -518,7 +538,7 @@ export default function TranscriptEntry() {
                   key={g.id}
                   className={'chip' + (fg.focusGroupId === g.id ? ' on' : '')}
                   aria-pressed={fg.focusGroupId === g.id}
-                  onClick={() => setFg({ ...fg, focusGroupId: g.id })}
+                  onClick={() => chooseFocusGroup(g.id)}
                 >
                   {g.label}
                 </button>
