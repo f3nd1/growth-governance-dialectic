@@ -310,6 +310,10 @@ export const FOCUS_GROUPS = [
   { id: 'fg-heads-of-departments', label: 'Heads of Departments' },
   { id: 'fg-managers', label: 'Managers' },
   { id: 'fg-executives', label: 'Executives' },
+  // The four above are seniority tiers inside the institution. This one is not:
+  // its members are external, so its consent and confidentiality terms differ
+  // and the UI has to say so before anyone is added to it.
+  { id: 'fg-external-agents', label: 'External parties (recruitment agents)', external: true },
 ]
 
 export const DOCUMENT_TYPES = [

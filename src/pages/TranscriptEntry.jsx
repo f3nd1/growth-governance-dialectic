@@ -525,9 +525,16 @@ export default function TranscriptEntry() {
               ))}
             </div>
             <p className="small muted" style={{ marginBottom: 0 }}>
-              The four groups are fixed by the study design. Adding a fifth would be a design
+              The five groups are fixed by the study design. Adding a sixth would be a design
               change, not a data-entry choice.
             </p>
+            {FOCUS_GROUPS.find((g) => g.id === fg.focusGroupId)?.external && (
+              <p className="small" role="note" style={{ margin: '8px 0 0', fontWeight: 600 }}>
+                Members of this group are <strong>external to the institution</strong>. Its
+                consent and confidentiality terms differ from the internal groups — check the
+                right ones were used before entering this session.
+              </p>
+            )}
           </section>
 
           {fg.focusGroupId && (
