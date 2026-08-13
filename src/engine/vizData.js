@@ -8,6 +8,7 @@ import { aggregateEvidence } from './patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { activeData } from '../store/dataStore'
 import { visibleJointRows, unmappedParticipants, EXTERNAL_GROUPS } from '../data/jointDisplayMatrix'
+import { segmentsOfType, sourceTypeOf } from './sources'
 
 /** Colours keyed wh1/wh2/wh3, pulled from the workspace hypotheses. */
 export function hypothesisColors(ws) {
@@ -90,9 +91,12 @@ function sharesFor(segments, codebook) {
  * synthetic segment subset (internal staff vs external investors/agents).
  * Placeholder rows carry null shares (real-data phase).
  */
-export function heatmapData(ws) {
+export function heatmapData(ws, typeFilter = 'all') {
   const data = activeData(ws)
   const groupById = new Map(data.participants.map((p) => [p.id, p.group]))
+  const scoped = data.isReal
+    ? segmentsOfType(data.interviews, data.coding.segments, typeFilter)
+    : data.coding.segments
   // Filtered here, at the single selector every consumer reads — the page, the
   // chart and both exports — so a hidden row cannot survive in one of them.
   const visible = visibleJointRows(ws.settings, ws.mode)
@@ -100,25 +104,36 @@ export function heatmapData(ws) {
   if (data.isReal) {
     // Real rows are stakeholder groups. Membership comes from the participant
     // record's group field, so a segment lands in a row because of who said it.
+    const docSessionIds = new Set(
+      data.interviews.filter((iv) => sourceTypeOf(iv) === 'document').map((iv) => iv.id),
+    )
     const rows = visible.map((r) => {
       const groups = new Set(r.groups)
-      const segs = data.coding.segments.filter((s) => groups.has(groupById.get(s.personaId)))
+      // A document row collects by SOURCE; a stakeholder row collects by who
+      // spoke. Document segments carry a personaId that matches no participant,
+      // so they never leak into a person's row.
+      const segs = r.document
+        ? scoped.filter((s) => docSessionIds.has(s.interviewId))
+        : scoped.filter((s) => groups.has(groupById.get(s.personaId)))
       const { shares, total } = sharesFor(segs, ws.codebook)
       return {
         id: r.id,
         label: r.label,
-        populated: true, // no placeholder rows: the design collects interviews only
+        populated: true, // no placeholder rows: the design collects all three types
         populatedBy: r.id,
         placeholderLabel: null,
         expected: r.expected,
+        document: Boolean(r.document),
         shares,
         segmentCount: total,
-        participantCount: data.participants.filter((p) => groups.has(p.group)).length,
+        participantCount: r.document
+          ? data.interviews.filter((iv) => sourceTypeOf(iv) === 'document').length
+          : data.participants.filter((p) => groups.has(p.group)).length,
       }
     })
     return {
       rows,
-      hasData: data.coding.segments.length > 0,
+      hasData: scoped.length > 0,
       // Reported, never guessed at: a participant whose group the five chapter
       // rows do not cover is excluded from every row and named instead.
       unmapped: unmappedParticipants(data.participants),

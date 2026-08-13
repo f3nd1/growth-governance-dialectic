@@ -78,6 +78,25 @@ export const REAL_JOINT_DISPLAY_ROWS = [
   },
 ]
 
+// Appended after the five stakeholder rows. Documents have no speaker, so they
+// cannot sit in a person's row; they are evidence of what the organisation
+// RECORDED rather than what anyone said, which is a different kind of claim and
+// belongs on its own line.
+//
+// EXPECTED-EVIDENCE WORDING IS A DERIVED DRAFT, like the five rows above — this
+// app has never held Chapter 3's Table 2 text for a documentary row.
+export const DOCUMENTARY_ROW = {
+  id: 'documentary-evidence',
+  label: 'Documentary evidence',
+  groups: [],
+  document: true,
+  expected: {
+    wh1: 'Minutes, audit findings and policy records show approvals, audit cycles or certification requirements deferring or reshaping commercial decisions.',
+    wh2: 'Certification correspondence, strategic plans and board records tie governance standing to expansion, investment or partner confidence.',
+    wh3: 'The documentary record shows governance and commercial activity proceeding on separate tracks, with outcomes recorded against market or operational causes.',
+  },
+}
+
 /** group id -> real row id. The single place membership is decided. */
 const GROUP_TO_REAL_ROW = new Map(
   REAL_JOINT_DISPLAY_ROWS.flatMap((r) => r.groups.map((g) => [g, r.id])),
@@ -103,7 +122,9 @@ export function realRowForGroup(group) {
 /** The row set for a mode. Real mode is stakeholder groups; synthetic is
  *  evidence types, unchanged. */
 export function rowsForMode(mode) {
-  return mode === 'real' ? REAL_JOINT_DISPLAY_ROWS : JOINT_DISPLAY_ROWS
+  return mode === 'real'
+    ? [...REAL_JOINT_DISPLAY_ROWS, DOCUMENTARY_ROW]
+    : JOINT_DISPLAY_ROWS
 }
 
 /**

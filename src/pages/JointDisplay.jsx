@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { useWorkspace, activeData, update } from '../store/dataStore'
@@ -5,11 +6,13 @@ import { HYPOTHESIS_IDS } from '../store/defaults'
 import { JointHeatmapChart } from '../components/AppCharts'
 import { heatmapData } from '../engine/vizData'
 import { rowsForMode, isJointRowEnabled } from '../data/jointDisplayMatrix'
+import EvidenceTypeFilter from '../components/EvidenceTypeFilter'
 
 export default function JointDisplay() {
   const ws = useWorkspace()
   const isReal = activeData(ws).isReal
-  const { rows, hasData, unmapped } = heatmapData(ws)
+  const [typeFilter, setTypeFilter] = useState('all')
+  const { rows, hasData, unmapped } = heatmapData(ws, typeFilter)
   const modeKey = isReal ? 'real' : 'synthetic'
 
   // Writes an EXCLUSION, and only for the active mode — the other mode's row
@@ -97,10 +100,18 @@ export default function JointDisplay() {
         </div>
       )}
 
+      {isReal && (
+        <EvidenceTypeFilter value={typeFilter} onChange={setTypeFilter}>
+          Filtering to one type shows what that evidence alone supports — the check on
+          group conformity in the focus groups and on organisational-record bias in the
+          documents.
+        </EvidenceTypeFilter>
+      )}
+
       <section className="card">
-        <h2>{isReal ? 'Stakeholder groups shown' : 'Evidence types shown'}</h2>
+        <h2>{isReal ? 'Rows shown' : 'Evidence types shown'}</h2>
         <p className="small muted">
-          Which {isReal ? 'stakeholder groups' : 'rows'} this matrix reports, for{' '}
+          Which rows this matrix reports, for{' '}
           <strong>{isReal ? 'real' : 'synthetic'} mode</strong>.
           The two modes keep separate settings, so hiding a row here leaves the other mode as it
           was. Nothing is deleted — a hidden row keeps its expected-evidence text and returns
@@ -148,7 +159,7 @@ export default function JointDisplay() {
         <table className="data">
           <thead>
             <tr>
-              <th style={{ minWidth: 130 }}>{isReal ? 'Stakeholder group' : 'Evidence type'}</th>
+              <th style={{ minWidth: 130 }}>{isReal ? 'Stakeholder group / source' : 'Evidence type'}</th>
               {HYPOTHESIS_IDS.map((id) => (
                 <th key={id} style={{ color: ws.hypotheses[id].color, minWidth: 200 }}>
                   {ws.hypotheses[id].label}
@@ -164,9 +175,11 @@ export default function JointDisplay() {
                   <div className="small" style={{ marginTop: 4 }}>
                     {row.populated ? (
                       <span className="stamp">
-                        {isReal
-                          ? `${row.participantCount} participant${row.participantCount === 1 ? '' : 's'}`
-                          : 'populated · synthetic'}
+                        {!isReal
+                          ? 'populated · synthetic'
+                          : row.document
+                            ? `${row.participantCount} source${row.participantCount === 1 ? '' : 's'}`
+                            : `${row.participantCount} participant${row.participantCount === 1 ? '' : 's'}`}
                       </span>
                     ) : (
                       <span className="tag muted">
@@ -185,9 +198,11 @@ export default function JointDisplay() {
                         <strong>{(row.shares[id] * 100).toFixed(0)}%</strong> of coded evidence
                         {row.segmentCount === 0 && (
                           <span className="small muted">
-                            {isReal
-                              ? ' — no participants in this group coded yet'
-                              : ' — no personas in this group run yet'}
+                            {!isReal
+                              ? ' — no personas in this group run yet'
+                              : row.document
+                                ? ' — no document extracts coded yet'
+                                : ' — no participants in this group coded yet'}
                           </span>
                         )}
                       </div>

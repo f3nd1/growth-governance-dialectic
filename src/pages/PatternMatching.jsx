@@ -1,7 +1,10 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import WeightBar from '../components/WeightBar'
 import { activeData, useWorkspace } from '../store/dataStore'
+import EvidenceTypeFilter from '../components/EvidenceTypeFilter'
+import { segmentsOfType } from '../engine/sources'
 import { aggregateEvidence, DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { HypothesisDistributionChart } from '../components/AppCharts'
@@ -9,9 +12,16 @@ import { HypothesisDistributionChart } from '../components/AppCharts'
 export default function PatternMatching() {
   const ws = useWorkspace()
   const data = activeData(ws)
+  // A view filter, not a stored setting: group conformity in focus groups and
+  // organisational-record bias in documents are validity concerns the
+  // researcher inspects by switching between them, not a workspace preference.
+  const [typeFilter, setTypeFilter] = useState('all')
+  const scoped = data.isReal
+    ? segmentsOfType(data.interviews, data.coding.segments, typeFilter)
+    : data.coding.segments
   const splitThreshold = ws.settings.patternMatching?.splitThreshold ?? DEFAULT_SPLIT_THRESHOLD
   const { personas, overall, topCodes } = aggregateEvidence(
-    data.coding.segments,
+    scoped,
     ws.codebook,
     splitThreshold,
   )
@@ -24,7 +34,7 @@ export default function PatternMatching() {
     wh3: hypTotal ? overall.wh3 / hypTotal : 0,
   }
 
-  if (data.coding.segments.length === 0) {
+  if (scoped.length === 0) {
     return (
       <>
         <PageHeader title="Pattern-Matching" desc="Aggregates coded evidence into the three rival propositions as distributed weight." />
@@ -45,6 +55,14 @@ export default function PatternMatching() {
             : 'Coded evidence aggregated across all synthetic interviews as DISTRIBUTED weight per hypothesis — never winner-take-all, so a paradox participant legitimately appears in two columns.'
         }
       />
+
+      {data.isReal && (
+        <EvidenceTypeFilter value={typeFilter} onChange={setTypeFilter}>
+          Read the types apart as well as together. A proposition that only holds in the
+          focus groups may be group conformity; one that only holds in the documents may be
+          what the organisation records rather than what it does.
+        </EvidenceTypeFilter>
+      )}
 
       {ws.settings.guidance && (
         <div className="notice">
@@ -137,7 +155,7 @@ export default function PatternMatching() {
         <table className="data">
           <thead>
             <tr>
-              <th>{data.isReal ? 'Participant' : 'Synthetic participant'}</th>
+              <th>{data.isReal ? 'Participant / source' : 'Synthetic participant'}</th>
               <th style={{ minWidth: 160 }}>Coded evidence</th>
               {HYPOTHESIS_IDS.map((id) => (
                 <th key={id} style={{ color: ws.hypotheses[id].color }}>{ws.hypotheses[id].short}</th>

@@ -11,6 +11,8 @@ import {
 } from '../engine/coding'
 import { runInterviews } from '../engine'
 import { ReliabilityChart } from '../components/AppCharts'
+import { SOURCE_TYPES } from '../data/seeds'
+import { segmentsOfType } from '../engine/sources'
 
 function codeLabel(codeId, codebook) {
   if (codeId === UNCLASSIFIED) return 'unclassified'
@@ -23,6 +25,16 @@ export default function Reliability() {
   const reliabilityCfg = ws.settings.reliability ?? {}
   const thresholds = reliabilityCfg.thresholds ?? DEFAULT_KAPPA_THRESHOLDS
   const stats = agreementStats(data.coding.segments)
+  // Split by evidence type: a focus group and a document are different coding
+  // problems, and one type carrying the agreement would be hidden in a pooled
+  // figure. Computed with the same function over the same base rule, so the
+  // rows and the overall figure cannot disagree about what they measure.
+  const statsByType = data.isReal
+    ? SOURCE_TYPES.map((t) => ({
+        ...t,
+        stats: agreementStats(segmentsOfType(data.interviews, data.coding.segments, t.id)),
+      })).filter((t) => t.stats)
+    : []
   const band = stats ? kappaBand(stats.kappa, thresholds) : null
   const [personaId, setPersonaId] = useState(data.participants[0]?.id ?? '')
   const [running, setRunning] = useState(false)
@@ -297,6 +309,51 @@ export default function Reliability() {
             </section>
           )}
         </>
+      )}
+
+      {data.isReal && statsByType.length > 0 && (
+        <section className="card" style={{ overflowX: 'auto' }}>
+          <h2>Agreement by evidence type</h2>
+          <p className="small muted">
+            The same calculation over each type separately, on the same substantive base.
+            A figure that holds overall but collapses within one type is telling you the
+            codebook works on one kind of material and not another.
+          </p>
+          <table className="data">
+            <thead>
+              <tr>
+                <th>Evidence type</th><th>N substantive</th><th>Excluded</th>
+                <th>p₀</th><th>κ</th><th>Band</th>
+              </tr>
+            </thead>
+            <tbody>
+              {statsByType.map((t) => (
+                <tr key={t.id}>
+                  <td>{t.plural}</td>
+                  <td>{t.stats.n}</td>
+                  <td>{t.stats.excluded}</td>
+                  <td>{(t.stats.po * 100).toFixed(1)}%</td>
+                  <td><strong>{t.stats.kappa.toFixed(3)}</strong></td>
+                  <td className="small">{kappaBand(t.stats.kappa, thresholds).label}</td>
+                </tr>
+              ))}
+              {stats && (
+                <tr style={{ fontWeight: 700 }}>
+                  <td>All evidence</td>
+                  <td>{stats.n}</td>
+                  <td>{stats.excluded}</td>
+                  <td>{(stats.po * 100).toFixed(1)}%</td>
+                  <td>{stats.kappa.toFixed(3)}</td>
+                  <td className="small">{kappaBand(stats.kappa, thresholds).label}</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+          <p className="small muted" style={{ marginBottom: 0 }}>
+            Document extracts are excluded from non-answer detection, so their “excluded”
+            count is zero by construction rather than by measurement.
+          </p>
+        </section>
       )}
 
       {!data.isReal && (
