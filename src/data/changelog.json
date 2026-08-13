@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T06:37:20.959Z",
+      "action": "push",
+      "commit": "0ab0da3",
+      "branch": "main",
+      "message": "Focus groups: switching group clears the attendees and turns beneath it",
+      "summary": "Choosing a different focus group in step 1 resets the attendee list and the turns, which belong to the session being left. A switch with typed turn text asks for confirmation first, naming both groups and the number of turns at stake; declining leaves the group, attendees and text untouched."
+    },
+    {
       "when": "2026-08-13T06:35:53.644Z",
       "action": "push",
       "commit": "d256d05",
