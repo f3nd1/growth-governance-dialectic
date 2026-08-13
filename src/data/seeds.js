@@ -307,7 +307,7 @@ export const SOURCE_TYPES = [
 // free text: a fifth group would be a design change, not a data-entry choice.
 export const FOCUS_GROUPS = [
   { id: 'fg-shareholders-board', label: 'Shareholders and board' },
-  { id: 'fg-heads-of-departments', label: 'Heads of Departments' },
+  { id: 'fg-academic-board', label: 'Academic Board members' },
   { id: 'fg-managers', label: 'Managers' },
   { id: 'fg-executives', label: 'Executives' },
   // The four above are seniority tiers inside the institution. This one is not:
@@ -325,10 +325,18 @@ export const FOCUS_GROUPS = [
 // double-allocation error, and the picker distinguishes the two cases.
 export const FOCUS_GROUP_ELIGIBILITY = {
   'fg-shareholders-board': ['shareholder', 'multi-role'],
-  'fg-heads-of-departments': ['senior-leader', 'academic'],
+  'fg-academic-board': ['senior-leader', 'academic'],
   'fg-managers': ['ph-ops', 'support'],
   'fg-executives': ['teacher'],
   'fg-external-agents': ['agent', 'multi-role'],
+}
+
+// Focus-group ids that were renamed after sessions could already have been
+// saved against them. Applied on load so a stored session keeps its group
+// rather than becoming an orphan with an unrecognised id. The session's own id
+// is NOT rewritten — coded segments join on it.
+export const RENAMED_FOCUS_GROUPS = {
+  'fg-heads-of-departments': 'fg-academic-board',
 }
 
 export const DOCUMENT_TYPES = [

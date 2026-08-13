@@ -4,7 +4,7 @@
 
 import { useSyncExternalStore } from 'react'
 import { defaultWorkspace, emptyRealDataset } from './defaults'
-import { rqList, normaliseHeld } from '../data/seeds'
+import { rqList, normaliseHeld, RENAMED_FOCUS_GROUPS, FOCUS_GROUPS } from '../data/seeds'
 
 const STORAGE_KEY = 'ggd-workspace-v1'
 
@@ -69,10 +69,19 @@ function mergeWithDefaults(loaded) {
   // Focus groups and documents were added after individual interviews. A record
   // saved before that is an interview by definition, so it is labelled rather
   // than left ambiguous — no read path has to guess at a missing type.
-  merged.real.interviews = merged.real.interviews.map((iv) => ({
-    ...iv,
-    sourceType: iv.sourceType ?? 'interview',
-  }))
+  merged.real.interviews = merged.real.interviews.map((iv) => {
+    const next = { ...iv, sourceType: iv.sourceType ?? 'interview' }
+    // A focus group renamed after sessions were saved would otherwise leave
+    // those sessions pointing at an id nothing recognises — no label, no
+    // eligibility, no roster. The id is remapped and the stored display name
+    // refreshed; the session's own id stays, so coded segments still join.
+    const renamed = RENAMED_FOCUS_GROUPS[next.focusGroupId]
+    if (renamed) {
+      next.focusGroupId = renamed
+      next.personaName = FOCUS_GROUPS.find((g) => g.id === renamed)?.label ?? next.personaName
+    }
+    return next
+  })
   // WH3 cannot coherently be held alongside WH1/WH2; drop it where a stored
   // persona has both, keeping the paradox signal.
   merged.personas = merged.personas.map((p) => ({ ...p, held: normaliseHeld(p.held) }))
