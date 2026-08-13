@@ -192,10 +192,15 @@ function topIsTied(ranked) {
  * This is a machine consistency check, NOT human inter-rater reliability, and
  * the Reliability page and exports say so in real mode.
  */
-function textOnlyCoding(text, codebook) {
+function textOnlyCoding(text, codebook, { skipNonAnswer = false } = {}) {
   // Checked before scoring: a disclaimer has no content to score, so any score
   // it produces is an artifact of the definitions' procedural wording.
-  if (isNonAnswer(text)) {
+  //
+  // NOT applied to documentary sources. The heuristic is built out of interview
+  // language — refusals, role disclaimers, "I would not know" — and a minute or
+  // a policy legitimately contains phrases like "not applicable" as record
+  // wording rather than as a participant declining to answer.
+  if (!skipNonAnswer && isNonAnswer(text)) {
     return { coderA: UNCLASSIFIED, coderB: UNCLASSIFIED, tied: false, nonAnswer: true }
   }
   const ranked = rankCodes(text, codebook.codes)
@@ -276,12 +281,22 @@ export function codeInterview(
 ) {
   return interview.answers.map((answer, idx) => {
     if (fromTextOnly) {
-      const { coderA, coderB, tied, nonAnswer } = textOnlyCoding(answer.text, codebook)
+      const sourceType = interview.sourceType ?? 'interview'
+      const isDocument = sourceType === 'document'
+      const isFocusGroup = sourceType === 'focus-group'
+      const { coderA, coderB, tied, nonAnswer } = textOnlyCoding(answer.text, codebook, {
+        skipNonAnswer: isDocument,
+      })
       return {
         id: `${interview.id}:${idx}`,
         interviewId: interview.id,
-        personaId: interview.personaId,
-        personaName: interview.personaName,
+        // A segment belongs to whoever said it. For a focus-group turn that is
+        // the SPEAKER, not the session — which is what makes the turn count
+        // under the speaker's stakeholder row without any special case
+        // downstream. A document has no speaker and keeps the source's own id.
+        personaId: isFocusGroup ? answer.speakerParticipantId ?? null : interview.personaId,
+        personaName: isFocusGroup ? answer.speakerCode ?? '(no speaker)' : interview.personaName,
+        sourceType,
         questionId: answer.questionId,
         questionIndex: idx,
         text: answer.text,

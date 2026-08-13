@@ -652,7 +652,18 @@ export default function Coding() {
                     <tr key={s.id} style={disagree ? { background: '#fff4f2' } : {}}>
                       <td>
                         <strong>{s.personaName.replace(' (synthetic)', '')}</strong>{' '}
-                        <span className="muted">Q{s.questionIndex + 1}</span>
+                        <span className="muted">
+                          {s.sourceType === 'document'
+                            ? `Extract ${s.questionIndex + 1}`
+                            : s.sourceType === 'focus-group'
+                              ? `Turn ${s.questionIndex + 1}`
+                              : `Q${s.questionIndex + 1}`}
+                        </span>
+                        {s.sourceType && s.sourceType !== 'interview' && (
+                          <span className="tag muted" style={{ marginLeft: 6 }}>
+                            {s.sourceType === 'document' ? 'document' : 'focus group'}
+                          </span>
+                        )}
                         {s.nonAnswer && (
                           <span className="tag muted" style={{ marginLeft: 6 }}>non-answer</span>
                         )}
@@ -673,7 +684,7 @@ export default function Coding() {
                       </td>
                       <td>
                         <select
-                          aria-label={`Override code for ${s.personaName} Q${s.questionIndex + 1}`}
+                          aria-label={`Override code for ${s.personaName} unit ${s.questionIndex + 1}`}
                           value={s.override ?? ''}
                           onChange={(e) => overrideSegment(s.id, e.target.value)}
                         >
