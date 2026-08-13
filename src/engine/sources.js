@@ -51,6 +51,24 @@ export function attendeeEligibility(focusGroupId, group) {
   return { state: 'unspecified', reason: label }
 }
 
+/**
+ * participantCode -> labels of the focus groups they are already saved into.
+ * Read from the saved rosters so double-allocation is visible in the picker,
+ * before a second session is entered rather than after.
+ */
+export function focusGroupAllocations(sessions) {
+  const out = new Map()
+  for (const s of sessions) {
+    if (sourceTypeOf(s) !== 'focus-group') continue
+    for (const c of s.participantCodes ?? []) {
+      if (!out.has(c)) out.set(c, [])
+      const label = focusGroupLabel(s.focusGroupId)
+      if (!out.get(c).includes(label)) out.get(c).push(label)
+    }
+  }
+  return out
+}
+
 /** True while a focus group's roster rule has not been supplied. */
 export function rosterUnspecified(focusGroupId) {
   return !FOCUS_GROUP_ELIGIBILITY[focusGroupId]

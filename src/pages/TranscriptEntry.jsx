@@ -11,6 +11,7 @@ import {
   sourceTypeLabel,
   attendeeEligibility,
   rosterUnspecified,
+  focusGroupAllocations,
 } from '../engine/sources'
 import {
   buildImportPlan,
@@ -136,6 +137,7 @@ export default function TranscriptEntry() {
   // stakeholder row it lands in would be a guess.
   const fgOrphanTurns = fg.turns.filter((t) => t.text.trim() && !t.speakerCode).length
   const canSaveFg = Boolean(fg.focusGroupId) && fgTurns.length > 0 && fgOrphanTurns === 0
+  const allocated = focusGroupAllocations(ws.real.interviews)
 
   // Steps 2 and 3 belong to the group chosen in step 1: an attendee list and a
   // set of turns are only meaningful for one session. Carrying them across a
@@ -618,7 +620,21 @@ export default function TranscriptEntry() {
                             }}
                           >
                             {p.participantCode}
-                            <span className="muted"> · {reason}</span>
+                            <span className="muted">
+                              {' · '}{reason}
+                              {p.roleDescriptor ? ` · ${p.roleDescriptor}` : ''}
+                            </span>
+                            {(allocated.get(p.participantCode) ?? []).filter(
+                              (l) => l !== focusGroupLabel(fg.focusGroupId),
+                            ).length > 0 && (
+                              <span style={{ color: '#b03230' }}>
+                                {' · already in '}
+                                {allocated
+                                  .get(p.participantCode)
+                                  .filter((l) => l !== focusGroupLabel(fg.focusGroupId))
+                                  .join(', ')}
+                              </span>
+                            )}
                           </button>
                         )
                       })}
