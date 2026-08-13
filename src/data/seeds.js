@@ -320,13 +320,14 @@ export const FOCUS_GROUPS = [
 // by the researcher — this is a study-design decision, not something the app
 // derives from a participant record.
 //
-// multi-role appears in TWO groups by design: those participants hold both
-// roles and attend both sessions. Being saved into both is expected, not a
+// A stakeholder group may appear in SEVERAL focus groups by design — multi-role
+// in three, academic in two. Those participants attend every session they are
+// listed for, so being saved into more than one is expected, not a
 // double-allocation error, and the picker distinguishes the two cases.
 export const FOCUS_GROUP_ELIGIBILITY = {
   'fg-shareholders-board': ['shareholder', 'multi-role'],
-  'fg-academic-board': ['senior-leader', 'academic'],
-  'fg-managers': ['ph-ops', 'support'],
+  'fg-academic-board': ['multi-role', 'academic'],
+  'fg-managers': ['ph-ops', 'support', 'academic'],
   'fg-executives': ['teacher'],
   'fg-external-agents': ['agent', 'multi-role'],
 }
