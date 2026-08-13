@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T03:36:34.834Z",
+      "action": "push",
+      "commit": "9eccb8e",
+      "branch": "main",
+      "message": "Real mode 3/5: code focus-group turns and document extracts",
+      "summary": "Focus-group and document segments run through the same codebook, dual-pass coding, tie handling and override column; focus-group segments carry their speaker so they attribute to that person, and non-answer detection is skipped for documents where the interview disclaimer heuristic would misfire."
+    },
+    {
       "when": "2026-08-13T03:35:13.982Z",
       "action": "push",
       "commit": "931ba32",
