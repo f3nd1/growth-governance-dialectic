@@ -48,6 +48,10 @@ export function aggregateEvidence(segments, codebook, splitThreshold = DEFAULT_S
       perPersona.set(seg.personaId, {
         personaId: seg.personaId,
         personaName: seg.personaName,
+        // Single-valued by construction: a document's personaId is its own id
+        // and matches no participant, so a row is a source or a person, never
+        // both. A person's row may still mix interview and focus-group turns.
+        document: seg.sourceType === 'document',
         tally: emptyTally(),
         total: 0,
       })

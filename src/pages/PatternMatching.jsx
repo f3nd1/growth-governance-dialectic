@@ -6,6 +6,7 @@ import { activeData, useWorkspace } from '../store/dataStore'
 import EvidenceTypeFilter from '../components/EvidenceTypeFilter'
 import { segmentsOfType } from '../engine/sources'
 import { aggregateEvidence, DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
+import { contributorName } from '../engine/report'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { HypothesisDistributionChart } from '../components/AppCharts'
 
@@ -135,7 +136,7 @@ export default function PatternMatching() {
           <h2>⚡ Split patterns detected</h2>
           {splits.map((p) => (
             <p key={p.personaId}>
-              <strong>{p.personaName}</strong> supports{' '}
+              <strong>{contributorName(p)}</strong> supports{' '}
               {p.splitPair.map((h) => (
                 <span key={h} style={{ color: ws.hypotheses[h].color, fontWeight: 600 }}>
                   {ws.hypotheses[h].short}{' '}
@@ -168,7 +169,7 @@ export default function PatternMatching() {
             {personas.map((p) => (
               <tr key={p.personaId}>
                 <td>
-                  {p.personaName.replace(' (synthetic)', '')}{' '}
+                  {contributorName(p).replace(' (synthetic)', '')}{' '}
                   {!data.isReal && <span className="stamp">syn</span>}
                 </td>
                 <td><WeightBar weights={p.shares} height={12} kind="coded" /></td>

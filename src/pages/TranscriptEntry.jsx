@@ -4,11 +4,12 @@ import PageHeader from '../components/PageHeader'
 import ModeGate from '../components/ModeGate'
 import { useWorkspace, updateActive, updateRealBatch } from '../store/dataStore'
 import { STAKEHOLDER_GROUPS, SOURCE_TYPES, FOCUS_GROUPS, DOCUMENT_TYPES } from '../data/seeds'
-import { sourceTypeOf, sessionLabel, focusGroupLabel } from '../engine/sources'
+import { sourceTypeOf, sessionLabel, focusGroupLabel, sourceTypeLabel } from '../engine/sources'
 import {
   buildImportPlan,
   applyImportPlan,
   templateCSV,
+  sourcesTemplateCSV,
   EXAMPLE_CODE,
 } from '../engine/transcriptImport'
 
@@ -235,7 +236,7 @@ export default function TranscriptEntry() {
       return next
     })
     setImportDone(
-      `Imported ${count} transcript${count === 1 ? '' : 's'} from ${plan.filename}. ` +
+      `Imported ${count} source${count === 1 ? '' : 's'} from ${plan.filename}. ` +
         'Nothing is coded yet — run the coders on the Coding page.',
     )
     setPlan(null)
@@ -274,7 +275,18 @@ export default function TranscriptEntry() {
             <strong>Long</strong> — one row per answer:{' '}
             <code>participantCode,questionNumber,answer</code>
           </li>
+          <li>
+            <strong>Extended long</strong> — adds focus groups and documents:{' '}
+            <code>participantCode,questionNumber,answer,sourceType,source</code>
+          </li>
         </ul>
+        <p className="small muted">
+          In every layout <strong>column 1 is who said it</strong>. A focus-group row puts the{' '}
+          <strong>speaker</strong> there and the group in <code>source</code>; a turn with no
+          speaker code is <strong>rejected at preview</strong> rather than attributed to the
+          group. A document row leaves column 1 <strong>empty</strong> — a document has no
+          speaker — and carries its title in <code>source</code>.
+        </p>
         <p className="small muted">
           Empty cells mean “not asked / not answered” and are stored as nothing. Answers
           containing commas, quotes or line breaks must be wrapped in double quotes, with
@@ -287,6 +299,14 @@ export default function TranscriptEntry() {
             onClick={() => download('transcript_import_template.csv', templateCSV(questions), 'text/csv')}
           >
             Download CSV template
+          </button>
+          <button
+            className="btn secondary"
+            onClick={() =>
+              download('evidence_import_template.csv', sourcesTemplateCSV(questions), 'text/csv')
+            }
+          >
+            Download template (all evidence types)
           </button>
           <input
             ref={fileRef}
@@ -340,7 +360,8 @@ export default function TranscriptEntry() {
               <table className="data">
                 <thead>
                   <tr>
-                    <th>Code</th>
+                    <th>Source</th>
+                    <th>Type</th>
                     <th>Row(s)</th>
                     <th>Answers</th>
                     <th>Status</th>
@@ -360,6 +381,7 @@ export default function TranscriptEntry() {
                             </div>
                           )}
                         </td>
+                        <td className="small">{sourceTypeLabel(r.sourceType)}</td>
                         <td className="small">{r.rowNumbers.join(', ')}</td>
                         <td>{r.answers.length}</td>
                         <td className="small" style={{ color: STATUS[r.status].tone }}>
@@ -419,14 +441,21 @@ export default function TranscriptEntry() {
                       </tr>
                       {openRow === i && (
                         <tr>
-                          <td colSpan={6}>
+                          <td colSpan={7}>
                             {r.answers.length === 0 ? (
                               <p className="small muted" style={{ margin: 0 }}>No answers in this row.</p>
                             ) : (
                               <ul className="small" style={{ margin: 0, paddingLeft: '1.1rem' }}>
-                                {r.answers.map((a) => (
-                                  <li key={a.questionId}>
-                                    <strong>Q{a.questionIndex + 1}</strong>: {preview(a.text)}
+                                {r.answers.map((a, ai) => (
+                                  <li key={ai}>
+                                    <strong>
+                                      {r.sourceType === 'focus-group'
+                                        ? a.speakerCode
+                                        : r.sourceType === 'document'
+                                          ? `Extract ${ai + 1}`
+                                          : `Q${a.questionIndex + 1}`}
+                                    </strong>
+                                    : {preview(a.text)}
                                   </li>
                                 ))}
                               </ul>
@@ -450,7 +479,7 @@ export default function TranscriptEntry() {
 
             <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', margin: '8px 0 0' }}>
               <button className="btn" onClick={confirmImport} disabled={!canImport}>
-                Import {chosen.length} transcript{chosen.length === 1 ? '' : 's'}
+                Import {chosen.length} source{chosen.length === 1 ? '' : 's'}
               </button>
               <button className="btn secondary" onClick={() => { setPlan(null); setOpenRow(null) }}>
                 Cancel

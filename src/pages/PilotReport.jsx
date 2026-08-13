@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import WeightBar from '../components/WeightBar'
 import { useWorkspace } from '../store/dataStore'
-import { buildReportModel } from '../engine/report'
+import { buildReportModel, corpusLine, contributorName } from '../engine/report'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { rqList } from '../data/seeds'
 
@@ -88,9 +88,16 @@ export default function PilotReport() {
         <h2>5 · {m.isReal ? 'Corpus (real participants)' : 'Pilot corpus (synthetic)'}</h2>
         <p>
           {m.counts.personas} {m.isReal ? 'participants' : 'synthetic personas'} ·{' '}
-          {m.counts.interviews} {m.isReal ? 'entered transcripts' : 'interviews'} ·{' '}
+          {m.counts.interviews} {m.isReal ? 'evidence sources' : 'interviews'} ·{' '}
           {m.counts.segments} dual-coded segments · {m.counts.overrides} logged overrides.
         </p>
+        {m.counts.byType && (
+          <ul className="small" style={{ marginBottom: 0 }}>
+            {m.counts.byType.map((t) => (
+              <li key={t.id}>{corpusLine(t)}</li>
+            ))}
+          </ul>
+        )}
       </section>
 
       <section className="card">
@@ -133,7 +140,7 @@ export default function PilotReport() {
             {m.patterns.splits.length > 0 && (
               <p style={{ marginTop: 10 }}>
                 ⚡ <strong>{m.patterns.splits.length} split pattern{m.patterns.splits.length === 1 ? '' : 's'}</strong>{' '}
-                ({m.patterns.splits.map((p) => p.personaName.replace(' (synthetic)', '')).join(', ')}) —
+                ({m.patterns.splits.map((p) => contributorName(p).replace(' (synthetic)', '')).join(', ')}) —
                 coexisting support for two hypotheses, a paradox-theory finding the instrument
                 successfully surfaced.
               </p>

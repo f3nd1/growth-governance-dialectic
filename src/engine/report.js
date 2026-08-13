@@ -15,6 +15,7 @@ import {
 import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
 import { rqList } from '../data/seeds'
 import { activeData } from '../store/dataStore'
+import { countsByType } from './sources'
 
 export const REAL_CONFIDENTIALITY_HEADER =
   'CONFIDENTIAL — REAL PARTICIPANT DATA. This document contains pseudonymised material from ' +
@@ -87,6 +88,12 @@ export function buildReportModel(ws) {
       interviews: activeData(ws).interviews.length,
       segments: activeData(ws).coding.segments.length,
       overrides: activeData(ws).coding.segments.filter((s) => s.override).length,
+      // Real fieldwork is three evidence types, and a pooled total hides which
+      // of them carries the corpus. Synthetic mode has one type, so the
+      // breakdown would say nothing there and is omitted.
+      byType: real
+        ? countsByType(activeData(ws).interviews, activeData(ws).coding.segments)
+        : null,
     },
     reliability: stats
       ? {
@@ -159,9 +166,13 @@ export function reportToMarkdown(m) {
   lines.push('')
   lines.push(
     m.isReal
-      ? `${m.counts.personas} participants · ${m.counts.interviews} entered transcripts · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.`
+      ? `${m.counts.personas} participants · ${m.counts.interviews} evidence sources · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.`
       : `${m.counts.personas} synthetic personas · ${m.counts.interviews} interviews · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.`,
   )
+  if (m.counts.byType) {
+    lines.push('')
+    for (const t of m.counts.byType) lines.push(`- ${corpusLine(t)}`)
+  }
   lines.push('')
   lines.push(
     m.isReal
@@ -210,7 +221,7 @@ export function reportToMarkdown(m) {
       lines.push('')
       for (const p of m.patterns.splits) {
         lines.push(
-          `- ${p.personaName} supports ${p.splitPair.join(' + ').toUpperCase()} simultaneously — under paradox theory a finding, not noise.`,
+          `- ${contributorName(p)} supports ${p.splitPair.join(' + ').toUpperCase()} simultaneously — under paradox theory a finding, not noise.`,
         )
       }
     }
@@ -320,6 +331,27 @@ function appendixNote(m) {
   return m.isReal ? APPENDIX_REAL_NOTE : APPENDIX_METHOD_NOTE
 }
 
+/** One corpus line per evidence type — sessions/sources, people, segments. */
+export function corpusLine(t) {
+  const unit = t.id === 'document' ? 'source' : 'session'
+  const people =
+    t.id === 'document' ? '' : ` · ${t.participants} participant${t.participants === 1 ? '' : 's'}`
+  return `${t.label}: ${t.sessions} ${unit}${t.sessions === 1 ? '' : 's'}${people} · ${t.segments} coded segment${t.segments === 1 ? '' : 's'}`
+}
+
+/** Names a contributor in a list. A document is not a person and says so. */
+export function contributorName(p) {
+  return p.document ? `${p.personaName} (documentary source)` : p.personaName
+}
+
+/** Document rows count sources, not people — they have no speaker. */
+function jointRowStatus(row) {
+  const n = row.participantCount
+  return row.document
+    ? `${n} source${n === 1 ? '' : 's'}`
+    : `${n} participant${n === 1 ? '' : 's'}`
+}
+
 function mdEsc(s) {
   return String(s).replace(/\|/g, '\\|').replace(/\n/g, ' ')
 }
@@ -335,9 +367,13 @@ export function appendixToMarkdown(m) {
   L.push(
     `_Generated ${new Date(m.generatedAt).toLocaleString()} · ${m.counts.personas} ` +
       `${m.isReal ? 'participants' : 'synthetic personas'} · ${m.counts.interviews} ` +
-      `${m.isReal ? 'entered transcripts' : 'interviews'} · ${m.counts.segments} dual-coded ` +
+      `${m.isReal ? 'evidence sources' : 'interviews'} · ${m.counts.segments} dual-coded ` +
       `segments · ${m.counts.overrides} logged overrides._`,
   )
+  if (m.counts.byType) {
+    L.push('')
+    for (const t of m.counts.byType) L.push(`- ${corpusLine(t)}`)
+  }
   L.push('')
 
   L.push('## A1 · Codebook (a priori + emergent)')
@@ -382,7 +418,7 @@ export function appendixToMarkdown(m) {
       L.push('')
       L.push('Split (paradox) patterns — coexisting support for two hypotheses, a finding under paradox theory (Smith & Lewis 2011):')
       for (const p of m.patterns.splits) {
-        L.push(`- ${p.personaName}: ${p.splitPair.join(' + ').toUpperCase()}`)
+        L.push(`- ${contributorName(p)}: ${p.splitPair.join(' + ').toUpperCase()}`)
       }
     }
   } else {
@@ -398,16 +434,16 @@ export function appendixToMarkdown(m) {
   } else {
   L.push(
     m.isReal
-      ? 'Expected evidence under each rival proposition BY STAKEHOLDER GROUP. The design is interviews-only, so rows are the five groups interviewed; a segment lands in a row because of who said it. Convergence is read across groups. The expected-evidence wording is a derived draft, not transcribed from Chapter 3 Table 2.'
+      ? 'Expected evidence under each rival proposition BY STAKEHOLDER GROUP. A segment lands in a row because of who said it, so a focus-group turn counts under its speaker. Documentary sources have no speaker and aggregate into their own row. Convergence is read across groups. The expected-evidence wording is a derived draft, not transcribed from Chapter 3 Table 2.'
       : 'Expected evidence under each rival proposition by evidence type. The two interview rows (internal staff; external investors/agents) are populated from synthetic data; documents and focus groups are real-data-phase placeholders, making explicit what synthetic data can and cannot validate.',
   )
   L.push('')
   const [ha, hb, hc] = m.hypotheses
-  L.push(`| ${m.isReal ? 'Stakeholder group' : 'Evidence type'} | ${m.isReal ? 'Participants' : 'Status'} | ${ha.short} | ${hb.short} | ${hc.short} |`)
+  L.push(`| ${m.isReal ? 'Stakeholder group / source' : 'Evidence type'} | ${m.isReal ? 'Contributors' : 'Status'} | ${ha.short} | ${hb.short} | ${hc.short} |`)
   L.push('| --- | --- | --- | --- | --- |')
   for (const row of m.jointDisplay) {
     const status = m.isReal
-      ? `${row.participantCount} participant${row.participantCount === 1 ? '' : 's'}`
+      ? jointRowStatus(row)
       : row.populated
         ? 'populated · synthetic'
         : row.placeholderLabel ?? 'not yet collected'
@@ -458,13 +494,13 @@ export function appendixToHTML(m) {
   const splitsBlock =
     m.patterns.hypTotal > 0 && m.patterns.splits.length
       ? `<p>Split (paradox) patterns — coexisting support for two hypotheses, a finding under paradox theory (Smith &amp; Lewis 2011):</p><ul>${m.patterns.splits
-          .map((p) => `<li>${esc(p.personaName)}: ${p.splitPair.join(' + ').toUpperCase()}</li>`)
+          .map((p) => `<li>${esc(contributorName(p))}: ${p.splitPair.join(' + ').toUpperCase()}</li>`)
           .join('')}</ul>`
       : ''
 
   const jointRows = m.jointDisplay.map((row) => {
     const status = m.isReal
-      ? `${row.participantCount} participant${row.participantCount === 1 ? '' : 's'}`
+      ? jointRowStatus(row)
       : row.populated
         ? 'populated · synthetic'
         : row.placeholderLabel ?? 'not yet collected'
@@ -506,7 +542,7 @@ export function appendixToHTML(m) {
 <h1>${m.isReal ? 'Appendix — Analysis (CONFIDENTIAL real participant data)' : 'Appendix — Pilot Instrument Validation (SYNTHETIC)'}</h1>
 <div class="caveat">${esc(m.caveat)}</div>
 <div class="method">${esc(appendixNote(m))}</div>
-<p><em>Generated ${esc(new Date(m.generatedAt).toLocaleString())} · ${m.counts.personas} ${m.isReal ? 'participants' : 'synthetic personas'} · ${m.counts.interviews} ${m.isReal ? 'entered transcripts' : 'interviews'} · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.</em></p>
+<p><em>Generated ${esc(new Date(m.generatedAt).toLocaleString())} · ${m.counts.personas} ${m.isReal ? 'participants' : 'synthetic personas'} · ${m.counts.interviews} ${m.isReal ? 'evidence sources' : 'interviews'} · ${m.counts.segments} dual-coded segments · ${m.counts.overrides} logged overrides.</em></p>${m.counts.byType ? `\n<ul>${m.counts.byType.map((t) => `<li>${esc(corpusLine(t))}</li>`).join('')}</ul>` : ''}
 
 <h2>A1 · Codebook (a priori + emergent)</h2>
 <table><thead><tr><th>Code</th><th>Hypothesis</th><th>Definition</th></tr></thead><tbody>${codebookRows}</tbody></table>
@@ -523,9 +559,9 @@ ${chartFig('Hypothesis distribution', m.charts.distribution, m.isReal ? 'Per-par
 ${m.jointDisplay.length === 0
   ? '<p><em>No evidence types are selected for the joint display, so no matrix is reported.</em></p>'
   : `<p>${m.isReal
-      ? 'Expected evidence under each proposition BY STAKEHOLDER GROUP. The design is interviews-only, so rows are the five groups interviewed. The expected-evidence wording is a derived draft, not transcribed from Chapter 3 Table 2.'
+      ? 'Expected evidence under each proposition BY STAKEHOLDER GROUP. A segment lands in a row because of who said it, so a focus-group turn counts under its speaker; documentary sources have no speaker and aggregate into their own row. The expected-evidence wording is a derived draft, not transcribed from Chapter 3 Table 2.'
       : 'Expected evidence under each hypothesis by evidence type. Only the interview row is populated from synthetic data; the remaining rows are real-data-phase placeholders.'}</p>
-<table><thead><tr><th>${m.isReal ? 'Stakeholder group' : 'Evidence type'}</th><th>${m.isReal ? 'Participants' : 'Status'}</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>`}
+<table><thead><tr><th>${m.isReal ? 'Stakeholder group / source' : 'Evidence type'}</th><th>${m.isReal ? 'Contributors' : 'Status'}</th><th>${m.hypotheses[0].short}</th><th>${m.hypotheses[1].short}</th><th>${m.hypotheses[2].short}</th></tr></thead><tbody>${jointRows}</tbody></table>`}
 ${m.jointDisplay.length ? chartFig('Joint-display heatmap', m.charts.heatmap, m.isReal ? 'Evidence strength per proposition, by stakeholder group.' : 'Evidence strength per hypothesis; only the interview row is populated.') : ''}
 
 <hr />
