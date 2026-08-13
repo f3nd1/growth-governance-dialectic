@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T07:10:13.212Z",
+      "action": "push",
+      "commit": "f0e14ad",
+      "branch": "main",
+      "message": "Focus groups: revised roster mapping",
+      "summary": "FOCUS_GROUP_ELIGIBILITY updated: academic board takes multi-role and academic, managers gains academic, so multi-role is eligible for three groups and academic for two. The allocation marker re-checks eligibility per membership rather than counting, so multiple legitimate memberships read as muted 'also in' with no override prompt; only memberships the mapping does not account for turn red. senior-leader is now eligible for no focus group while remaining the Add-participant default — reported, not changed."
+    },
+    {
       "when": "2026-08-13T07:08:33.783Z",
       "action": "push",
       "commit": "02bd1c2",
