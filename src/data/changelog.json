@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T07:08:33.783Z",
+      "action": "push",
+      "commit": "02bd1c2",
+      "branch": "main",
+      "message": "Rename the third focus group to Academic Board members",
+      "summary": "fg-heads-of-departments becomes fg-academic-board with the label 'Academic Board members'. Saved focus-group sessions are migrated on load via RENAMED_FOCUS_GROUPS in mergeWithDefaults: focusGroupId and display name are rewritten while the session id is preserved so coded segments stay joined. Verified against a workspace forced back to the old id."
+    },
+    {
       "when": "2026-08-13T06:54:33.648Z",
       "action": "push",
       "commit": "4bbf132",
