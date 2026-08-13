@@ -3,7 +3,8 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import ModeGate from '../components/ModeGate'
 import { useWorkspace, updateActive, updateRealBatch } from '../store/dataStore'
-import { STAKEHOLDER_GROUPS } from '../data/seeds'
+import { STAKEHOLDER_GROUPS, SOURCE_TYPES, FOCUS_GROUPS, DOCUMENT_TYPES } from '../data/seeds'
+import { sourceTypeOf, sessionLabel, focusGroupLabel } from '../engine/sources'
 import {
   buildImportPlan,
   applyImportPlan,
@@ -49,6 +50,14 @@ export default function TranscriptEntry() {
   const [openRow, setOpenRow] = useState(null)
   const [importDone, setImportDone] = useState('')
   const fileRef = useRef(null)
+  // Which evidence type is being entered. Interviews stay the default so the
+  // existing flow is unchanged for anyone not using the new types.
+  const [sourceType, setSourceType] = useState('interview')
+  // Focus-group draft: one of the four fixed groups, its roster, and the turns.
+  const [fg, setFg] = useState({ focusGroupId: '', participantCodes: [], turns: [] })
+  // Document draft: metadata plus extracts.
+  const [doc, setDoc] = useState({ title: '', docType: 'policy', periodLabel: '', extracts: [''] })
+  const [sourceSaved, setSourceSaved] = useState('')
 
   if (ws.mode !== 'real') {
     return (
@@ -109,6 +118,75 @@ export default function TranscriptEntry() {
       `Saved ${filled.length} answer${filled.length === 1 ? '' : 's'} for ${participant.participantCode}.` +
         (existing ? ' Previously coded segments for this transcript were cleared — re-code it.' : ''),
     )
+  }
+
+  // --------------------------------------------------- focus groups + documents
+  const byCode = new Map(participants.map((p) => [p.participantCode, p]))
+  const fgTurns = fg.turns.filter((t) => t.text.trim() && t.speakerCode)
+  // A turn with text but no speaker is NOT saved: attributing it to the group as
+  // a whole would put words in an unidentified participant's mouth, and the
+  // stakeholder row it lands in would be a guess.
+  const fgOrphanTurns = fg.turns.filter((t) => t.text.trim() && !t.speakerCode).length
+  const canSaveFg = Boolean(fg.focusGroupId) && fgTurns.length > 0 && fgOrphanTurns === 0
+
+  function saveFocusGroup() {
+    if (!canSaveFg) return
+    const id = `real-fg-${fg.focusGroupId}-${ws.real.interviews.length}`
+    const record = {
+      id,
+      sourceType: 'focus-group',
+      focusGroupId: fg.focusGroupId,
+      participantCodes: [...fg.participantCodes],
+      // No single interviewee: the session belongs to the group, and each TURN
+      // carries its own speaker. personaName is the group label so lists read
+      // sensibly; attribution never uses it.
+      personaId: null,
+      personaName: focusGroupLabel(fg.focusGroupId),
+      real: true,
+      mode: 'entered',
+      seed: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      answers: fgTurns.map((t) => ({
+        questionId: null,
+        questionText: '',
+        text: t.text.trim(),
+        speakerCode: t.speakerCode,
+        speakerParticipantId: byCode.get(t.speakerCode)?.id ?? null,
+      })),
+    }
+    updateActive('interviews', (list) => [...list, record])
+    setFg({ focusGroupId: '', participantCodes: [], turns: [] })
+    setSourceSaved(`Saved ${fgTurns.length} turns for ${focusGroupLabel(record.focusGroupId)}.`)
+  }
+
+  const docExtracts = doc.extracts.filter((x) => x.trim())
+  const canSaveDoc = Boolean(doc.title.trim()) && docExtracts.length > 0
+
+  function saveDocument() {
+    if (!canSaveDoc) return
+    const id = `real-doc-${Date.now().toString(36)}-${ws.real.interviews.length}`
+    const record = {
+      id,
+      sourceType: 'document',
+      title: doc.title.trim(),
+      docType: doc.docType,
+      periodLabel: doc.periodLabel.trim(),
+      // A document has no participant. Its own id is used so segments stay
+      // joinable, and it deliberately matches no participant record — which is
+      // what puts it in the Documentary evidence row rather than a person's.
+      personaId: id,
+      personaName: doc.title.trim(),
+      real: true,
+      mode: 'entered',
+      seed: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      answers: docExtracts.map((x) => ({ questionId: null, questionText: '', text: x.trim() })),
+    }
+    updateActive('interviews', (list) => [...list, record])
+    setDoc({ title: '', docType: 'policy', periodLabel: '', extracts: [''] })
+    setSourceSaved(`Saved ${docExtracts.length} extract(s) from ${record.title}.`)
   }
 
   // ------------------------------------------------------------- bulk import
@@ -386,7 +464,183 @@ export default function TranscriptEntry() {
         )}
       </section>
 
-      {participants.length === 0 ? (
+
+      <div className="chip-row" role="group" aria-label="Evidence type">
+        {SOURCE_TYPES.map((t) => (
+          <button
+            key={t.id}
+            className={'chip' + (sourceType === t.id ? ' on' : '')}
+            aria-pressed={sourceType === t.id}
+            onClick={() => { setSourceType(t.id); setSourceSaved('') }}
+          >
+            {t.plural}
+          </button>
+        ))}
+      </div>
+      {sourceSaved && <p role="status" className="small" style={{ color: '#2f9e44' }}>{sourceSaved}</p>}
+
+      {sourceType === 'focus-group' && (
+        <>
+          <section className="card">
+            <h2>1 · Choose the focus group</h2>
+            <div className="chip-row" role="group" aria-label="Focus group">
+              {FOCUS_GROUPS.map((g) => (
+                <button
+                  key={g.id}
+                  className={'chip' + (fg.focusGroupId === g.id ? ' on' : '')}
+                  aria-pressed={fg.focusGroupId === g.id}
+                  onClick={() => setFg({ ...fg, focusGroupId: g.id })}
+                >
+                  {g.label}
+                </button>
+              ))}
+            </div>
+            <p className="small muted" style={{ marginBottom: 0 }}>
+              The four groups are fixed by the study design. Adding a fifth would be a design
+              change, not a data-entry choice.
+            </p>
+          </section>
+
+          {fg.focusGroupId && (
+            <>
+              <section className="card">
+                <h2>2 · Who attended</h2>
+                {participants.length === 0 ? (
+                  <p className="muted">
+                    No participant records yet — add them on{' '}
+                    <Link to="/participants/records">Participant Records</Link> first.
+                  </p>
+                ) : (
+                  <div className="chip-row" role="group" aria-label="Attendees">
+                    {participants.map((p) => {
+                      const on = fg.participantCodes.includes(p.participantCode)
+                      return (
+                        <button
+                          key={p.id}
+                          className={'chip' + (on ? ' on' : '')}
+                          aria-pressed={on}
+                          onClick={() =>
+                            setFg({
+                              ...fg,
+                              participantCodes: on
+                                ? fg.participantCodes.filter((c) => c !== p.participantCode)
+                                : [...fg.participantCodes, p.participantCode],
+                            })
+                          }
+                        >
+                          {p.participantCode}
+                        </button>
+                      )
+                    })}
+                  </div>
+                )}
+              </section>
+
+              <section className="card">
+                <h2>3 · Turns</h2>
+                <p className="small muted">
+                  Each turn belongs to <strong>one</strong> speaker. A turn with text but no
+                  speaker will not save — attributing it to the group would put words in an
+                  unidentified participant’s mouth, and the stakeholder row it landed in would
+                  be a guess.
+                </p>
+                {fg.turns.map((t, i) => (
+                  <div key={i} className="grid-2" style={{ borderTop: '1px solid var(--line)', paddingTop: 10 }}>
+                    <div className="field" style={{ maxWidth: 200 }}>
+                      <label htmlFor={`fg-sp-${i}`}>Speaker</label>
+                      <select
+                        id={`fg-sp-${i}`}
+                        value={t.speakerCode}
+                        onChange={(e) =>
+                          setFg({ ...fg, turns: fg.turns.map((x, j) => (j === i ? { ...x, speakerCode: e.target.value } : x)) })
+                        }
+                      >
+                        <option value="">— choose speaker —</option>
+                        {fg.participantCodes.map((c) => <option key={c} value={c}>{c}</option>)}
+                      </select>
+                    </div>
+                    <div className="field">
+                      <label htmlFor={`fg-tx-${i}`}>What they said</label>
+                      <textarea
+                        id={`fg-tx-${i}`}
+                        rows={3}
+                        value={t.text}
+                        onChange={(e) =>
+                          setFg({ ...fg, turns: fg.turns.map((x, j) => (j === i ? { ...x, text: e.target.value } : x)) })
+                        }
+                      />
+                    </div>
+                  </div>
+                ))}
+                <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button
+                    className="btn secondary"
+                    onClick={() => setFg({ ...fg, turns: [...fg.turns, { speakerCode: '', text: '' }] })}
+                    disabled={fg.participantCodes.length === 0}
+                  >
+                    + Add turn
+                  </button>
+                  <button className="btn" onClick={saveFocusGroup} disabled={!canSaveFg}>
+                    Save focus group ({fgTurns.length} turn{fgTurns.length === 1 ? '' : 's'})
+                  </button>
+                </p>
+                {fgOrphanTurns > 0 && (
+                  <p className="small" role="alert" style={{ color: '#b03230' }}>
+                    {fgOrphanTurns} turn{fgOrphanTurns === 1 ? ' has' : 's have'} text but no
+                    speaker. Choose a speaker or clear the text.
+                  </p>
+                )}
+              </section>
+            </>
+          )}
+        </>
+      )}
+
+      {sourceType === 'document' && (
+        <section className="card">
+          <h2>Documentary source</h2>
+          <p className="small muted">
+            Records, not people. Document extracts are coded against the same codebook, but
+            carry no participant and no speaker.
+          </p>
+          <div className="grid-2">
+            <div className="field">
+              <label htmlFor="doc-title">Title</label>
+              <input id="doc-title" type="text" value={doc.title}
+                onChange={(e) => setDoc({ ...doc, title: e.target.value })} />
+            </div>
+            <div className="field">
+              <label htmlFor="doc-type">Document type</label>
+              <select id="doc-type" value={doc.docType}
+                onChange={(e) => setDoc({ ...doc, docType: e.target.value })}>
+                {DOCUMENT_TYPES.map((d) => <option key={d.id} value={d.id}>{d.label}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label htmlFor="doc-period">Date or period</label>
+              <input id="doc-period" type="text" placeholder="2024, or FY2023-24" value={doc.periodLabel}
+                onChange={(e) => setDoc({ ...doc, periodLabel: e.target.value })} />
+            </div>
+          </div>
+          {doc.extracts.map((x, i) => (
+            <div key={i} className="field">
+              <label htmlFor={`doc-x-${i}`}>Extract {i + 1}</label>
+              <textarea id={`doc-x-${i}`} rows={3} value={x}
+                onChange={(e) => setDoc({ ...doc, extracts: doc.extracts.map((y, j) => (j === i ? e.target.value : y)) })} />
+            </div>
+          ))}
+          <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+            <button className="btn secondary" onClick={() => setDoc({ ...doc, extracts: [...doc.extracts, ''] })}>
+              + Add extract
+            </button>
+            <button className="btn" onClick={saveDocument} disabled={!canSaveDoc}>
+              Save document ({docExtracts.length} extract{docExtracts.length === 1 ? '' : 's'})
+            </button>
+          </p>
+        </section>
+      )}
+
+      {sourceType === 'interview' && (participants.length === 0 ? (
         <div className="card muted">
           No participant records yet — add them on the{' '}
           <Link to="/participants/records">Participant Records</Link> page first.
@@ -452,7 +706,7 @@ export default function TranscriptEntry() {
             </section>
           )}
         </>
-      )}
+      ))}
     </>
   )
 }
