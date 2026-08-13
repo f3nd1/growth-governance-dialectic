@@ -14,7 +14,10 @@ export const TENURE_BANDS = [
   'over 10 years',
 ]
 
-const blank = { participantCode: '', group: 'senior-leader', roleDescriptor: '', tenureBand: '' }
+// No default group. A pre-selected one is a group nobody chose, and the group
+// decides which focus groups the participant is eligible for and which joint
+// display row their evidence lands in — too much to inherit from a form default.
+const blank = { participantCode: '', group: '', roleDescriptor: '', tenureBand: '' }
 
 export default function RealParticipants() {
   const ws = useWorkspace()
@@ -36,7 +39,7 @@ export default function RealParticipants() {
   const codeTaken = participants.some(
     (p) => p.id !== editingId && p.participantCode.toLowerCase() === code.toLowerCase(),
   )
-  const canSave = code.length > 0 && !codeTaken
+  const canSave = code.length > 0 && !codeTaken && draft.group !== ''
 
   function edit(p) {
     setEditingId(p.id)
@@ -168,10 +171,17 @@ export default function RealParticipants() {
               value={draft.group}
               onChange={(e) => setDraft({ ...draft, group: e.target.value })}
             >
+              <option value="">— choose stakeholder group —</option>
               {STAKEHOLDER_GROUPS.map((g) => (
                 <option key={g.id} value={g.id}>{g.label}</option>
               ))}
             </select>
+            {draft.group === '' && (
+              <p className="small muted" style={{ margin: '4px 0 0' }}>
+                Required. It decides which focus groups this participant is eligible for and
+                which joint-display row their evidence lands in.
+              </p>
+            )}
           </div>
           <div className="field">
             <label htmlFor="rp-role">Role descriptor (optional, non-identifying)</label>
