@@ -4,7 +4,14 @@ import PageHeader from '../components/PageHeader'
 import ModeGate from '../components/ModeGate'
 import { useWorkspace, updateActive, updateRealBatch } from '../store/dataStore'
 import { STAKEHOLDER_GROUPS, SOURCE_TYPES, FOCUS_GROUPS, DOCUMENT_TYPES } from '../data/seeds'
-import { sourceTypeOf, sessionLabel, focusGroupLabel, sourceTypeLabel } from '../engine/sources'
+import {
+  sourceTypeOf,
+  sessionLabel,
+  focusGroupLabel,
+  sourceTypeLabel,
+  attendeeEligibility,
+  rosterUnspecified,
+} from '../engine/sources'
 import {
   buildImportPlan,
   applyImportPlan,
@@ -567,28 +574,56 @@ export default function TranscriptEntry() {
                     <Link to="/participants/records">Participant Records</Link> first.
                   </p>
                 ) : (
-                  <div className="chip-row" role="group" aria-label="Attendees">
-                    {participants.map((p) => {
-                      const on = fg.participantCodes.includes(p.participantCode)
-                      return (
-                        <button
-                          key={p.id}
-                          className={'chip' + (on ? ' on' : '')}
-                          aria-pressed={on}
-                          onClick={() =>
-                            setFg({
-                              ...fg,
-                              participantCodes: on
-                                ? fg.participantCodes.filter((c) => c !== p.participantCode)
-                                : [...fg.participantCodes, p.participantCode],
-                            })
-                          }
-                        >
-                          {p.participantCode}
-                        </button>
-                      )
-                    })}
-                  </div>
+                  <>
+                    {rosterUnspecified(fg.focusGroupId) && (
+                      <p className="small" role="note" style={{ marginTop: 0 }}>
+                        <strong>No roster rule has been supplied for this group.</strong> Only
+                        the fixed rule applies — an agent is external and belongs to no internal
+                        group. Everyone else is shown as selectable. The rule lives in{' '}
+                        <code>FOCUS_GROUP_ELIGIBILITY</code> in <code>src/data/seeds.js</code>.
+                      </p>
+                    )}
+                    <div className="chip-row" role="group" aria-label="Attendees">
+                      {participants.map((p) => {
+                        const on = fg.participantCodes.includes(p.participantCode)
+                        const { state, reason } = attendeeEligibility(fg.focusGroupId, p.group)
+                        const blocked = state === 'ineligible'
+                        return (
+                          <button
+                            key={p.id}
+                            className={'chip' + (on ? ' on' : '')}
+                            aria-pressed={on}
+                            // Greyed, never hidden, and still clickable: a genuine
+                            // exception has to stay possible. The confirm is what
+                            // keeps it from happening by accident.
+                            style={blocked && !on ? { opacity: 0.5 } : undefined}
+                            title={reason}
+                            onClick={() => {
+                              if (
+                                !on &&
+                                blocked &&
+                                !window.confirm(
+                                  `Add ${p.participantCode} to ${focusGroupLabel(fg.focusGroupId)}?\n\n` +
+                                    `${reason}. Add them only if they genuinely attended.`,
+                                )
+                              ) {
+                                return
+                              }
+                              setFg({
+                                ...fg,
+                                participantCodes: on
+                                  ? fg.participantCodes.filter((c) => c !== p.participantCode)
+                                  : [...fg.participantCodes, p.participantCode],
+                              })
+                            }}
+                          >
+                            {p.participantCode}
+                            <span className="muted"> · {reason}</span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </>
                 )}
               </section>
 

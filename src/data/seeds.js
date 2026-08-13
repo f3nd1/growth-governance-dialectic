@@ -316,6 +316,32 @@ export const FOCUS_GROUPS = [
   { id: 'fg-external-agents', label: 'External parties (recruitment agents)', external: true },
 ]
 
+// Which participant stakeholder groups may attend which focus group.
+//
+// NOT YET SUPPLIED. These rosters are a study-design decision, not something
+// this app can derive: nothing in a participant record says whether a "senior
+// leader" sits in Executives or Heads of Departments. A null entry means the
+// rule for that group has not been given, and the picker greys nobody for it.
+// Exactly one rule is fixed and encoded below: an agent belongs to the external
+// group and to no internal one.
+//
+// To supply a roster, replace null with the list of stakeholder-group ids that
+// may attend, e.g. 'fg-executives': ['senior-leader'].
+export const FOCUS_GROUP_ELIGIBILITY = {
+  'fg-shareholders-board': null,
+  'fg-heads-of-departments': null,
+  'fg-managers': null,
+  'fg-executives': null,
+  'fg-external-agents': ['agent'],
+}
+
+// A participant recorded as multi-role genuinely spans groups, so neither
+// "eligible" nor "ineligible" is knowable from the record. They are marked
+// undetermined rather than greyed — greying would assert an exclusion the data
+// does not support, and this app reports such cases rather than guessing (the
+// same treatment unmapped participants get in the joint display).
+export const UNDETERMINED_GROUP = 'multi-role'
+
 export const DOCUMENT_TYPES = [
   { id: 'policy', label: 'Policy' },
   { id: 'minutes', label: 'Minutes' },

@@ -15,7 +15,46 @@
 // special case: a focus-group turn lands in its speaker's row because the
 // segment genuinely carries the speaker.
 
-import { FOCUS_GROUPS, DOCUMENT_TYPES, SOURCE_TYPES } from '../data/seeds'
+import {
+  FOCUS_GROUPS,
+  DOCUMENT_TYPES,
+  SOURCE_TYPES,
+  FOCUS_GROUP_ELIGIBILITY,
+  UNDETERMINED_GROUP,
+  STAKEHOLDER_GROUPS,
+} from '../data/seeds'
+
+export function stakeholderGroupLabel(id) {
+  return STAKEHOLDER_GROUPS.find((g) => g.id === id)?.label ?? (id || '(no group)')
+}
+
+/**
+ * Whether a participant's stakeholder group may attend a focus group.
+ * Returns 'eligible' | 'ineligible' | 'undetermined' with the reason to show.
+ * Never hides anyone: the picker greys, and an explicit override stays possible.
+ */
+export function attendeeEligibility(focusGroupId, group) {
+  const label = stakeholderGroupLabel(group)
+  if (group === UNDETERMINED_GROUP) {
+    return { state: 'undetermined', reason: `${label} — spans groups, eligibility not determined` }
+  }
+  const allowed = FOCUS_GROUP_ELIGIBILITY[focusGroupId]
+  if (allowed) {
+    return allowed.includes(group)
+      ? { state: 'eligible', reason: label }
+      : { state: 'ineligible', reason: `${label} — not a member of this group` }
+  }
+  // No roster supplied for this group. The one fixed rule still applies.
+  if (group === 'agent') {
+    return { state: 'ineligible', reason: `${label} — external, not a member of an internal group` }
+  }
+  return { state: 'unspecified', reason: label }
+}
+
+/** True while a focus group's roster rule has not been supplied. */
+export function rosterUnspecified(focusGroupId) {
+  return !FOCUS_GROUP_ELIGIBILITY[focusGroupId]
+}
 
 export const SOURCE_TYPE_IDS = SOURCE_TYPES.map((t) => t.id)
 
