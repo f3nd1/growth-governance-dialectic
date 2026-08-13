@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T07:16:02.917Z",
+      "action": "push",
+      "commit": "a775299",
+      "branch": "main",
+      "message": "Participant Records: no default stakeholder group",
+      "summary": "The Add-participant form no longer defaults to Senior leader. It opens on a '— choose stakeholder group —' placeholder and Add stays disabled until a group is chosen, since the group decides focus-group eligibility and the joint-display row. senior-leader remains in STAKEHOLDER_GROUPS and in no focus-group roster. Editing an existing record still prefills its group."
+    },
+    {
       "when": "2026-08-13T07:10:13.212Z",
       "action": "push",
       "commit": "f0e14ad",
