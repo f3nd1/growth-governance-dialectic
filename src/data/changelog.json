@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-13T06:54:33.648Z",
+      "action": "push",
+      "commit": "4bbf132",
+      "branch": "main",
+      "message": "Focus groups: the supplied roster mapping",
+      "summary": "FOCUS_GROUP_ELIGIBILITY filled with the researcher's five rosters; every focus group now greys non-members. multi-role is explicitly eligible in shareholders-and-board and external-agents, so the undetermined placeholder state is removed. A prior membership the mapping accounts for is reported neutrally as 'also in', not as a double-allocation error; unaccounted-for memberships stay red. The unsupplied-roster notice is dropped as unreachable."
+    },
+    {
       "when": "2026-08-13T06:41:21.867Z",
       "action": "push",
       "commit": "8e7dbee",
