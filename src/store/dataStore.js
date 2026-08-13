@@ -66,6 +66,13 @@ function mergeWithDefaults(loaded) {
   // Real mode added later: back-fill so pre-existing synthetic workspaces load
   // unchanged and simply arrive in synthetic mode with an empty real dataset.
   merged.real = { ...emptyRealDataset(), ...(merged.real ?? {}) }
+  // Focus groups and documents were added after individual interviews. A record
+  // saved before that is an interview by definition, so it is labelled rather
+  // than left ambiguous — no read path has to guess at a missing type.
+  merged.real.interviews = merged.real.interviews.map((iv) => ({
+    ...iv,
+    sourceType: iv.sourceType ?? 'interview',
+  }))
   // WH3 cannot coherently be held alongside WH1/WH2; drop it where a stored
   // persona has both, keeping the paradox signal.
   merged.personas = merged.personas.map((p) => ({ ...p, held: normaliseHeld(p.held) }))

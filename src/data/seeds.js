@@ -294,6 +294,33 @@ export function looksLikeName(code) {
   return /^[A-Za-z]{4,}$/.test(v)
 }
 
+// Real fieldwork now comprises three evidence types. A recorded item carries
+// exactly one of these; interview is the default so existing records migrate
+// without a decision being made for them.
+export const SOURCE_TYPES = [
+  { id: 'interview', label: 'Individual interview', plural: 'Individual interviews' },
+  { id: 'focus-group', label: 'Focus group', plural: 'Focus groups' },
+  { id: 'document', label: 'Document', plural: 'Documentary sources' },
+]
+
+// Exactly four moderated focus groups, fixed by the study design. They are not
+// free text: a fifth group would be a design change, not a data-entry choice.
+export const FOCUS_GROUPS = [
+  { id: 'fg-shareholders-board', label: 'Shareholders and board' },
+  { id: 'fg-heads-of-departments', label: 'Heads of Departments' },
+  { id: 'fg-managers', label: 'Managers' },
+  { id: 'fg-executives', label: 'Executives' },
+]
+
+export const DOCUMENT_TYPES = [
+  { id: 'policy', label: 'Policy' },
+  { id: 'minutes', label: 'Minutes' },
+  { id: 'audit-report', label: 'Audit report' },
+  { id: 'certification-correspondence', label: 'Certification correspondence' },
+  { id: 'strategic-plan', label: 'Strategic plan' },
+  { id: 'other', label: 'Other' },
+]
+
 export const STAKEHOLDER_GROUPS = [
   { id: 'shareholder', label: 'Shareholder' },
   { id: 'senior-leader', label: 'Senior leader' },
