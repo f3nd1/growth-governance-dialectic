@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T09:51:34.162Z",
+      "action": "push",
+      "commit": "3cb7df8",
+      "branch": "main",
+      "message": "Transcripts: filter the corpus by evidence type",
+      "summary": "Transcripts listed interviews, focus groups and documents in one flat chip row, so reading one evidence type meant knowing by name which chips belonged to it. Real mode now has a tab per type — All / Individual interviews / Focus groups / Documentary sources — each showing its own count, with the selection held in the URL as ?type= so a filtered view can be linked or bookmarked. Selecting a tab clears the chosen transcript so the detail pane cannot show a session the filter excludes. An empty tab keeps the tabs rendered and reports where the rest of the corpus is, rather than collapsing to the no-transcripts-yet state, which now fires only when the corpus is genuinely empty. Filtering reuses sourceTypeOf and SOURCE_TYPES rather than introducing a second notion of evidence type. The page also reads a ?new= list of session ids, inert until the import summary links into it. Synthetic mode has one evidence type and is unchanged: no tabs, same flat list, pages and exports verified identical."
+    },
+    {
       "when": "2026-08-15T07:26:48.081Z",
       "action": "push",
       "commit": "1227b46",
