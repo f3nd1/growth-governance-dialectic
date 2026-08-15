@@ -125,6 +125,47 @@ export function buildReportModel(ws) {
   }
 }
 
+/**
+ * Which instrument section 3 documents — decided once, for the on-screen
+ * report and the exported one alike, so the two can never disagree about what
+ * the fieldwork ran.
+ *
+ * Keyed on CODED SEGMENTS rather than sessions: an entered-but-uncoded source
+ * has not been analysed, so it is not what this section documents. Synthetic
+ * mode has no byType breakdown and one instrument, so it takes the interview
+ * branch and its report is unchanged.
+ */
+export function reportSection3(m) {
+  const coded = (id) => m.counts.byType?.find((t) => t.id === id)?.segments ?? 0
+  const interview = {
+    key: 'interview',
+    title: 'Interview protocol',
+    questions: m.protocol,
+    opening: m.openingScript,
+    closing: m.closingScript,
+    prefix: '',
+  }
+  const focusGroup = {
+    key: 'focus-group',
+    title: 'Focus group protocol',
+    questions: m.focusGroupProtocol ?? [],
+    opening: m.fgOpeningScript ?? '',
+    closing: m.fgClosingScript ?? '',
+    prefix: 'FG',
+  }
+  const hasFg = coded('focus-group') > 0
+  const hasIv = !m.counts.byType || coded('interview') > 0
+  // Real mode with nothing coded: neither instrument has been used yet, so
+  // both are shown. Naming one would be the assertion this change removes.
+  if ((hasFg && hasIv) || (m.counts.byType && !hasFg && !hasIv)) {
+    return { heading: 'Instruments under validation', instruments: [interview, focusGroup] }
+  }
+  if (hasFg) {
+    return { heading: 'Focus group protocol under validation', instruments: [focusGroup] }
+  }
+  return { heading: 'Interview protocol under validation', instruments: [interview] }
+}
+
 export function reportToMarkdown(m) {
   const lines = []
   lines.push('# Pilot Report — governance-growth-dialectic')
@@ -148,19 +189,7 @@ export function reportToMarkdown(m) {
   lines.push('')
   for (const h of m.hypotheses) lines.push(`- **${h.label}** — ${h.description}`)
   lines.push('')
-  // Which instrument section 3 prints follows the evidence actually coded, not
-  // an assumption about which one was used. Printing the nine interview
-  // questions above a corpus of focus groups documented an instrument the
-  // fieldwork never ran.
-  const codedOf = (id) => m.counts.byType?.find((t) => t.id === id)?.segments ?? 0
-  // Synthetic mode has no byType and one instrument: it takes the interview
-  // branch, exactly as before.
-  const showFg = codedOf('focus-group') > 0
-  const showIv = !m.counts.byType || codedOf('interview') > 0
-  // Real, nothing coded yet: neither instrument has been used, so both are
-  // shown rather than one being asserted as the one under validation.
-  const showBoth = (showFg && showIv) || (m.counts.byType && !showFg && !showIv)
-
+  const s3 = reportSection3(m)
   const protocolBlock = (questions, opening, closing, prefix) => {
     if (opening) {
       lines.push('**Opening script (read verbatim):** ' + opening)
@@ -177,25 +206,16 @@ export function reportToMarkdown(m) {
     }
   }
 
-  if (showBoth) {
-    lines.push('## 3 · Instruments under validation')
-    lines.push('')
-    lines.push('### Interview protocol')
-    lines.push('')
-    protocolBlock(m.protocol, m.openingScript, m.closingScript, '')
-    lines.push('')
-    lines.push('### Focus group protocol')
-    lines.push('')
-    protocolBlock(m.focusGroupProtocol, m.fgOpeningScript, m.fgClosingScript, 'FG')
-  } else if (showFg) {
-    lines.push('## 3 · Focus group protocol under validation')
-    lines.push('')
-    protocolBlock(m.focusGroupProtocol, m.fgOpeningScript, m.fgClosingScript, 'FG')
-  } else {
-    lines.push('## 3 · Interview protocol under validation')
-    lines.push('')
-    protocolBlock(m.protocol, m.openingScript, m.closingScript, '')
-  }
+  lines.push(`## 3 · ${s3.heading}`)
+  lines.push('')
+  s3.instruments.forEach((ins, i) => {
+    if (s3.instruments.length > 1) {
+      if (i > 0) lines.push('')
+      lines.push(`### ${ins.title}`)
+      lines.push('')
+    }
+    protocolBlock(ins.questions, ins.opening, ins.closing, ins.prefix)
+  })
   lines.push('')
   lines.push('## 4 · Codebook')
   lines.push('')

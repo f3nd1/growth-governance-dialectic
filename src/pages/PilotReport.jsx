@@ -2,13 +2,14 @@ import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import WeightBar from '../components/WeightBar'
 import { useWorkspace } from '../store/dataStore'
-import { buildReportModel, corpusLine, contributorName } from '../engine/report'
+import { buildReportModel, corpusLine, contributorName, reportSection3 } from '../engine/report'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { rqList } from '../data/seeds'
 
 export default function PilotReport() {
   const ws = useWorkspace()
   const m = buildReportModel(ws)
+  const section3 = reportSection3(m)
 
   return (
     <>
@@ -47,25 +48,32 @@ export default function PilotReport() {
         ))}
       </section>
 
+      {/* The page and the export must document the same instrument. Both read
+          reportSection3 rather than each deciding for itself. */}
       <section className="card">
-        <h2>3 · Interview protocol under validation</h2>
-        {m.openingScript && (
-          <p className="small muted"><strong>Opening script:</strong> {m.openingScript}</p>
-        )}
-        <ol>
-          {m.protocol.map((q) => (
-            <li key={q.id} style={{ marginBottom: 6 }}>
-              {q.text}
-              <div className="small muted">{rqList(q.rq).join(', ')} · {q.source}</div>
-              {(q.probes ?? []).length > 0 && (
-                <div className="small muted">Probes: {q.probes.join(' · ')}</div>
-              )}
-            </li>
-          ))}
-        </ol>
-        {m.closingScript && (
-          <p className="small muted"><strong>Closing script:</strong> {m.closingScript}</p>
-        )}
+        <h2>3 · {section3.heading}</h2>
+        {section3.instruments.map((ins) => (
+          <div key={ins.key}>
+            {section3.instruments.length > 1 && <h3>{ins.title}</h3>}
+            {ins.opening && (
+              <p className="small muted"><strong>Opening script:</strong> {ins.opening}</p>
+            )}
+            <ol>
+              {ins.questions.map((q) => (
+                <li key={q.id} style={{ marginBottom: 6 }}>
+                  {q.text}
+                  <div className="small muted">{rqList(q.rq).join(', ')} · {q.source}</div>
+                  {(q.probes ?? []).length > 0 && (
+                    <div className="small muted">Probes: {q.probes.join(' · ')}</div>
+                  )}
+                </li>
+              ))}
+            </ol>
+            {ins.closing && (
+              <p className="small muted"><strong>Closing script:</strong> {ins.closing}</p>
+            )}
+          </div>
+        ))}
       </section>
 
       <section className="card">
