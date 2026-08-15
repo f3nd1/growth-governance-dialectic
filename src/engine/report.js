@@ -82,6 +82,12 @@ export function buildReportModel(ws) {
     protocol: [...ws.protocol.questions].sort((a, b) => a.order - b.order),
     openingScript: ws.protocol.openingScript ?? '',
     closingScript: ws.protocol.closingScript ?? '',
+    // The workspace has held a second instrument since focus groups got their
+    // own protocol; the report never carried it, so section 3 could only ever
+    // print the interview questions however the corpus was actually gathered.
+    focusGroupProtocol: [...ws.focusGroupProtocol.questions].sort((a, b) => a.order - b.order),
+    fgOpeningScript: ws.focusGroupProtocol.openingScript ?? '',
+    fgClosingScript: ws.focusGroupProtocol.closingScript ?? '',
     codebook: ws.codebook.codes,
     counts: {
       personas: activeData(ws).participants.length,
@@ -142,20 +148,53 @@ export function reportToMarkdown(m) {
   lines.push('')
   for (const h of m.hypotheses) lines.push(`- **${h.label}** — ${h.description}`)
   lines.push('')
-  lines.push('## 3 · Interview protocol under validation')
-  lines.push('')
-  if (m.openingScript) {
-    lines.push('**Opening script (read verbatim):** ' + m.openingScript)
-    lines.push('')
+  // Which instrument section 3 prints follows the evidence actually coded, not
+  // an assumption about which one was used. Printing the nine interview
+  // questions above a corpus of focus groups documented an instrument the
+  // fieldwork never ran.
+  const codedOf = (id) => m.counts.byType?.find((t) => t.id === id)?.segments ?? 0
+  // Synthetic mode has no byType and one instrument: it takes the interview
+  // branch, exactly as before.
+  const showFg = codedOf('focus-group') > 0
+  const showIv = !m.counts.byType || codedOf('interview') > 0
+  // Real, nothing coded yet: neither instrument has been used, so both are
+  // shown rather than one being asserted as the one under validation.
+  const showBoth = (showFg && showIv) || (m.counts.byType && !showFg && !showIv)
+
+  const protocolBlock = (questions, opening, closing, prefix) => {
+    if (opening) {
+      lines.push('**Opening script (read verbatim):** ' + opening)
+      lines.push('')
+    }
+    questions.forEach((q, i) => {
+      lines.push(`${prefix}${i + 1}. ${q.text}`)
+      lines.push(`   - Maps to ${rqList(q.rq).join(', ')} · Source: ${q.source}`)
+      for (const pr of q.probes ?? []) lines.push(`   - Probe: ${pr}`)
+    })
+    if (closing) {
+      lines.push('')
+      lines.push('**Closing script (read verbatim):** ' + closing)
+    }
   }
-  m.protocol.forEach((q, i) => {
-    lines.push(`${i + 1}. ${q.text}`)
-    lines.push(`   - Maps to ${rqList(q.rq).join(', ')} · Source: ${q.source}`)
-    for (const pr of q.probes ?? []) lines.push(`   - Probe: ${pr}`)
-  })
-  if (m.closingScript) {
+
+  if (showBoth) {
+    lines.push('## 3 · Instruments under validation')
     lines.push('')
-    lines.push('**Closing script (read verbatim):** ' + m.closingScript)
+    lines.push('### Interview protocol')
+    lines.push('')
+    protocolBlock(m.protocol, m.openingScript, m.closingScript, '')
+    lines.push('')
+    lines.push('### Focus group protocol')
+    lines.push('')
+    protocolBlock(m.focusGroupProtocol, m.fgOpeningScript, m.fgClosingScript, 'FG')
+  } else if (showFg) {
+    lines.push('## 3 · Focus group protocol under validation')
+    lines.push('')
+    protocolBlock(m.focusGroupProtocol, m.fgOpeningScript, m.fgClosingScript, 'FG')
+  } else {
+    lines.push('## 3 · Interview protocol under validation')
+    lines.push('')
+    protocolBlock(m.protocol, m.openingScript, m.closingScript, '')
   }
   lines.push('')
   lines.push('## 4 · Codebook')
@@ -252,7 +291,9 @@ export function reportToHTML(m) {
       if (line.startsWith('### ')) return `<h3>${esc(line.slice(4))}</h3>`
       if (line.startsWith('> ')) return `<div class="caveat">${esc(line.slice(2).replace(/\*\*/g, ''))}</div>`
       if (line.startsWith('---')) return '<hr />'
-      if (/^\d+\. /.test(line)) return `<p class="li">${esc(line)}</p>`
+      // FG1. … is a numbered protocol question too, and must not fall through
+      // to a bare paragraph just because it carries an instrument prefix.
+      if (/^(FG)?\d+\. /.test(line)) return `<p class="li">${esc(line)}</p>`
       if (line.startsWith('   - ')) return `<p class="li sub">${esc(line.trim())}</p>`
       if (line.startsWith('- ')) return `<p class="li">• ${esc(line.slice(2))}</p>`
       if (line.trim() === '') return ''
