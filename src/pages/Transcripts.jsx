@@ -45,6 +45,9 @@ export default function Transcripts() {
     .filter((iv) => filter === 'all' || sourceTypeOf(iv) === filter)
     .filter((iv) => justImported.length === 0 || justImported.includes(iv.id))
   const [selectedId, setSelectedId] = useState(null)
+  // Which session has its delete panel open, and what has been typed into it.
+  const [confirmingId, setConfirmingId] = useState(null)
+  const [typed, setTyped] = useState('')
   const current = interviews.find((iv) => iv.id === selectedId) ?? interviews[0]
   const type = sourceTypeOf(current)
   // Turns store their prompt's id; the number shown is its place in the live
@@ -61,16 +64,47 @@ export default function Transcripts() {
           (current?.periodLabel ? ` · ${current.periodLabel}` : '')
         : `hand-entered · ${n(answers, 'answer')}`
 
+  // Synthetic transcripts are reproducible from persona + seed, so deleting one
+  // costs a re-run. This path is unchanged.
   function remove(id) {
-    const what = data.isReal
-      ? 'Delete this real participant transcript and its coded segments? The verbatim text is not recoverable.'
-      : 'Delete this synthetic transcript and its coded segments?'
-    if (!window.confirm(what)) return
+    if (!window.confirm('Delete this synthetic transcript and its coded segments?')) return
     updateActive('interviews', (ivs) => ivs.filter((iv) => iv.id !== id))
     updateActive('coding', (c) => ({
       ...c,
       segments: c.segments.filter((s) => s.interviewId !== id),
     }))
+  }
+
+  // Real evidence is not reproducible: what is deleted here was said once, by a
+  // person, and the app holds the only copy. So the real path is separate from
+  // the synthetic one above — deliberately not one function with a mode flag,
+  // because the flag is the thing that would eventually be got wrong — and it
+  // asks for the session's own name to be typed rather than a click.
+  const doomed = data.isReal && confirmingId ? all.find((iv) => iv.id === confirmingId) : null
+  const doomedSegments = doomed
+    ? data.coding.segments.filter((s) => s.interviewId === doomed.id)
+    : []
+  const doomedOverrides = doomed
+    ? data.coding.overridesLog.filter((o) =>
+        doomedSegments.some((s) => s.id === o.segmentId),
+      ).length
+    : 0
+
+  function removeReal() {
+    if (!doomed || typed !== sessionLabel(doomed)) return
+    const segIds = new Set(doomedSegments.map((s) => s.id))
+    updateActive('interviews', (ivs) => ivs.filter((iv) => iv.id !== doomed.id))
+    updateActive('coding', (c) => ({
+      ...c,
+      segments: c.segments.filter((s) => s.interviewId !== doomed.id),
+      // The log is an audit trail of decisions about segments. Once its
+      // segments are gone the entries point at nothing, and a stale entry in a
+      // methods appendix is worse than no entry.
+      overridesLog: c.overridesLog.filter((o) => !segIds.has(o.segmentId)),
+    }))
+    setConfirmingId(null)
+    setTyped('')
+    setSelectedId(null)
   }
 
   // Only when the corpus itself is empty. A filter that matches nothing is a
@@ -169,12 +203,74 @@ export default function Transcripts() {
             <span className="stamp">
               {data.isReal ? 'Real participant · confidential' : 'Synthetic transcript'}
             </span>
-            <button className="btn small danger" onClick={() => remove(current.id)}>Delete</button>
+            {data.isReal ? (
+              <button
+                className="btn small danger"
+                onClick={() => {
+                  setConfirmingId(confirmingId === current.id ? null : current.id)
+                  setTyped('')
+                }}
+              >
+                Delete…
+              </button>
+            ) : (
+              <button className="btn small danger" onClick={() => remove(current.id)}>Delete</button>
+            )}
           </div>
           <p className="muted small">
             {data.isReal ? meta : `${current.mode} mode · seed ${current.seed}`}{' '}
             · {new Date(current.createdAt).toLocaleString()}
           </p>
+
+          {doomed?.id === current.id && (
+            <div className="notice" role="alertdialog" style={{ borderLeftColor: '#b03230' }}>
+              <p style={{ margin: '0 0 6px', fontWeight: 700 }}>
+                Permanently delete {sessionLabel(doomed)}?
+              </p>
+              <ul className="small" style={{ margin: '0 0 8px', paddingLeft: 18 }}>
+                <li>
+                  the {sourceTypeLabel(sourceTypeOf(doomed)).toLowerCase()} itself, and its{' '}
+                  {n(doomed.answers.length, type === 'focus-group' ? 'turn' : 'answer')} of verbatim
+                  text
+                </li>
+                <li>{n(doomedSegments.length, 'coded segment')} derived from it</li>
+                <li>
+                  {n(doomedOverrides, 'entry')} in the override log recorded against those segments
+                </li>
+              </ul>
+              <p className="small" style={{ margin: '0 0 8px' }}>
+                Nothing else is touched: no other session, no participant record, no codebook or
+                protocol change. The app holds the only copy of this text and there is no undo.
+              </p>
+              <div className="field" style={{ maxWidth: 380 }}>
+                <label htmlFor="del-confirm">
+                  Type <strong>{sessionLabel(doomed)}</strong> to confirm
+                </label>
+                <input
+                  id="del-confirm"
+                  type="text"
+                  autoComplete="off"
+                  value={typed}
+                  onChange={(e) => setTyped(e.target.value)}
+                />
+              </div>
+              <p style={{ display: 'flex', gap: 8, margin: 0 }}>
+                <button
+                  className="btn small danger"
+                  disabled={typed !== sessionLabel(doomed)}
+                  onClick={removeReal}
+                >
+                  Delete permanently
+                </button>
+                <button
+                  className="btn small secondary"
+                  onClick={() => { setConfirmingId(null); setTyped('') }}
+                >
+                  Cancel
+                </button>
+              </p>
+            </div>
+          )}
 
           {current.answers.map((a, i) => (
             <div key={a.questionId + i} style={{ borderTop: '1px solid var(--line)', padding: '12px 0' }}>
