@@ -3,6 +3,7 @@ import PageHeader from '../components/PageHeader'
 import { Link } from 'react-router-dom'
 import { useWorkspace, replaceWorkspace } from '../store/dataStore'
 import { staleSyntheticProse } from '../engine/storedProse'
+import { countsByType } from '../engine/sources'
 import {
   buildReportModel,
   reportToMarkdown,
@@ -84,10 +85,17 @@ function parseImport(text) {
  */
 function confirmRealExport(ws, what) {
   const answers = ws.real.interviews.reduce((n, iv) => n + iv.answers.length, 0)
+  // A pooled transcript count hides that a focus group carries several people's
+  // words in one file, so the consent prompt names the types it is releasing.
+  const byType = countsByType(ws.real.interviews, ws.real.coding.segments)
+    .filter((t) => t.sessions > 0)
+    .map((t) => `    – ${t.sessions} ${t.label} (${t.segments} coded segments)`)
+    .join('\n')
   return window.confirm(
     `Export ${what} containing REAL PARTICIPANT DATA?\n\n` +
       `· ${ws.real.participants.length} participant records (codes, groups, role descriptors)\n` +
       `· ${ws.real.interviews.length} transcripts — ${answers} verbatim answers\n` +
+      (byType ? byType + '\n' : '') +
       `· ${ws.real.coding.segments.length} coded segments (each carries its verbatim text)\n` +
       `· ${(ws.real.aiReviewLog ?? []).length} AI review log entries (each stores the full prompt sent)\n` +
       `· ${(ws.real.codebookDecisions ?? []).length} codebook decision records\n\n` +
@@ -111,6 +119,9 @@ export default function ExportCentre() {
   // Real exports are named for what they are, and carry the confidentiality
   // header INSTEAD of the synthetic caveat — never both, and never neither.
   const tag = isReal ? 'REAL-CONFIDENTIAL' : 'SYNTHETIC'
+  // Synthetic mode has one evidence type, so the breakdown would be a table with
+  // one populated row saying what the page already says.
+  const corpus = isReal ? countsByType(ws.real.interviews, ws.real.coding.segments) : []
   const guard = (what) => !isReal || confirmRealExport(ws, what)
 
   function exportJSON() {
@@ -263,6 +274,44 @@ export default function ExportCentre() {
             first. The app will not rewrite your text for you.
           </p>
         </div>
+      )}
+
+      {isReal && (
+        <section className="card">
+          <h2>What is in the corpus</h2>
+          <p className="small muted">
+            What every export below contains, by evidence type. Interviews, focus groups and
+            documents pool into one transcript count everywhere else; before a file leaves the
+            app is the point at which that pooling matters.
+          </p>
+          <table className="data">
+            <thead>
+              <tr>
+                <th>Evidence type</th>
+                <th>Sources</th>
+                <th>People</th>
+                <th>Coded segments</th>
+              </tr>
+            </thead>
+            <tbody>
+              {corpus.map((t) => (
+                <tr key={t.id} className={t.sessions === 0 ? 'muted' : undefined}>
+                  <td>{t.label}</td>
+                  <td>{t.sessions}</td>
+                  {/* A document has no speaker, so a people count there would be
+                      a zero that reads as missing data rather than as N/A. */}
+                  <td>{t.id === 'document' ? '—' : t.participants}</td>
+                  <td>{t.segments}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {corpus.every((t) => t.sessions === 0) && (
+            <p className="small muted" style={{ marginBottom: 0 }}>
+              Nothing entered yet — an export now carries the instrument and no evidence.
+            </p>
+          )}
+        </section>
       )}
 
       <div className="grid-2">

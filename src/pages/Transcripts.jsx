@@ -2,6 +2,12 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { activeData, updateActive, useWorkspace } from '../store/dataStore'
+import {
+  sourceTypeOf,
+  sourceTypeLabel,
+  sessionLabel,
+  documentTypeLabel,
+} from '../engine/sources'
 
 function LeanTag({ lean, secondaryLean, hypotheses }) {
   if (lean === 'offscript') {
@@ -29,6 +35,20 @@ export default function Transcripts() {
   const interviews = [...data.interviews].reverse()
   const [selectedId, setSelectedId] = useState(null)
   const current = interviews.find((iv) => iv.id === selectedId) ?? interviews[0]
+  const type = sourceTypeOf(current)
+  // Turns store their prompt's id; the number shown is its place in the live
+  // focus group protocol, so a reordered protocol renumbers the transcript too.
+  const fgOrder = [...ws.focusGroupProtocol.questions].sort((a, b) => a.order - b.order)
+  const fgNumber = (id) => fgOrder.findIndex((q) => q.id === id) + 1
+  const n = (count, word) => `${count} ${word}${count === 1 ? '' : 's'}`
+  const answers = current?.answers.length ?? 0
+  const meta =
+    type === 'focus-group'
+      ? `focus group · ${n(answers, 'turn')} · ${n(current?.participantCodes?.length ?? 0, 'attendee')}`
+      : type === 'document'
+        ? `${documentTypeLabel(current?.docType)} · ${n(answers, 'extract')}` +
+          (current?.periodLabel ? ` · ${current.periodLabel}` : '')
+        : `hand-entered · ${n(answers, 'answer')}`
 
   function remove(id) {
     const what = data.isReal
@@ -78,8 +98,8 @@ export default function Transcripts() {
             aria-pressed={current?.id === iv.id}
             onClick={() => setSelectedId(iv.id)}
           >
-            {iv.personaName.replace(' (synthetic)', '')}
-            {data.isReal ? ' · entered' : ` · seed ${iv.seed} · ${iv.mode}`}
+            {sessionLabel(iv).replace(' (synthetic)', '')}
+            {data.isReal ? ` · ${sourceTypeLabel(sourceTypeOf(iv))}` : ` · seed ${iv.seed} · ${iv.mode}`}
           </button>
         ))}
       </div>
@@ -87,24 +107,37 @@ export default function Transcripts() {
       {current && (
         <section className="card">
           <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
-            <h2 style={{ margin: 0, flex: 1 }}>{current.personaName}</h2>
+            <h2 style={{ margin: 0, flex: 1 }}>{sessionLabel(current)}</h2>
             <span className="stamp">
               {data.isReal ? 'Real participant · confidential' : 'Synthetic transcript'}
             </span>
             <button className="btn small danger" onClick={() => remove(current.id)}>Delete</button>
           </div>
           <p className="muted small">
-            {data.isReal
-              ? `hand-entered · ${current.answers.length} answers`
-              : `${current.mode} mode · seed ${current.seed}`}{' '}
+            {data.isReal ? meta : `${current.mode} mode · seed ${current.seed}`}{' '}
             · {new Date(current.createdAt).toLocaleString()}
           </p>
 
           {current.answers.map((a, i) => (
             <div key={a.questionId + i} style={{ borderTop: '1px solid var(--line)', padding: '12px 0' }}>
-              <p style={{ fontWeight: 600, marginBottom: 6 }}>
-                Q{i + 1}. {a.questionText}
-              </p>
+              {/* Who said it comes FIRST in a focus group: the same session holds
+                  several speakers, and an unattributed turn is not evidence. An
+                  interview needs no speaker line — the whole transcript is one
+                  person, named in the heading above. */}
+              {type === 'focus-group' ? (
+                <p style={{ fontWeight: 600, marginBottom: 6 }}>
+                  <span className="tag">{a.speakerCode || '(speaker not recorded)'}</span>{' '}
+                  <span className="muted" style={{ fontWeight: 400 }}>
+                    {a.questionText
+                      ? `prompted by FG${fgNumber(a.questionId)}. ${a.questionText}`
+                      : 'not on the schedule'}
+                  </span>
+                </p>
+              ) : (
+                <p style={{ fontWeight: 600, marginBottom: 6 }}>
+                  {type === 'document' ? `Extract ${i + 1}.` : `Q${i + 1}.`} {a.questionText}
+                </p>
+              )}
               <p style={{ marginBottom: 6 }}>{a.text}</p>
               {!data.isReal && (
                 <p className="small" style={{ margin: 0 }}>
