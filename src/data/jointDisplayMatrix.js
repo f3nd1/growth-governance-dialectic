@@ -115,6 +115,21 @@ export function unmappedParticipants(participants) {
   return (participants ?? []).filter((p) => !GROUP_TO_REAL_ROW.has(p.group))
 }
 
+/**
+ * How much of the participant roster the five stakeholder rows actually cover.
+ *
+ * The Joint Display and Pattern-Matching run over the same corpus but not the
+ * same denominator: a participant whose group maps to no row is excluded from
+ * every row of the matrix while still counting in the aggregate. Both pages
+ * and the exports state this from here, so the two numbers are never presented
+ * side by side without the gap between them being visible.
+ */
+export function rowCoverage(participants) {
+  const all = participants ?? []
+  const unmapped = unmappedParticipants(all)
+  return { total: all.length, mapped: all.length - unmapped.length, unmapped }
+}
+
 export function realRowForGroup(group) {
   return GROUP_TO_REAL_ROW.get(group) ?? null
 }

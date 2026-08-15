@@ -8,6 +8,7 @@ import { segmentsOfType } from '../engine/sources'
 import { aggregateEvidence, DEFAULT_SPLIT_THRESHOLD } from '../engine/patterns'
 import { contributorName } from '../engine/report'
 import { HYPOTHESIS_IDS } from '../store/defaults'
+import { rowCoverage } from '../data/jointDisplayMatrix'
 import { HypothesisDistributionChart } from '../components/AppCharts'
 
 export default function PatternMatching() {
@@ -17,6 +18,7 @@ export default function PatternMatching() {
   // organisational-record bias in documents are validity concerns the
   // researcher inspects by switching between them, not a workspace preference.
   const [typeFilter, setTypeFilter] = useState('all')
+  const coverageOf = rowCoverage(data.participants)
   const scoped = data.isReal
     ? segmentsOfType(data.interviews, data.coding.segments, typeFilter)
     : data.coding.segments
@@ -65,6 +67,19 @@ export default function PatternMatching() {
           focus groups may be group conformity; one that only holds in the documents may be
           what the organisation records rather than what it does.
         </EvidenceTypeFilter>
+      )}
+
+      {/* The other page reporting this corpus uses a smaller denominator. Saying
+          so here, not only there, is what stops the two totals being read as
+          the same population. */}
+      {data.isReal && coverageOf.unmapped.length > 0 && (
+        <div className="notice" role="note">
+          These totals aggregate all {coverageOf.total} participants. The{' '}
+          <Link to="/analysis/joint-display">Joint Display</Link> covers {coverageOf.mapped} of
+          them: {coverageOf.unmapped.map((p) => p.participantCode).join(', ')} map to no
+          stakeholder row and are excluded from that matrix, so the two pages report different
+          denominators over the same evidence.
+        </div>
       )}
 
       {ws.settings.guidance && (

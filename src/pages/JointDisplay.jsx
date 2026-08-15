@@ -5,7 +5,7 @@ import { useWorkspace, activeData, update } from '../store/dataStore'
 import { HYPOTHESIS_IDS } from '../store/defaults'
 import { JointHeatmapChart } from '../components/AppCharts'
 import { heatmapData } from '../engine/vizData'
-import { rowsForMode, isJointRowEnabled } from '../data/jointDisplayMatrix'
+import { rowsForMode, isJointRowEnabled, rowCoverage } from '../data/jointDisplayMatrix'
 import EvidenceTypeFilter from '../components/EvidenceTypeFilter'
 import { evidenceCoverage, listTypes, sentenceCase } from '../engine/sources'
 
@@ -16,6 +16,8 @@ export default function JointDisplay() {
   // What the corpus actually holds, so the claims below describe this corpus
   // rather than the one it had when the sentence was written.
   const coverage = evidenceCoverage(data.interviews, data.coding.segments)
+  // Stated on both pages and in the exports, from one source.
+  const coverageOf = rowCoverage(data.participants)
   const [typeFilter, setTypeFilter] = useState('all')
   const { rows, hasData, unmapped } = heatmapData(ws, typeFilter)
   const modeKey = isReal ? 'real' : 'synthetic'
@@ -83,9 +85,13 @@ export default function JointDisplay() {
       {isReal && unmapped.length > 0 && (
         <div className="notice" role="alert" style={{ borderLeftColor: '#b03230' }}>
           <p style={{ margin: '0 0 6px', fontWeight: 700 }}>
-            {unmapped.length} participant{unmapped.length === 1 ? '' : 's'} do
-            {unmapped.length === 1 ? 'es' : ''} not map to any of the five groups, and
-            {unmapped.length === 1 ? ' is' : ' are'} excluded from every row.
+            This matrix covers {coverageOf.mapped} of {coverageOf.total} participants.{' '}
+            {unmapped.length} do{unmapped.length === 1 ? 'es' : ''} not map to any of the five
+            groups, and {unmapped.length === 1 ? 'is' : 'are'} excluded from every row.
+          </p>
+          <p className="small" style={{ margin: '0 0 6px' }}>
+            <Link to="/analysis/patterns">Pattern-Matching</Link> aggregates all{' '}
+            {coverageOf.total}, so its totals and this matrix's are over different denominators.
           </p>
           <p className="small" style={{ margin: '0 0 6px' }}>
             Their coded segments appear in the analysis elsewhere but not in this matrix. The

@@ -16,6 +16,7 @@ import { hypothesisDistributionSVG, reliabilitySVG, heatmapSVG } from './charts'
 import { rqList } from '../data/seeds'
 import { activeData } from '../store/dataStore'
 import { countsByType } from './sources'
+import { rowCoverage } from '../data/jointDisplayMatrix'
 
 export const REAL_CONFIDENTIALITY_HEADER =
   'CONFIDENTIAL — REAL PARTICIPANT DATA. This document contains pseudonymised material from ' +
@@ -101,6 +102,9 @@ export function buildReportModel(ws) {
         ? countsByType(activeData(ws).interviews, activeData(ws).coding.segments)
         : null,
     },
+    // Real only: the five stakeholder rows are a real-mode construct, and the
+    // synthetic matrix has no participant-to-row mapping to fall short of.
+    coverage: real ? rowCoverage(activeData(ws).participants) : null,
     reliability: stats
       ? {
           ...stats,
@@ -231,6 +235,18 @@ export function reportToMarkdown(m) {
   if (m.counts.byType) {
     lines.push('')
     for (const t of m.counts.byType) lines.push(`- ${corpusLine(t)}`)
+  }
+  // A reader comparing section 7 against the joint display is comparing two
+  // denominators. The report says so rather than leaving it to be noticed.
+  if (m.coverage && m.coverage.unmapped.length > 0) {
+    lines.push('')
+    lines.push(
+      `**Denominators differ.** Pattern-matching below aggregates all ${m.coverage.total} ` +
+        `participants. The joint-display matrix covers ${m.coverage.mapped} of them: ` +
+        `${m.coverage.unmapped.map((p) => p.participantCode).join(', ')} map to no stakeholder ` +
+        'row and are excluded from every row of that matrix. Their coded segments are counted ' +
+        'in the totals above and in the pattern-matching result.',
+    )
   }
   lines.push('')
   lines.push(
