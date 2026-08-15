@@ -12,6 +12,8 @@ import {
   stripProposalBlock,
   MAX_INPUT_TOKENS,
 } from '../engine/codingDiagnostic'
+import { SOURCE_TYPES } from '../data/seeds'
+import { sourceTypeOf } from '../engine/sources'
 
 function download(filename, content, type) {
   const blob = new Blob([content], { type })
@@ -51,6 +53,26 @@ export default function Coding() {
   const disagreements = segments.filter((s) => s.coderA !== s.coderB)
 
   const overrideCount = segments.filter((s) => s.override).length
+
+  // The button used to say "interviews" whatever was actually queued, so a
+  // researcher with two focus groups and a policy document waiting was told
+  // they had three interviews. Real mode names the mix; synthetic mode has
+  // nothing but interviews, so the plain word stays the honest one there.
+  const uncodedByType = SOURCE_TYPES.map((t) => ({
+    ...t,
+    count: uncoded.filter((iv) => sourceTypeOf(iv) === t.id).length,
+  })).filter((t) => t.count > 0)
+  const single = uncodedByType.length === 1 ? uncodedByType[0] : null
+  const plural = (t, c) => (c === 1 ? t.label.toLowerCase() : t.plural.toLowerCase())
+  const uncodedNoun = !data.isReal
+    ? `interview${uncoded.length === 1 ? '' : 's'}`
+    : single
+      ? plural(single, single.count)
+      : `source${uncoded.length === 1 ? '' : 's'}`
+  const uncodedMix =
+    data.isReal && uncodedByType.length > 1
+      ? uncodedByType.map((t) => `${t.count} ${plural(t, t.count)}`).join(', ')
+      : ''
 
   function codeAll(recode) {
     // Re-coding re-derives what the CODERS think. Overrides are what the
@@ -282,7 +304,8 @@ export default function Coding() {
       <section className="card">
         <p style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
           <button className="btn" onClick={() => codeAll(false)} disabled={uncoded.length === 0}>
-            Code {uncoded.length} uncoded interview{uncoded.length === 1 ? '' : 's'}
+            Code {uncoded.length} uncoded {uncodedNoun}
+            {uncodedMix && ` (${uncodedMix})`}
           </button>
           <button className="btn secondary" onClick={() => codeAll(true)} disabled={data.interviews.length === 0}>
             Re-code everything{overrideCount > 0 ? ` (keeps ${overrideCount} override${overrideCount === 1 ? '' : 's'})` : ''}
@@ -298,7 +321,7 @@ export default function Coding() {
         </p>
         {data.interviews.length === 0 && (
           <p className="muted">
-            No interviews to code —{' '}
+            No {data.isReal ? 'evidence' : 'interviews'} to code —{' '}
             {data.isReal ? (
               <Link to="/fieldwork/entry">enter a transcript</Link>
             ) : (

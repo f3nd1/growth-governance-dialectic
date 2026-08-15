@@ -40,7 +40,9 @@ export default function PatternMatching() {
       <>
         <PageHeader title="Pattern-Matching" desc="Aggregates coded evidence into the three rival propositions as distributed weight." />
         <div className="card muted">
-          Nothing to aggregate yet — <Link to="/analysis/coding">code some interviews</Link> first.
+          Nothing to aggregate yet —{' '}
+          <Link to="/analysis/coding">code {data.isReal ? 'the evidence' : 'some interviews'}</Link>{' '}
+          first.
         </div>
       </>
     )
