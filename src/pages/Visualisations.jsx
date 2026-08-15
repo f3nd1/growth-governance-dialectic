@@ -5,10 +5,13 @@ import {
   ReliabilityChart,
   JointHeatmapChart,
 } from '../components/AppCharts'
+import { evidenceCoverage, listTypes } from '../engine/sources'
 
 export default function Visualisations() {
   const ws = useWorkspace()
-  const isReal = activeData(ws).isReal
+  const data = activeData(ws)
+  const isReal = data.isReal
+  const coverage = evidenceCoverage(data.interviews, data.coding.segments)
 
   return (
     <>
@@ -58,7 +61,17 @@ export default function Visualisations() {
         <h2>{isReal ? 'B · Joint-display heatmap' : 'C · Joint-display heatmap'}</h2>
         <p className="small muted">
           {isReal
-            ? 'The Chapter 3 matrix as intensity. Only the interview rows are populated; the financial, audit and report rows are not yet collected, making plain which evidence types the analysis currently rests on.'
+            ? // Same derivation as the Joint Display's claims card: one corpus, one
+              // account of what it holds, so the two pages cannot disagree.
+              'The Chapter 3 matrix as intensity, by stakeholder group. ' +
+              (coverage.populated.length === 0
+                ? 'Nothing is coded yet, so no row carries intensity.'
+                : `Intensity currently rests on ${listTypes(coverage.populated)}` +
+                  (coverage.uncollected.length > 0
+                    ? `; ${listTypes(coverage.uncollected)} ` +
+                      `${coverage.uncollected.length === 1 ? 'has' : 'have'} not been collected, ` +
+                      'making plain which evidence types the analysis currently rests on.'
+                    : ' — every evidence type is now represented.'))
             : 'The Chapter 3 matrix as intensity. Only the interview row is populated from synthetic data; the financial, audit and report rows are explicit real-data-phase placeholders — making plain what synthetic data can and cannot validate.'}
         </p>
         <JointHeatmapChart />
