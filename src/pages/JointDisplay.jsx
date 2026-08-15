@@ -7,10 +7,15 @@ import { JointHeatmapChart } from '../components/AppCharts'
 import { heatmapData } from '../engine/vizData'
 import { rowsForMode, isJointRowEnabled } from '../data/jointDisplayMatrix'
 import EvidenceTypeFilter from '../components/EvidenceTypeFilter'
+import { evidenceCoverage, listTypes, sentenceCase } from '../engine/sources'
 
 export default function JointDisplay() {
   const ws = useWorkspace()
-  const isReal = activeData(ws).isReal
+  const data = activeData(ws)
+  const isReal = data.isReal
+  // What the corpus actually holds, so the claims below describe this corpus
+  // rather than the one it had when the sentence was written.
+  const coverage = evidenceCoverage(data.interviews, data.coding.segments)
   const [typeFilter, setTypeFilter] = useState('all')
   const { rows, hasData, unmapped } = heatmapData(ws, typeFilter)
   const modeKey = isReal ? 'real' : 'synthetic'
@@ -239,13 +244,24 @@ export default function JointDisplay() {
             <li>
               <strong>Cannot:</strong> claim inter-rater reliability — both coding passes are
               automated, so the κ figure describes how sharply the codebook discriminates on this
-              text, not agreement between two human coders. It also cannot claim convergence or
-              divergence across evidence types: documents and focus groups have not been
-              collected, so only the interview rows are populated.
+              text, not agreement between two human coders.{' '}
+              {coverage.populated.length === 0
+                ? 'It also cannot claim anything across evidence types: nothing is coded yet, so no row is populated.'
+                : coverage.populated.length === 1
+                  ? `It also cannot claim convergence or divergence across evidence types: every coded
+                     segment comes from ${listTypes(coverage.populated)}, so this matrix shows one
+                     evidence type read across stakeholder groups, not agreement between types.`
+                  : `Convergence across evidence types can be read only for the types actually held —
+                     ${listTypes(coverage.populated)} — and not for any type still uncollected.`}
+              {coverage.uncollected.length > 0 &&
+                ` ${sentenceCase(listTypes(coverage.uncollected))}
+                  ${coverage.uncollected.length === 1 ? 'has' : 'have'} not been collected.`}
             </li>
             <li>
-              <strong>Still required:</strong> a second human coder for reportable reliability,
-              and the remaining evidence types before any triangulated claim.
+              <strong>Still required:</strong> a second human coder for reportable reliability
+              {coverage.uncollected.length > 0
+                ? `, and ${listTypes(coverage.uncollected)} before any triangulated claim.`
+                : '.'}
             </li>
           </ul>
         ) : (

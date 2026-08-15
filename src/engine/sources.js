@@ -118,11 +118,45 @@ export function countsByType(sessions, segments) {
     return {
       id,
       label: sourceTypeLabel(id),
+      plural: SOURCE_TYPES.find((t) => t.id === id)?.plural ?? sourceTypeLabel(id),
       sessions: own.length,
       participants: people.size,
       segments: segments.filter((sg) => bySession.get(sg.interviewId) === id).length,
     }
   })
+}
+
+/**
+ * Which evidence types the corpus actually holds. Prose that names the
+ * composition — what is collected, what the matrix rests on — must be built
+ * from this rather than written down, because a sentence asserting "only the
+ * interviews are populated" is true for exactly as long as nobody enters a
+ * focus group, and then silently becomes a false claim in an export.
+ *
+ * `collected` is any session of that type. `populated` is any CODED segment:
+ * an entered-but-uncoded source contributes nothing to the joint display, so
+ * the two questions have different answers and both get asked.
+ */
+export function evidenceCoverage(sessions, segments) {
+  const counts = countsByType(sessions, segments)
+  return {
+    collected: counts.filter((t) => t.sessions > 0),
+    uncollected: counts.filter((t) => t.sessions === 0),
+    populated: counts.filter((t) => t.segments > 0),
+  }
+}
+
+/** "focus groups", "focus groups and documents", "a, b and c" — for prose. */
+export function listTypes(types) {
+  const names = types.map((t) => t.plural.toLowerCase())
+  if (names.length === 0) return ''
+  if (names.length === 1) return names[0]
+  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+}
+
+/** For a derived list that lands at the start of a sentence. */
+export function sentenceCase(s) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
 }
 
 /** Segments belonging to one evidence type — the filter every split reads. */
