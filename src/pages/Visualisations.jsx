@@ -5,13 +5,25 @@ import {
   ReliabilityChart,
   JointHeatmapChart,
 } from '../components/AppCharts'
-import { evidenceCoverage, listTypes } from '../engine/sources'
+import { evidenceCoverage, listTypes, sentenceCase } from '../engine/sources'
+import { visibleJointRows } from '../data/jointDisplayMatrix'
 
 export default function Visualisations() {
   const ws = useWorkspace()
   const data = activeData(ws)
   const isReal = data.isReal
   const coverage = evidenceCoverage(data.interviews, data.coding.segments)
+  // Which synthetic rows carry simulated evidence and which are placeholders is
+  // a property of the row definitions, so the caption reads them.
+  const synRows = visibleJointRows(ws.settings, 'synthetic')
+  const synPopulated = synRows.filter((r) => r.populatedBy)
+  const synPlaceholder = synRows.filter((r) => !r.populatedBy)
+  const listRows = (rows) => {
+    const names = rows.map((r) => `the ${r.label.toLowerCase()} row`)
+    if (names.length === 0) return 'no row'
+    if (names.length === 1) return names[0]
+    return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
+  }
 
   return (
     <>
@@ -72,7 +84,15 @@ export default function Visualisations() {
                       `${coverage.uncollected.length === 1 ? 'has' : 'have'} not been collected, ` +
                       'making plain which evidence types the analysis currently rests on.'
                     : ' — every evidence type is now represented.'))
-            : 'The Chapter 3 matrix as intensity. Only the interview row is populated from synthetic data; the financial, audit and report rows are explicit real-data-phase placeholders — making plain what synthetic data can and cannot validate.'}
+            : // Named from the synthetic row definitions rather than written
+              // down: the rows this once called financial, audit and report
+              // had already been replaced when the sentence was left behind.
+              'The Chapter 3 matrix as intensity. ' +
+              `${sentenceCase(listRows(synPopulated))} ` +
+              `${synPopulated.length === 1 ? 'is' : 'are'} populated from synthetic data; ` +
+              `${listRows(synPlaceholder)} ` +
+              `${synPlaceholder.length === 1 ? 'is an explicit placeholder' : 'are explicit placeholders'}` +
+              ' for the real-data phase — making plain what synthetic data can and cannot validate.'}
         </p>
         <JointHeatmapChart />
       </section>
