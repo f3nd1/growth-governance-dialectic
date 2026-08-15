@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T09:56:43.136Z",
+      "action": "push",
+      "commit": "2776349",
+      "branch": "main",
+      "message": "Import: say what landed and where it went",
+      "summary": "After a bulk CSV import the banner said only 'Imported N sources from <file>', so confirming what had actually landed meant navigating to Transcripts and deducing it from a date-sorted list. The summary now breaks the import down by evidence type and names every source — '2 individual interviews — P05, P06 / 1 focus group — Managers / 1 document — Council minutes 2024' — and links to /fieldwork/transcripts?new=<ids>, which shows exactly those records with one click back to the full corpus. To make that possible applyImportPlan's 'imported' return changed from an array of label strings to {id, sourceType, label} per source; its only consumer was the banner's count. Focus-group labels resolve through focusGroupLabel so the summary shows 'Managers', not 'fg-managers'. A focus group whose group already holds a session still defaults to skip under the existing overwrite guard and is therefore correctly absent from the summary. Synthetic mode does not have import of this kind and is unchanged; pages and exports verified identical."
+    },
+    {
       "when": "2026-08-15T09:51:34.162Z",
       "action": "push",
       "commit": "3cb7df8",
