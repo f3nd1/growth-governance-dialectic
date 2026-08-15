@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:37:02.452Z",
+      "action": "push",
+      "commit": "20eee02",
+      "branch": "main",
+      "message": "Visualisations: the synthetic caption names the rows that exist",
+      "summary": "The synthetic half of the chart B caption asserted that 'the financial, audit and report rows are explicit real-data-phase placeholders' and that only the interview row is populated. Neither was true: the synthetic matrix rows are Documents, Internal interviews, External interviews (investors, agents) and Focus group discussions, and two of them carry simulated evidence, not one. The caption is now built from visibleJointRows and each row's populatedBy flag, so it names whichever rows are actually plotted and populated and stays correct if the row set changes or a row is hidden from the heatmap. This is a deliberate, authorised exception to the synthetic byte-identical rule, on the grounds that the rule exists to protect the integrity of the data and its labelling, not to preserve a false statement about it. The change was scoped before committing: exactly one line of text on /analysis/visualisations differs, every other synthetic page is unchanged, and the Pilot Report and Chapter-3 Appendix exports remain byte-identical in both markdown and HTML."
+    },
+    {
       "when": "2026-08-15T10:28:49.053Z",
       "action": "push",
       "commit": "ed5083b",
