@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:26:42.983Z",
+      "action": "push",
+      "commit": "acc3271",
+      "branch": "main",
+      "message": "Pilot Report: section 3 shows the instrument the evidence came from",
+      "summary": "Section 3 was headed 'Interview protocol under validation' and printed the nine interview questions unconditionally, so a corpus of five focus groups and no interviews produced an advisor-facing export documenting an instrument the fieldwork never ran. What was required: buildReportModel carried only ws.protocol. The workspace has held ws.focusGroupProtocol since focus groups gained their own instrument, but the model never read it, so no branching in the renderer could have printed it; the model now carries the focus group questions and its opening and closing scripts alongside the interview ones, and counts.byType — already in the model — selects which to print. Selection is by coded segments rather than sessions, since an entered-but-uncoded source has not been analysed and cannot be what the section documents: focus-group segments alone print the focus group protocol; interview segments alone print the interview protocol with its wording unchanged; both print both under 'Instruments under validation' with a subheading each. Real mode with nothing coded also prints both, because neither instrument has been used and asserting one would reproduce the original defect. The HTML renderer now recognises 'FG1.' as a numbered question line, which it would otherwise have rendered as a bare paragraph. Synthetic mode has no byType, takes the interview branch, and its report and appendix are byte-identical in both markdown and HTML."
+    },
+    {
       "when": "2026-08-15T10:24:24.483Z",
       "action": "push",
       "commit": "4384da7",
