@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "side-tab",
+        "value": "*",
+        "files": [
+          "src/engine/report.js"
+        ],
+        "createdAt": "2026-08-15T10:40:14.095Z",
+        "reason": "User confirmed: .method rule marks the methodological caveat in the exported Chapter-3 Appendix, a print document; the CSS is also under the byte-identical export check"
+      }
+    ]
+  }
+}

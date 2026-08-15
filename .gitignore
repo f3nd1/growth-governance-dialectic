@@ -4,3 +4,6 @@ dist
 .env.*.local
 *.log
 .DS_Store
+
+# Impeccable design-detector cache (machine-local, regenerated on each run)
+.impeccable/hook.cache.json
