@@ -17,6 +17,7 @@
 // one would attribute an organisational record to a person.
 
 import { looksLikeName, FOCUS_GROUPS } from '../data/seeds'
+import { focusGroupLabel } from './sources'
 
 export const EXAMPLE_CODE = 'P00'
 
@@ -478,7 +479,7 @@ export function applyImportPlan(real, rows) {
           })),
         },
       ]
-      imported.push(row.code)
+      imported.push({ id, sourceType: 'focus-group', label: focusGroupLabel(row.sourceLabel) })
       continue
     }
 
@@ -500,7 +501,7 @@ export function applyImportPlan(real, rows) {
           answers: row.answers.map((a) => ({ questionId: null, questionText: '', text: a.text })),
         },
       ]
-      imported.push(row.sourceLabel)
+      imported.push({ id, sourceType: 'document', label: row.sourceLabel })
       continue
     }
 
@@ -522,11 +523,12 @@ export function applyImportPlan(real, rows) {
     }
     if (!participantId) continue // defensive: nothing to attach to
 
+    const id = `real-iv-${participantId}-imp${counter++}`
     interviews = [
       ...interviews,
       {
         ...base,
-        id: `real-iv-${participantId}-imp${counter++}`,
+        id,
         sourceType: 'interview',
         personaId: participantId,
         personaName: row.code,
@@ -539,7 +541,7 @@ export function applyImportPlan(real, rows) {
         })),
       },
     ]
-    imported.push(row.code)
+    imported.push({ id, sourceType: 'interview', label: row.code })
   }
 
   return {

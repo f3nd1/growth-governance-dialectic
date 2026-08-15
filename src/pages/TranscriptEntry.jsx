@@ -262,18 +262,18 @@ export default function TranscriptEntry() {
 
   function confirmImport() {
     if (!canImport) return
-    let count = 0
+    let landed = []
     // One commit: participants, transcripts and the segment purge land together
     // or not at all, so a failure cannot leave a half-imported workspace.
     updateRealBatch((real) => {
       const { next, imported } = applyImportPlan(real, plan.rows)
-      count = imported.length
+      landed = imported
       return next
     })
-    setImportDone(
-      `Imported ${count} source${count === 1 ? '' : 's'} from ${plan.filename}. ` +
-        'Nothing is coded yet — run the coders on the Coding page.',
-    )
+    // The ids go with it: "imported 12 sources" and a list sorted by date is
+    // not an answer to where they went, and a researcher checking an import
+    // should not have to work that out by elimination.
+    setImportDone({ filename: plan.filename, sources: landed })
     setPlan(null)
     setOpenRow(null)
   }
@@ -366,7 +366,36 @@ export default function TranscriptEntry() {
           <p className="small" role="alert" style={{ color: '#b03230' }}>{importError}</p>
         )}
         {importDone && (
-          <p className="small" role="status" style={{ color: '#2f9e44' }}>{importDone}</p>
+          <div className="notice" role="status" style={{ borderLeftColor: '#2f9e44' }}>
+            <p style={{ margin: '0 0 6px' }}>
+              <strong>
+                Imported {importDone.sources.length} source
+                {importDone.sources.length === 1 ? '' : 's'}
+              </strong>{' '}
+              from {importDone.filename}.
+            </p>
+            <ul className="small" style={{ margin: '0 0 6px', paddingLeft: 18 }}>
+              {SOURCE_TYPES.map((t) => {
+                const own = importDone.sources.filter((s) => s.sourceType === t.id)
+                if (own.length === 0) return null
+                return (
+                  <li key={t.id}>
+                    {own.length} {own.length === 1 ? t.label.toLowerCase() : t.plural.toLowerCase()}
+                    {' — '}
+                    {own.map((s) => s.label).join(', ')}
+                  </li>
+                )
+              })}
+            </ul>
+            <p className="small" style={{ margin: 0 }}>
+              <Link to={`/fieldwork/transcripts?new=${importDone.sources.map((s) => s.id).join(',')}`}>
+                View {importDone.sources.length === 1 ? 'it' : 'just these records'} in Transcripts
+              </Link>
+              {' · '}
+              Nothing is coded yet — run the coders on the{' '}
+              <Link to="/analysis/coding">Coding page</Link>.
+            </p>
+          </div>
         )}
 
         {plan && (
