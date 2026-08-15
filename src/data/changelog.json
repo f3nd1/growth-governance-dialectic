@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:40:41.910Z",
+      "action": "push",
+      "commit": "ab28f59",
+      "branch": "main",
+      "message": "Record the side-tab exception for the appendix export stylesheet",
+      "summary": "The design detector flags the .method rule's 4px left border in the Chapter-3 Appendix's exported stylesheet as a side-tab accent. Confirmed intentional and recorded rather than changed, for two reasons: the border marks the methodological caveat block in a Georgia-serif, print-width document destined for PDF rather than a screen card, and that CSS sits inside the appendix HTML covered by the byte-identical synthetic export check, so editing it would alter exported artifacts. The exception is written through hook-admin as a value ignore scoped to that single rule in that single file, with the reason stored alongside it. npx impeccable detect confirmed side-tab was the only rule firing in report.js, so no other rule is suppressed there and the rest of the project keeps side-tab active. No inline suppression comment was added to the source. .impeccable/hook.cache.json is machine-local session state and is gitignored; .impeccable/config.json is committed so the exception is reviewable in one place."
+    },
+    {
       "when": "2026-08-15T10:39:47.485Z",
       "action": "push",
       "commit": "960653a",
