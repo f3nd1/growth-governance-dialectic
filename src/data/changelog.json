@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:24:24.483Z",
+      "action": "push",
+      "commit": "4384da7",
+      "branch": "main",
+      "message": "Visualisations: derive the heatmap caption from the corpus",
+      "summary": "The chart B caption claimed 'Only the interview rows are populated; the financial, audit and report rows are not yet collected'. Both halves were false against the live corpus: the populated rows are the focus groups, and no financial, audit or report row has existed since the real matrix moved to stakeholder-group rows (its rows are the five stakeholder groups plus documentary evidence). The real-mode caption now reads the same evidenceCoverage derivation as the Joint Display's can-and-cannot-claim card, so both pages describe one corpus from one source and cannot drift apart, and it names the row axis correctly as stakeholder groups. It handles nothing-coded, some-types-collected and all-types-collected without asserting any fixed composition. NOT fixed, deliberately: the synthetic half of the same caption is false in the same way — it names financial, audit and report rows the synthetic matrix does not have either, its rows being Documents, Internal interviews, External interviews and Focus group discussions. Correcting it would change synthetic-mode page text, which the brief rules out, so it is reported for a decision rather than changed. Synthetic pages and exports verified identical."
+    },
+    {
       "when": "2026-08-15T10:23:09.185Z",
       "action": "push",
       "commit": "606b9a5",
