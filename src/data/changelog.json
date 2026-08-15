@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:28:49.053Z",
+      "action": "push",
+      "commit": "ed5083b",
+      "branch": "main",
+      "message": "Pilot Report page: section 3 follows the same rule as the export",
+      "summary": "The Pilot Report page renders its own section 3 rather than the exported markdown, and still had 'Interview protocol under validation' and the nine interview questions hardcoded. Correcting the export alone therefore left the on-screen report beside it asserting the opposite about the same corpus. The selection logic moves out of reportToMarkdown into reportSection3, exported from engine/report.js and read by the page and by both export renderers, so none of the three decides for itself and they cannot document different instruments from one corpus. reportSection3 returns a heading and an ordered list of instruments, each with its questions, scripts and numbering prefix, and the page shows a subheading per instrument only when more than one applies. This was caught by re-running the stale-claim sweep after committing the export fix: the page had not been in the brief's scope and would otherwise have shipped stale. Synthetic mode unchanged: pages, markdown and HTML exports all verified identical."
+    },
+    {
       "when": "2026-08-15T10:26:42.983Z",
       "action": "push",
       "commit": "acc3271",
