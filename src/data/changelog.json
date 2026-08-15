@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T09:58:32.358Z",
+      "action": "push",
+      "commit": "b5a9730",
+      "branch": "main",
+      "message": "Say \"interviews\" only where interviews are what is meant",
+      "summary": "The Coding page's action button counted every uncoded evidence source and then called them all interviews, so a researcher with two focus groups and a policy document queued was told they had three uncoded interviews. The label now reads the actual mix from sourceTypeOf: 'Code 3 uncoded sources (1 individual interview, 1 focus group, 1 document)' when several types are waiting, or the type named directly — 'Code 1 uncoded individual interview' — when only one is. A grep for the same pattern found two further real-mode strings using 'interview' to mean any evidence source: Coding's 'No interviews to code' and Pattern-Matching's 'code some interviews', both now saying evidence in real mode. Deliberately left alone: JointDisplay and PilotReport, which were already mode-conditional; and Run Interviews, Persona Builder, Persona Library, Reliability's pilot note and the AI review log, where the corpus genuinely is interviews only. Synthetic wording is unchanged throughout — synthetic mode has one evidence type, so 'interview' is accurate there rather than a leftover; pages and exports verified identical."
+    },
+    {
       "when": "2026-08-15T09:56:43.136Z",
       "action": "push",
       "commit": "2776349",
