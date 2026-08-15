@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import PageHeader from '../components/PageHeader'
 import { activeData, updateActive, useWorkspace } from '../store/dataStore'
+import { SOURCE_TYPES } from '../data/seeds'
 import {
   sourceTypeOf,
   sourceTypeLabel,
@@ -32,7 +33,17 @@ function LeanTag({ lean, secondaryLean, hypotheses }) {
 export default function Transcripts() {
   const ws = useWorkspace()
   const data = activeData(ws)
-  const interviews = [...data.interviews].reverse()
+  const all = [...data.interviews].reverse()
+  // Synthetic mode has one evidence type, so a filter there would be a row of
+  // tabs where every tab but one is empty. Real mode only.
+  const [params, setParams] = useSearchParams()
+  const filter = data.isReal ? (params.get('type') ?? 'all') : 'all'
+  // An import hands over the ids it just created, so "where did they go" is
+  // answered by the destination rather than by hunting a list sorted by date.
+  const justImported = (params.get('new') ?? '').split(',').filter(Boolean)
+  const interviews = all
+    .filter((iv) => filter === 'all' || sourceTypeOf(iv) === filter)
+    .filter((iv) => justImported.length === 0 || justImported.includes(iv.id))
   const [selectedId, setSelectedId] = useState(null)
   const current = interviews.find((iv) => iv.id === selectedId) ?? interviews[0]
   const type = sourceTypeOf(current)
@@ -62,7 +73,10 @@ export default function Transcripts() {
     }))
   }
 
-  if (interviews.length === 0) {
+  // Only when the corpus itself is empty. A filter that matches nothing is a
+  // different situation and must keep its tabs on screen, or there is no way
+  // back to the type that does have transcripts.
+  if (all.length === 0) {
     return (
       <>
         <PageHeader title="Transcripts" desc="Per-interview Q/A view." />
@@ -90,6 +104,50 @@ export default function Transcripts() {
         }
       />
 
+      {justImported.length > 0 && (
+        <div className="notice" role="status">
+          Showing the {n(interviews.length, 'source')} from the last import.{' '}
+          <button
+            className="btn small secondary"
+            onClick={() => setParams(filter === 'all' ? {} : { type: filter })}
+          >
+            Show all transcripts
+          </button>
+        </div>
+      )}
+
+      {data.isReal && (
+        <div className="chip-row" role="group" aria-label="Filter by evidence type">
+          {[{ id: 'all', plural: 'All' }, ...SOURCE_TYPES].map((t) => {
+            const count =
+              t.id === 'all' ? all.length : all.filter((iv) => sourceTypeOf(iv) === t.id).length
+            return (
+              <button
+                key={t.id}
+                className={'chip' + (filter === t.id ? ' on' : '')}
+                aria-pressed={filter === t.id}
+                onClick={() => {
+                  // Changing type drops the just-imported narrowing: the two
+                  // together answer a question nobody asked, and leaving it on
+                  // would show an empty tab for a type the import did not touch.
+                  setParams(t.id === 'all' ? {} : { type: t.id })
+                  setSelectedId(null)
+                }}
+              >
+                {t.plural} · {count}
+              </button>
+            )
+          })}
+        </div>
+      )}
+
+      {interviews.length === 0 ? (
+        <div className="card muted">
+          No {filter === 'all' ? '' : `${sourceTypeLabel(filter).toLowerCase()} `}transcripts here —
+          the corpus holds {n(all.length, 'source')} under the other tabs.
+        </div>
+      ) : (
+        <>
       <div className="chip-row" role="group" aria-label="Choose transcript">
         {interviews.map((iv) => (
           <button
@@ -150,6 +208,8 @@ export default function Transcripts() {
             </div>
           ))}
         </section>
+      )}
+        </>
       )}
     </>
   )
