@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T07:26:48.081Z",
+      "action": "push",
+      "commit": "1227b46",
+      "branch": "main",
+      "message": "Transcripts and Export Centre read the corpus by evidence type",
+      "summary": "Transcripts named every session by personaName and numbered every answer 'Q{n}', so a focus group showed under a participant name with its turns numbered as interview questions and no speaker rendered at all — the speaker was stored, never displayed. Sessions now use sessionLabel; a focus-group turn leads with its speaker code and the FG question that prompted it (numbered from the live focus group protocol, so reordering renumbers the transcript) or 'not on the schedule'; documents head extracts as extracts and carry document type and period. Export Centre showed only a pooled transcript count in the pre-export consent dialog, which conceals that one focus-group file carries several people's words: real mode now shows a corpus-by-evidence-type table above the export buttons and the confirmation itemises the same breakdown, both from countsByType so page, dialog and Pilot Report cannot disagree. Documents show '—' for people rather than 0. Synthetic mode unchanged in both, verified by diffing re-exported report and appendix against pre-change exports."
+    },
+    {
       "when": "2026-08-13T10:14:04.582Z",
       "action": "push",
       "commit": "17ebca2",
