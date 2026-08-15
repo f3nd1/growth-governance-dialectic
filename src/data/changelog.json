@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:39:47.485Z",
+      "action": "push",
+      "commit": "960653a",
+      "branch": "main",
+      "message": "State the joint-display denominator wherever the totals are read",
+      "summary": "The Joint Display excludes any participant whose stakeholder group maps to no row — 'multi-role' being the case in the live workspace — so it and Pattern-Matching report the same corpus over different denominators. The Joint Display named the excluded participants but never gave the two figures together; Pattern-Matching said nothing at all, and an advisor reading the exported Pilot Report saw neither. A single derivation, rowCoverage in data/jointDisplayMatrix.js, returns the roster total, the mapped count and the excluded records. The Joint Display's existing alert now opens with 'This matrix covers N of M participants' and links to Pattern-Matching; Pattern-Matching states that it aggregates all M, names who is absent from the matrix, and links back; the Pilot Report carries the same statement under the corpus counts in section 5, immediately above the pattern-matching result it qualifies. All three are conditional on an unmapped participant existing and disappear together once every group maps to a row, verified in both directions. No participant is assigned to a row and the multi-role judgement call is left untouched. Real mode only, since the synthetic matrix has no participant-to-row mapping; synthetic pages and exports verified unchanged."
+    },
+    {
       "when": "2026-08-15T10:37:02.452Z",
       "action": "push",
       "commit": "20eee02",
