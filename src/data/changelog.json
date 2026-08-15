@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:23:09.185Z",
+      "action": "push",
+      "commit": "606b9a5",
+      "branch": "main",
+      "message": "Joint Display: stop the description asserting an interviews-only design",
+      "summary": "The real-mode page description read 'The design is interviews-only, so rows are the five groups interviewed rather than evidence types'. That is no longer true: focus groups are collected, and the page's own evidence-type filter offers all three types. Rather than swapping one hardcoded composition for another, the description now explains the row semantics without asserting which types exist — a segment lands in a row by who said it rather than by which evidence type it came from, so a row aggregates whatever that stakeholder group said in an interview or a focus group alike, and the filter is there to read one type on its own. Because it makes no claim about composition it cannot go stale as the corpus changes. It also drops the hardcoded 'five', which the Rows shown card already lists and which the row toggles above can change. Synthetic mode's description is untouched; pages and exports verified identical."
+    },
+    {
       "when": "2026-08-15T10:22:20.414Z",
       "action": "push",
       "commit": "e7b731d",
