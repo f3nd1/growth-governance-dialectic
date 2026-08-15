@@ -3,6 +3,14 @@
   "checkFromNote": "Entries before this commit recorded the hash of the changelog commit rather than the commit they describe, so they cannot be verified by hash. changelog:check only polices commits after this one.",
   "entries": [
     {
+      "when": "2026-08-15T10:01:43.306Z",
+      "action": "push",
+      "commit": "3e04865",
+      "branch": "main",
+      "message": "Delete a real session, and everything derived from it",
+      "summary": "Removing a single imported session — an interview, focus group or document — previously required editing localStorage by hand. Real mode now has a delete that names what it destroys before doing it: the session and its verbatim text, the coded segments derived from it, and the override-log entries recorded against those segments, each counted from the live workspace rather than described in general terms. It is deliberately hard to fire: the button opens a panel instead of acting, and 'Delete permanently' stays disabled until the session's own label is typed exactly; Cancel writes nothing. The cascade now includes overridesLog, which the previous delete left behind pointing at segments that no longer existed. Nothing else is touched — other sessions, participant records, codebook and protocol are all verified intact by id after deletion. Coding, Reliability, Pattern-Matching and the Export Centre corpus table derive their totals from the workspace on every render, so all four read correctly straight after a delete with no re-code click; re-coding the remaining evidence stays an explicit action. Synthetic mode keeps its original one-step delete on a separate function: sharing one path behind a mode flag is how this eventually destroys irreplaceable data on the wrong branch, and hardening synthetic's path would itself have been a synthetic-mode change."
+    },
+    {
       "when": "2026-08-15T09:58:32.358Z",
       "action": "push",
       "commit": "b5a9730",
