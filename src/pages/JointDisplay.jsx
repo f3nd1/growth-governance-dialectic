@@ -41,7 +41,7 @@ export default function JointDisplay() {
         title="Joint Display"
         desc={
           isReal
-            ? 'The Chapter 3 pattern-matching matrix (Table 2): stakeholder groups × rival propositions. The design is interviews-only, so rows are the five groups interviewed rather than evidence types.'
+            ? 'The Chapter 3 pattern-matching matrix (Table 2): stakeholder groups × rival propositions. A segment lands in a row by who said it, not by which evidence type it came from — so a row aggregates whatever a group said, in an interview or in a focus group alike. Use the evidence-type filter to read one type on its own.'
             : 'The Chapter 3 pattern-matching matrix (Table 2): evidence types × rival propositions. It makes explicit what synthetic data CAN validate (the interview instrument) and what it CANNOT (documents and focus groups, which await the real-data phase).'
         }
       />
